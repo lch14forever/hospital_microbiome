@@ -1,0 +1,48 @@
+---
+title: "Supplimentary Figures"
+output:
+  html_document:
+    df_print: paged
+---
+
+### HAI abundance in the environment
+
+Load generic libraries
+```{r}
+source('configuration.r')
+```
+
+Load plot specific libraries
+```{r}
+library(vegan)
+```
+
+Sup. Fig. 6A
+```{r}
+df.mapping <- read.table('../metadata/nanopore.metadata.txt',head=T,sep='\t')
+df.nanopore <- read.table('../tables/nanopore_kraken_genus.dat',head=T,sep='\t',row.names=1)
+df.nanopore[df.nanopore < 0.1] <- 0
+df.nanopore <- df.nanopore[rowSums(df.nanopore)>0, ]
+shan=data.frame(diversity(t(df.nanopore),index="shannon"))
+simp=data.frame(diversity(t(df.nanopore),index="simpson"))
+shan= mutate(shan,Library=rownames(shan))
+simp= mutate(simp,Library=rownames(simp))
+colnames(shan)[1]="Shannon"
+colnames(simp)[1]="Simpson"
+diversity=merge(shan,df.mapping,by.x="Library",by.y="Nanopore_ID")
+diversity=merge(diversity,simp,by="Library")
+diversity1=select(diversity,Antibiotics,Simpson,Shannon)
+diversity1=melt(diversity1,id="Antibiotics")
+level_order <- c('BHI', 'AMP', 'CHLOR', 'KAN', 'STREP', 'TET')
+ggplot(data = diversity1, aes(x=factor(Antibiotics,level=level_order),y=value,fill=Antibiotics)) +
+  geom_violin() +
+  theme(axis.text.x = element_text(angle=40, hjust=1, size=10)) +
+  scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-c(2,8)])+
+  labs(x='Antibiotics', y='Diversity') + 
+  facet_wrap(~variable,nrow=2,scale="free_y")
+```
+
+Sup. Fig. 6B
+```{r}
+
+```

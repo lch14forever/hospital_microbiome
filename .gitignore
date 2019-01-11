@@ -1,0 +1,8 @@
+*~
+*#
+data-raw/
+.DS_Store
+.Rproj.user
+.Rhistory
+.RData
+tmp*

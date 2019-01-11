@@ -1,0 +1,224 @@
+---
+title: "Phylogenetic analysis based on identity and hive plot for species distribution"
+output:
+  html_document:
+    df_print: paged
+---
+
+### Phylogenetic analysis based on identity
+
+Load generic libraries
+```{r}
+source('configuration.r')
+```
+
+Load plot specific libraries
+```{r}
+library(ape)
+library(ggtree)
+library(HiveR)
+```
+
+Merge data
+```{r}
+df <- read.table('../tables/species_in_assembly_qc_pass.dat', head=TRUE, stringsAsFactors = FALSE, comment.char = '!')
+meta.illumina <- read.table('../metadata/illumina_metadata.txt', head=TRUE)[,-2]
+meta.nanopore <- read.table('../metadata/nanopore.metadata.txt', head=TRUE, sep='\t', strip.white = TRUE)
+meta.merged <- merge(meta.nanopore, meta.illumina,
+                     by.x='Illumina_Library_ID',
+                     by.y='Library')
+meta.merged <- merge(df, meta.merged,
+                     by.x='lib',
+                     by.y='Nanopore_ID')[,c(4,1:3,5:18)]
+colnames(meta.merged)[3] <- 'Species'
+## write.table(meta.merged, 'merged_metadata.tsv', quote=F, row.names = F, col.names = T, sep='\t')
+
+## meta.merged <- filter(meta.merged, Antibiotics!='BHI')
+```
+
+
+Function to plot the tree with heatmap
+```{r}
+## function to plot tree
+plot.tree <- function(x, color, offset=0.01){
+  dist.dat <- read.table(x)
+  idx <- str_detect(rownames(dist.dat), 's_') & rownames(dist.dat) %in% meta.merged[,1]
+  dist.dat <- dist.dat[idx, idx]
+  
+  ## clustering
+  cluster.full <- hclust(as.dist(dist.dat), method='ward.D')
+  clusters <- cutree(cluster.full, h=0.001)
+  
+  strains <- sapply(unique(clusters), function(x) clusters[clusters==x][1])
+  cluster.strains <- hclust(as.dist(dist.dat[names(strains), names(strains)]), method='single')
+  
+  merged <- merge(data.frame(clusters), meta.merged, by.x=0, by.y=1) %>%  
+    mutate(strain=paste0('s', clusters))
+  
+  antibiotics <- select(merged, clusters, Antibiotics) %>% group_by(clusters, Antibiotics) %>% 
+    count() %>% spread(Antibiotics,n,fill=0) %>% merge(data.frame(strains, id=names(strains)), by.x=1, by.y=1) %>% 
+    select(-clusters, -BHI) %>% data.frame(row.names = 'id')
+  antibiotics[antibiotics > 0] <- 'D'
+  
+  p <- ggtree(as.phylo(cluster.strains), layout="fan", open.angle=45, lwd=1.5) %<+%
+    merged + 
+    geom_tippoint(size=3, shape=19, col=color) +
+    geom_tiplab2(aes(label=strain), size=5, offset=0.0015)
+  
+  p <- gheatmap(p, offset=offset, antibiotics, color='black', colnames_offset_y = 0.3,##colnames_offset_x=10,
+                colnames_angle = 60, hjust =1, font.size=6.5) + scale_fill_manual(values=c('white', color)) + 
+    theme(legend.position ='none')
+  return(list(p=p, dat=merged))
+}
+```
+
+Generate tree plots
+```{r}
+g1 <- plot.tree('../tables/Acinetobacter_baumannii_mummer_heatmap.dat', 'red', 0.007)
+g2 <- plot.tree('../tables/Enterococcus_faecalis_mummer_heatmap.dat', 'blue', 0.004)
+g3 <- plot.tree('../tables/Staphylococcus_aureus_mummer_heatmap.dat', 'darkgreen', 0.005)
+g4 <- plot.tree('../tables/Elizabethkingia_anophelis_mummer_heatmap.dat', 'gold', 0.005)
+g5 <- plot.tree('../tables/Staphylococcus_epidermidis_mummer_heatmap.dat', 'orange', 0.004)
+```
+
+#### Acinetobacter baumannii
+```{r fig.height=12, fig.width=12}
+g1$p
+```
+
+
+#### Enterococcus faecalis
+```{r fig.height=12, fig.width=12}
+g2$p
+```
+
+#### Staphylococcus aureus
+```{r fig.height=12, fig.width=12}
+g3$p
+```
+
+#### Elizabethkingia anophelis
+```{r fig.height=12, fig.width=12}
+g4$p
+```
+
+#### Staphylococcus epidermidis
+```{r fig.height=12, fig.width=12}
+g5$p
+```
+
+Save plots
+```{r, echo=FALSE}
+pdf('../plots/strain_tree.pdf', width=12, height=12)
+g1$p
+g2$p
+g3$p
+g4$p
+g5$p
+dev.off()
+```
+
+### Hive plot for species distribution
+
+Generate edge data
+```{r}
+rbind(g1$dat, g2$dat, g3$dat, g4$dat, g5$dat) %>%
+  group_by(Species, clusters, Sample_type, Room_type, #bed_number,
+           timept, Sample_ID.y, Cubicle_room) %>%
+  tally()  %>% ungroup() %>% 
+  mutate(clusters=sprintf("%02d", clusters)) %>% 
+  group_by(Species, clusters, Sample_type, Cubicle_room, Room_type, timept) %>% 
+  count %>% select(-nn) %>% 
+  mutate(label1='Strain', label2='Site', label3='Room') %>% 
+  unite(n1,c(label1, Species, clusters), sep='=', remove=F) %>% 
+  unite(n2,c(label2, Sample_type), sep='=', remove=F) %>% 
+  unite(n3,c(label3, Room_type, Cubicle_room), sep='=',remove=F) %>% 
+  select(-label1, -label2, -label3) -> edge_data
+
+## remove strains only occurred once at one place
+edge_data <- filter(edge_data, n1%in% 
+         (edge_data %>% group_by(n1) %>% count %>% filter(n>1))$n1)
+```
+
+Hive plot function
+```{r}
+hiveplot <- function(species, col){ 
+  edge_plot <- filter(edge_data ,Species==species)
+  strain_col <- col
+  
+  rbind(data.frame(x1=edge_plot$n1, x2=edge_plot$n2, color=edge_plot$timept) ,
+             data.frame(x1=edge_plot$n1, x2=edge_plot$n3, color=edge_plot$timept)
+             ) %>% 
+    group_by(x1, x2, color) %>% count() %>% 
+    select(x1, x2, weight=n, color) %>% 
+    arrange(desc(x1,x2)) -> e
+  
+  hive <- edge2HPD(data.frame(e[,1:3]))
+  hive$nodes$axis <- as.integer(as.factor(str_split_fixed(hive$nodes$lab, '=', 2)[,1]))
+  hive$nodes$tag <- str_split_fixed(hive$nodes$lab, '=', 3)[,1] 
+  ## species color
+  hive$nodes$color[ hive$nodes$tag == 'Strain'] <- strain_col
+  ## site color
+  colors <- sapply(c(pal_simpsons('springfield')(16)), adjustcolor, alpha.f=0.9)
+  colormap <- data.frame(site=levels(edge_data$Sample_type), col=colors[1:9], row.names = 1, stringsAsFactors = F)
+  site.id <- hive$nodes$tag=='Site'
+  hive$nodes$color[site.id] <- colormap[str_split_fixed(hive$nodes$lab, '=', 2)[site.id, 2], ]
+  ## room color
+  colormap <-data.frame(room=unique(edge_data$Room_type), col=colors[c(13,15,16)], row.names = 1, stringsAsFactors = F)
+  room.id <- hive$nodes$tag=='Room'
+  hive$nodes$color[room.id] <- colormap[str_split_fixed(hive$nodes$lab[room.id], '=', 3)[,2], ]
+  
+  hive$nodes$size=2
+  hive$edges$weight <- hive$edges$weight*3-1
+  hive$edges$color <- ifelse(e$color<2, '#ff990055','#66ccff55')
+  #hive$edges$color <- ifelse(e$color<2,'#66ccff77',  '#ff330077')
+  tmp <- data.frame(node.lab=hive$nodes$lab, node.text=hive$nodes$lab, angle=0, radius=0, offset=-0.5, hjust=1, vjust=0.5)
+  mutate(tmp, node.text=str_replace(node.text, 'Strain=.*=', 'Strain=s')) %>% 
+    separate(col=node.text, into=c('lab','node.text'), '=', extra='merge') %>% 
+    mutate(node.text=str_replace_all(node.text, '_', ' ')) %>% 
+    mutate(node.text=str_replace_all(node.text, '=', ': ')) %>% 
+    mutate(offset=ifelse(lab=='Room' , -0.05, -0.04)) %>% 
+    select(-lab) %>% 
+  write.table('tmp_hive.txt', sep=',', quote=T, row.names = F, col.names = T)
+  
+  plotHive(hive, ch=0.2, method='ranknorm', bkgnd='white', anNodes = 'tmp_hive.txt')
+}
+```
+
+#### Acinetobacter baumannii
+```{r}
+hiveplot('Acinetobacter_baumannii', 'red')
+```
+
+
+#### Enterococcus faecalis
+```{r fig.height=10, fig.width=10}
+hiveplot('Enterococcus_faecalis', 'blue')
+```
+
+#### Staphylococcus aureus
+```{r fig.height=10, fig.width=10}
+hiveplot('Staphylococcus_aureus', 'darkgreen')
+```
+
+#### Elizabethkingia anophelis
+```{r fig.height=10, fig.width=10}
+hiveplot('Elizabethkingia_anophelis', 'gold')
+```
+
+#### Staphylococcus epidermidis
+```{r fig.height=10, fig.width=10}
+hiveplot('Staphylococcus_epidermidis', 'orange')
+```
+
+Save plot
+
+```{r echo=FALSE}
+pdf('../plots/hive.map.pdf', width=9, height=8)
+hiveplot('Acinetobacter_baumannii', 'red')
+hiveplot('Enterococcus_faecalis', 'blue')
+hiveplot('Staphylococcus_aureus', 'darkgreen')
+hiveplot('Elizabethkingia_anophelis', 'gold')
+hiveplot('Staphylococcus_epidermidis', 'orange')
+dev.off()
+```
