@@ -59,3 +59,7 @@ ggsave('../plots/hai_ar_species_nanopore_n50.pdf', g,
        width=8, height=5)
 ```
 
+### Session informaton
+```{r}
+sessionInfo()
+```

@@ -1,0 +1,89 @@
+---
+title: "Supplementary Figure 9"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+Load generic libraries
+```{r}
+source('configuration.r')
+```
+
+Load plot specific libraries
+```{r message=FALSE}
+library(ggbeeswarm)
+```
+
+```{r fig.height=5, fig.width=15}
+meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2)
+df.nanopore <- read.table('../tables/species_in_assembly_qc_pass.dat')
+df.metaphlan <- read.table('../tables/illumina_metaphlan2_species.tsv', head=TRUE, stringsAsFactors=FALSE)
+rownames(df.metaphlan) <- gsub('s__', '',  df.metaphlan$Index)
+df.metaphlan <- df.metaphlan[,-1]
+tmp2 <- melt(as.matrix(df.metaphlan)) %>% mutate(tmp=paste0(Var1, Var2))
+tmp3=merge(tmp2,meta,by.x="Var2",by.y="Library")%>%
+  select(Var1,value,tmp)
+df.mapping <- read.table('../metadata/nanopore.metadata.txt',head=T,sep='\t')
+df.mapping <- filter(df.mapping,!Illumina_Library_ID %in% c(""))
+
+## merge tables
+tmp <- merge(df.nanopore, df.mapping, by.x='V2', by.y='Nanopore_ID') %>%
+  filter(V3>1e6) %>% mutate(tmp=paste0(V1, Illumina_Library_ID))
+dat <-
+  (merge(tmp, tmp3, by='tmp') %>% 
+     select(-tmp, -Var1)) %>%
+  mutate(Species=paste0(V2,'@',V1, '@', Illumina_Library_ID))
+
+dat = select(dat,-V3, -V4, -Sample_ID, -Culturing_Sample_ID, -Species) %>%
+  mutate(group=paste0(V1,'_',Antibiotics))
+
+dat[["V1"]]=gsub("_"," ",as.character(dat[["V1"]]))
+
+dat = filter(dat, !(grepl("Burkholderia", V1) | V1 %in% c("Acinetobacter baumannii","Candida albicans","Clostridium difficile", 
+                                                          "Clostridium sordellii", "Klebsiella pneumoniae", "Klebsiella oxytoca",
+                                                        "Escherichia coli", "Staphylococcus aureus","Pseudomonas aeruginosa",
+                                                        "Mycobacterium abscessus", "Mycobacterium tuberculosis",
+                                                        "Enterococcus faecalis","Enterococcus faecium", 
+                                                        "Staphylococcus epidermidis")))
+test = group_by(dat,V1) %>% 
+  tally() %>%
+  merge(dat, by='V1') %>%
+  filter(n>10)
+
+o <- c('Ill','BHI', 'AMP', 'CHLOR', 'KAN', 'STREP', 'TET')
+g.a <- ggplot(data=test,aes(x=factor(Antibiotics,level=o), y=log(value+1,2),color=Antibiotics)) +
+  geom_quasirandom(dodge.width = 1) +
+  theme(axis.text.x = element_text(angle=40, hjust=1, size=8),strip.text = element_text(size=10, face='bold.italic'))+
+  facet_wrap(~V1,nrow=2)
+g.a
+```
+
+```{r fig.height=5, fig.width=15}
+N=read.table('../tables/nanopore_assembly_contiguity.dat', head=TRUE, row.names=1)
+N=data.frame(N,Index=rownames(N))
+reassemble <- function(x, ind) paste(x[ind], collapse=" ") 
+N[,"Index"]=vapply(strsplit(rownames(N),"_"), reassemble, "" , c(1,2)) 
+
+N=filter(N,Index %in% test[,"V1"])
+colnames(N)=c("Total","N50","Index")
+N=filter(N,Total>1000000)
+
+g.b <- ggplot(data = N, aes(x=Index,y=log(N50,10),fill=Index)) +
+  geom_violin(scale="width") +
+  scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-c(2,8)])+
+  theme(axis.text.x = element_text(angle=40, hjust=1, size=10))+
+  coord_cartesian(ylim =c(4,7))
+g.b
+```
+
+Save plot
+```{r}
+ggsave('../plots/sup9_a_b.pdf', cowplot::plot_grid(g.a, g.b, nrow=2), width = 15, height = 10)
+```
+
+### Session informaton
+```{r}
+sessionInfo()
+```

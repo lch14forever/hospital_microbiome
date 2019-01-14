@@ -1,11 +1,11 @@
 ---
-title: "Supplimentary Figures"
+title: "Supplimentary Figure 6"
 output:
   html_document:
     df_print: paged
 ---
 
-### HAI abundance in the environment
+### Supplimentary Figure 6
 
 Load generic libraries
 ```{r}
@@ -13,8 +13,9 @@ source('configuration.r')
 ```
 
 Load plot specific libraries
-```{r}
+```{r message=FALSE}
 library(vegan)
+library(reshape2)
 ```
 
 Sup. Fig. 6A
@@ -34,15 +35,53 @@ diversity=merge(diversity,simp,by="Library")
 diversity1=select(diversity,Antibiotics,Simpson,Shannon)
 diversity1=melt(diversity1,id="Antibiotics")
 level_order <- c('BHI', 'AMP', 'CHLOR', 'KAN', 'STREP', 'TET')
-ggplot(data = diversity1, aes(x=factor(Antibiotics,level=level_order),y=value,fill=Antibiotics)) +
+g.a <- ggplot(data = diversity1, aes(x=factor(Antibiotics,level=level_order),y=value,fill=Antibiotics)) +
   geom_violin() +
   theme(axis.text.x = element_text(angle=40, hjust=1, size=10)) +
   scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-c(2,8)])+
   labs(x='Antibiotics', y='Diversity') + 
   facet_wrap(~variable,nrow=2,scale="free_y")
+g.a
 ```
 
 Sup. Fig. 6B
 ```{r}
+df.nanopore <- read.table('../tables/nanopore_kraken_species.dat',head=T,sep='\t',row.names=1, quote='&', comment.char='&')
+nanopore <- merge(t(df.nanopore), df.mapping,by.x=0,by.y="Nanopore_ID")%>%
+  select(-contains("virus"))
+Anticount <- group_by(nanopore,Antibiotics) %>% count()
 
+nanopore <- select(nanopore,-Row.names,-Sample_ID,-Illumina_Library_ID)%>%
+  melt(id=c("Antibiotics","Culturing_Sample_ID"))%>%
+  filter(grepl("Burkholderia", variable) | variable %in% c("Acinetobacter_baumannii","Candida_albicans","Clostridium_difficile", 
+		"Clostridium_sordellii", "Klebsiella_pneumoniae", "Klebsiella_oxytoca",
+		"Escherichia_coli", "Staphylococcus_aureus","Pseudomonas_aeruginosa","Mycobacterium_abscessus",
+    "Mycobacterium_tuberculosis","Enterococcus_faecalis","Enterococcus_faecium", "Staphylococcus_epidermidis"))%>%
+  filter(value>10)%>%
+  select(-Culturing_Sample_ID)%>%
+  group_by(Antibiotics,variable)%>%
+  count()
+
+nanopore_final=merge(Anticount,nanopore,by=("Antibiotics"))%>%
+  mutate(freq=n.y/n.x)%>%
+  select(-n.x,-n.y) %>% 
+  mutate(variable=str_replace(variable, '_', ' '))
+
+o <- c('Ill','BHI', 'AMP', 'CHLOR', 'KAN', 'STREP', 'TET')
+g.b <- ggplot(data=nanopore_final, aes(x=variable,y=freq,fill=factor(Antibiotics,level=o))) +
+  geom_bar(width=0.8,color="black",position="dodge",stat="identity") +
+  theme(axis.text.x = element_text(angle=40, hjust=1, size=10, face='bold.italic'),legend.title=element_text(size=10))+
+  scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-(7:8)])
+g.b
+```
+
+Save plot
+```{r fig.height=10, fig.width=10}
+ggsave('../plots/sup6_a_b.pdf', cowplot::plot_grid(g.a, g.b, nrow=2), width = 10, height = 10)
+```
+
+
+### Session informaton
+```{r}
+sessionInfo()
 ```

@@ -41,10 +41,8 @@ edges.full <- foreach(id=unique(dat$id), .combine=rbind) %do% {
 }
 
 edges.collapsed <- group_by(edges.full, X1, X2) %>% 
-  tally() 
-#filter(edges.full, dist<Inf) %>%
-#    group_by(X1,X2) %>% tally() %>%
-#    filter(n>2) -> edges.collapsed
+  tally() %>% 
+  filter(n>2)   ### keep edges with more than 2 support
 ```
 
 Run MCL graph clustering
@@ -75,12 +73,7 @@ E(g)$community <-
                       ifelse(V(g)$community[x[1]] == V(g)$community[x[2]],
                                        LETTERS[V(g)$community[x[1]]], NA))
 ## node size
-#### carbapenemase
-args <- c('MECA_Bla', 'CARB_Bla', 'OXA-48_Bla', 'OXA-228_Bla', 'IMP-1_Bla', 'CARB-5_Bla',
-          'OXA-23_Bla','OXA-58_Bla','OXA-51_Bla')
-carb <- setNames(rep('No', length(V(g)$name)),V(g)$name)
-carb[names(carb) %in% args] <- 'Yes'
-V(g)$carb <- carb
+
 ## format vertex names
 aux <- function(x){
     if(length(x) > 2){
@@ -90,11 +83,16 @@ aux <- function(x){
     }
 }
 V(g)$name <- sapply(str_split(V(g)$name, '_'), aux)
+#### carbapenemase
+args <- read.table('../metadata/Bla_Carb.dat', head=F, stringsAsFactors=F)[,1]
+carb <- setNames(rep('No', length(V(g)$name)),V(g)$name)
+carb[names(carb) %in% args] <- 'Yes'
+V(g)$carb <- carb
 ```
 
 Plot
 ```{r fig.height=18, fig.width=20}
-g_cols <- c('burlywood', colors[2:5], 'purple',  'blue', 'darkgreen', 'pink', 'red', 'gold', 'black')
+g_cols <- c('burlywood', colors[2], 'purple',  'blue', 'darkgreen', 'pink', 'red', 'gold', 'black')
 p <- ggraph(g, layout = 'fr')+#, circular=TRUE) +
   geom_edge_arc(aes(width=width, color=community),
                 curvature = 0.0,
@@ -104,12 +102,12 @@ p <- ggraph(g, layout = 'fr')+#, circular=TRUE) +
                           na.value = rgb(0.8,0.8,0.8,0.5)) +
   geom_node_point(aes(fill=Type, color=carb), shape=21, size=5) +
   scale_color_manual(values=c('grey','firebrick')) + 
-  geom_node_text(aes(label = name), size=4, repel = TRUE) +
+  geom_node_text(aes(label = name), size=5, repel = TRUE, fontface='bold') +
   scale_edge_width(range = c(0.5,3)) +
   scale_fill_manual(values=pal_ucscgb('default')(16)[-c(1,3,4)]) +
   theme_void()
 p
-ggsave('../plots/ar_gene_linkage_graph.pdf', p, width=20, height=20)
+ggsave('../plots/ar_gene_linkage_graph.pdf', p, width=16, height=16)
 ```
 
 ### Sankey plot
@@ -117,26 +115,37 @@ ggsave('../plots/ar_gene_linkage_graph.pdf', p, width=20, height=20)
 Format data
 ```{r}
 edge.dat <- data.frame(v=V(g)$name, g=LETTERS[V(g)$community])
-select(dat, Species=V1, gene=V6) %>% mutate(gene=str_replace(gene, '_.*','')) %>%
+
+genome.info <- read.table('../tables/genome_info.dat', sep = '\t') 
+merge(dat, genome.info, by=c(1,2)) %>% ## only take the high/medium quality ones
+  select(Species=V1, gene=V6.x) %>% mutate(gene=str_replace(gene, '_.*','')) %>%
   filter(Species!='plasmid') -> sp.dat
 
 sankey.dat <- merge(sp.dat, edge.dat, by.x=2, by.y=1) %>% 
+  mutate(Species=str_replace(Species,'_',' ')) %>% 
   group_by(Species, g) %>% 
   count %>% 
-  mutate(Antibiotics_cluster=as.character(g))
+  mutate(Antibiotics_cluster=as.character(g)) %>% 
+  filter(n>2)
 ```
 
 Plot
-```{r fig.height=18, fig.width=10}
+```{r fig.height=18, fig.width=18}
 p <- ggplot(sankey.dat,aes(y=log10(n), axis1=Species, axis2=Antibiotics_cluster)) +
-  geom_alluvium(aes(fill=Antibiotics_cluster), width=1/12)  +
-  geom_stratum(width=1/12) +
-  geom_text(stat = "stratum", label.strata = TRUE, size=3) +
+  geom_alluvium(aes(fill=Antibiotics_cluster), width=1/5)  +
+  geom_stratum(width=1/5, fill=NA) +
+  geom_text(stat = "stratum", label.strata = TRUE, size=6, fontface = "italic", nudge_x=-0.12, hjust=1) +
   scale_fill_manual(values=g_cols) +
-  scale_x_discrete(limits = c("Species", "Antibiotics Cluster"), expand = c(.05, .05)) +
-  theme_void()
+  scale_x_discrete(limits = c("Species", "Antibiotics Cluster"), expand = c(.5, .05)) +
+  theme_void() +
+  theme()
 p
-ggsave('../plots/ar_gene_linkage_graph.pdf', p, width=10, height=15)
+ggsave('../plots/ar_gene_linkage_sankey.pdf', p, width=18, height=18)
+```
+
+### Session informaton
+```{r}
+sessionInfo()
 ```
 
 

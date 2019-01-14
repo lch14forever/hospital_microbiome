@@ -1,0 +1,170 @@
+---
+title: "Genome comparison of isolates from hospital and patient"
+output:
+  html_document:
+    df_print: paged
+---
+
+### Genome comparison of isolates from hospital and patient
+
+Load generic libraries
+```{r message=FALSE}
+source('configuration.r')
+```
+
+Load plot specific libraries
+```{r message=FALSE}
+library(foreach)
+library(ggtree)
+library(ape)
+```
+
+Function to plot tree
+```{r}
+get_tree_data <- function(species, filter.patient.only=TRUE, outlier=''){
+  dist.dat <- read.table(paste0('../tables/',species,'_mummer_heatmap.dat'))
+  
+  clustering.all <- hclust(as.dist(dist.dat), method='single')
+  clusters.all <- cutree(clustering.all, h=0.001)
+  strains <- foreach(x=unique(clusters.all), .combine=rbind) %do% {
+    tmp <- clusters.all[clusters.all==x]
+    dat <- data.frame(strain=tmp[1])
+    dat$n <- length(tmp)
+    dat$Hospital <- sum(str_detect(names(tmp), 's'))/dat$n
+    dat$Patient <- sum(str_detect(names(tmp), 'G'))/dat$n
+    dat$rep <- row.names(dat)
+    dat[,c(5,1,2,3,4)]
+  }
+  ## filter patient only strains
+  if(filter.patient.only) strains <- filter(strains, Patient<1)
+  ## filter strains that are very different
+  strains <- filter(strains, rep!=outlier) 
+  idx <- strains$rep
+  
+  clustering <- hclust(as.dist(dist.dat[idx, idx]), method='single')
+  
+  meta <- read.table('../metadata/merged_assembly_metadata.tsv', head=TRUE) %>% filter(Species==species)
+  merge(data.frame(clusters=clusters.all), meta, by.x=0, by.y=1, all.x=TRUE) %>%
+     mutate(strain=paste0('s', clusters)) %>%
+     mutate(lab=ifelse(str_detect(Row.names, 's'), 'Hospital', 'Patient')) -> merged
+  
+  mutate_at(merged, vars(Antibiotics), function(x) ifelse(merged$lab=='Patient', 'MET', as.character(x)) ) %>%
+    select(clusters, Antibiotics) %>% group_by(clusters, Antibiotics) %>%
+    count() %>% spread(Antibiotics,n,fill=0) %>%
+    merge(x=strains, y=., by.x=2, by.y=1) %>% 
+    select(-n, -strain, -BHI) %>% data.frame(row.names = 'rep') -> antibiotics
+  
+  select(antibiotics, AMP, CHLOR, KAN, STREP, TET) -> antibiotics
+  anno <- antibiotics %>% 
+    mutate_at(vars(AMP, CHLOR, KAN, STREP, TET), function(x) ifelse(x>0, 'Hospital', NA))
+  rownames(anno) <- rownames(antibiotics)
+  ## generate barplot
+  bars <- foreach(r=1:nrow(strains)) %do% {
+    data <- melt(strains[r,], id.vars = c('n', 'strain', 'rep')) 
+    ggplot(data, aes(x=1, y=value, fill= variable, width=n)) +
+      geom_bar(stat='identity', alpha=1) +
+      coord_flip() +
+      scale_fill_simpsons() +
+      theme_inset()
+  }
+  names(bars) <- 1:length(bars)
+  list(anno=anno, strains=strains, clustering=clustering, bars=bars)
+}
+```
+
+#### *Staphylococcus aureus*
+
+```{r fig.height=10, fig.width=10, message=FALSE}
+dat <- get_tree_data('Staphylococcus_aureus', outlier = 's_3217')
+attach(dat)
+## create a tree
+p <- ggtree(as.phylo(clustering)) %<+%
+  strains +
+  geom_tippoint(aes(size=n), shape=19) +
+  geom_tiplab(aes(label=paste0('s', strain)),size=4, color='black', fontface='bold', offset=5e-4) +
+  scale_size_continuous(trans='log2') + 
+  geom_treescale(x=0, y=20, width=0.001) +
+  theme(legend.position="left")
+
+## Add heatmap
+tree <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, offset=0.0008, font.size=3.5,
+         colnames_angle = 60, hjust =1) +
+  scale_fill_simpsons(guide=FALSE)
+
+## Add bar plot
+tree <- inset(tree, bars, width=0.0006, height=1.4, hjust=-0.0003)
+## Add legend for bars
+l1 <- cowplot::get_legend(bars[[1]] + theme_bw() + theme(legend.title =element_blank()))
+l2 <- cowplot::get_legend(tree)
+l <- cowplot::plot_grid(l1, l2, nrow=2)
+tree <- cowplot::plot_grid(l, tree + theme(legend.position="none"),
+          rel_widths=c(0.1,1) , nrow=1)
+tree
+ggsave('../plots/s_aureus_tree_w_patient_data.pdf', tree, width=10, height=10)
+```
+
+#### *Elizabethkingia anophelis*
+
+```{r fig.height=5, fig.width=10, message=FALSE}
+dat <- get_tree_data('Elizabethkingia_anophelis',  outlier = 's_2815')
+attach(dat)
+## create a tree
+p <- ggtree(as.phylo(clustering)) %<+%
+  strains +
+  geom_tippoint(aes(size=n), shape=19) +
+  geom_tiplab(aes(label=paste0('s', strain)),size=4, color='black', fontface='bold', offset=5e-4) +
+  scale_size_continuous(trans='log2') + 
+  geom_treescale(x=0, y=8, width=0.001) +
+  theme(legend.position="left")
+
+## Add heatmap
+tree <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, offset=0.0008, font.size=3.5,
+         colnames_angle = 60, hjust =1) +
+  scale_fill_simpsons(guide=FALSE)
+
+## Add bar plot
+tree <- inset(tree, bars, width=0.0006, height=1., hjust=-0.0003)
+## Add legend for bars
+l1 <- cowplot::get_legend(bars[[1]] + theme_bw() + theme(legend.title =element_blank()))
+l2 <- cowplot::get_legend(tree)
+l <- cowplot::plot_grid(l1, l2, nrow=2)
+tree <- cowplot::plot_grid(l, tree + theme(legend.position="none"),
+          rel_widths=c(0.1,1) , nrow=1)
+tree
+ggsave('../plots/e_anophelis_tree_w_patient_data.pdf', tree, width=10, height=10)
+```
+### 
+
+```{r fig.height=15, fig.width=10, message=FALSE}
+dat <- get_tree_data('Staphylococcus_epidermidis', outlier = '')
+attach(dat)
+## create a tree
+p <- ggtree(as.phylo(clustering)) %<+%
+  strains +
+  geom_tippoint(aes(size=n), shape=19) +
+  geom_tiplab(aes(label=paste0('s', strain)),size=4, color='black', fontface='bold', offset=5e-4) +
+  scale_size_continuous(trans='log2') + 
+  geom_treescale(x=0, y=40, width=0.001) +
+  theme(legend.position="left")
+
+## Add heatmap
+tree <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, offset=0.0008, font.size=3.5,
+         colnames_angle = 60, hjust =1) +
+  scale_fill_simpsons(guide=FALSE)
+
+## Add bar plot
+tree <- inset(tree, bars, width=0.0006, height=1.5, hjust=-0.0003)
+## Add legend for bars
+l1 <- cowplot::get_legend(bars[[1]] + theme_bw() + theme(legend.title =element_blank()))
+l2 <- cowplot::get_legend(tree)
+l <- cowplot::plot_grid(l1, l2, nrow=2)
+tree <- cowplot::plot_grid(l, tree + theme(legend.position="none"),
+          rel_widths=c(0.1,1) , nrow=1)
+tree
+ggsave('../plots/s_epidermidis_tree_w_patient_data.pdf', tree, width=10, height=15)
+```
+
+### Session informaton
+```{r}
+sessionInfo()
+```
