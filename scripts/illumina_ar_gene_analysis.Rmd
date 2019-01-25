@@ -71,7 +71,7 @@ s9 <- plot.heatmap("Flq", 'GnBu')
 Main
 ```{r fig.height=7, fig.width=4}
 cowplot::plot_grid(m1$gtable)
-ggsave('../plots/fig1e_antibiotics_profile.pdf', height = 12, width = 15)
+ggsave('../plots/fig1e_antibiotics_profile.pdf', height = 7, width = 4)
 ```
 
 Supplementary figures
