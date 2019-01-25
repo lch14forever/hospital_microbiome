@@ -81,6 +81,10 @@ g4 <- plot.tree('../tables/Klebsiella_pneumoniae_mummer_heatmap.dat', colors[4],
 g5 <- plot.tree('../tables/Pseudomonas_aeruginosa_mummer_heatmap.dat', colors[5], 0.004, 'Pseudomonas aeruginosa')
 g6 <- plot.tree('../tables/Enterococcus_faecium_mummer_heatmap.dat', colors[6], 0.005, 'Enterococcus faecium')
 g7 <- plot.tree('../tables/Staphylococcus_epidermidis_mummer_heatmap.dat', colors[7], 0.004, 'Staphylococcus epidermidis')
+g8 <- plot.tree('../tables/Elizabethkingia_anophelis_mummer_heatmap.dat', colors[8], 0.004, 'Elizabethkingia anophelis')
+
+write.table(rbind(g1$dat, g2$dat, g3$dat, g4$dat, g5$dat, g6$dat, g7$dat, g8$dat), 
+            '../tables/strain_cluster_summary.tsv', sep='\t', row.names = F, col.names = T, quote=F)
 ```
 
 Main figure part (*S. aureus*)

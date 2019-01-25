@@ -39,6 +39,8 @@ edges.full <- foreach(id=unique(dat$id), .combine=rbind) %do% {
         edge
     }
 }
+## save for ad hoc analysis
+write.table(edges.full, '../tables/ar_gene_linkage_edge_list_uncollapsed.tsv', row.names = F, quote=F, sep='\t')
 
 edges.collapsed <- group_by(edges.full, X1, X2) %>% 
   tally() %>% 

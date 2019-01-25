@@ -5,6 +5,8 @@ N111_BC11	19822	0	NA	Pseudomonas aeruginosa strain PA83 plasmid unnamed1, comple
 N130_BC07	9033	0	NA	Bacillus thuringiensis serovar kurstaki str. YBT-1520 plasmid pBMB7921, complete sequence	0.729	93.117
 N130_BC07	31814	1	TetL;	Staphylococcus epidermidis plasmid SAP016A, complete sequence	0.487	93.793
 N139_BC03	109836	0	NA	Acinetobacter baumannii strain ABNIH28 plasmid pABA-1fe1, complete sequence	0.946	98.132
+N192_BC03	141587	0	NA	Bacillus cereus G9842 plasmid pG9842 140, complete sequence	0.970	97.241
+N192_BC03	76449	0	NA	Bacillus cereus strain K8 plasmid pBCK802, complete sequence	0.442	92.238
 N149_BC04	237643	2	MphA;SHV-OKP-LEN;	Enterobacter cloacae strain N1863 plasmid pN1863-HI2, complete sequence	0.924	98.187
 N122_BC10	73054	0	NA	Bacillus thuringiensis Bt407 plasmid BTB 78p, complete sequence	0.733	97.233
 N122_BC10	183664	0	NA	Bacillus thuringiensis strain SCG04-02 plasmid PSCG364, complete sequence	0.729	92.615
@@ -92,6 +94,12 @@ N132_BC01	4610	0	NA	Lactobacillus sakei strain Rits9 plasmid pLS55, complete seq
 N125_BC09	28218	2	MsrA;MphC;	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	0.662	97.173
 N166_BC11	4965	1	TetK;	Listeria monocytogenes strain LM-C-273 plasmid pLM-C-273 clone contig000004 genomic sequence	0.736	91.180
 N166_BC11	44834	4	ErmC;Far1;TetL;AadD;	Staphylococcus epidermidis isolate BPH0662 genome assembly, plasmid: 2	0.540	97.441
+N183_BC12	3032	0	NA	Staphylococcus aureus subsp. aureus TW20, plasmid pTW20 2	1.007	98.749
+N183_BC12	124524	0	NA	Bacillus thuringiensis strain MYBT18246 plasmid p120510, complete sequence	0.408	92.402
+N183_BC12	95791	0	NA	Bacillus cereus strain MLY1 plasmid pMLY1.2, complete sequence	0.384	92.604
+N183_BC12	101358	0	NA	Bacillus thuringiensis strain MYBT18246 plasmid p101287, complete sequence	0.292	93.257
+N183_BC12	4154	0	NA	Bacillus thuringiensis strain YGd22-03 plasmid pYGD83, complete sequence	0.292	85.117
+N183_BC12	8244	0	NA	Bacillus cereus H3081.97 plasmid pH308197 10, complete sequence	0.083	81.720
 N116_BC02	11832	0	NA	Staphylococcus aureus subsp. aureus strain 1971.C01 plasmid p1971.C01b, complete sequence	0.772	93.155
 N151_BC05	109668	0	NA	Acinetobacter baumannii strain ABNIH28 plasmid pABA-1fe1, complete sequence	0.943	97.829
 N118_BC02	109834	0	NA	Acinetobacter baumannii strain ABNIH28 plasmid pABA-1fe1, complete sequence	0.931	98.127
@@ -104,6 +112,7 @@ N165_BC04	70008	0	NA	Acinetobacter baumannii strain ABNIH28 plasmid pABA-2f10, c
 N165_BC04	5465	0	NA	Acinetobacter pittii strain IEC338SC plasmid pIEC338SC3, complete sequence	0.873	92.332
 N165_BC04	5473	0	NA	Acinetobacter pittii strain IEC338SC plasmid pIEC338SC3, complete sequence	0.855	92.155
 N165_BC04	44090	1	BlaZ;	Staphylococcus epidermidis plasmid SAP107A, complete sequence	0.319	95.069
+N183_BC07	30784	0	NA	Bacillus cereus H3081.97 plasmid pH308197 29, complete sequence	0.040	81.520
 N135_BC05	5965	0	NA	Staphylococcus haemolyticus isolate 131A plasmid p131A, complete sequence	1.013	98.623
 N135_BC05	11060	0	NA	Staphylococcus epidermidis plasmid SAP024B, partial sequence	0.424	90.727
 N196_BC11	62084	4	Aph3''Ia;SulI;TetC;AadB;	Uncultured bacterium plasmid pRSB105, complete sequence	0.358	96.513
@@ -120,9 +129,15 @@ N219_BC07	122041	0	NA	Bacillus thuringiensis YBT-1518 plasmid pBMB0230, complete
 N219_BC07	94497	0	NA	Bacillus cereus strain MLY1 plasmid pMLY1.2, complete sequence	0.452	92.641
 N219_BC07	97512	0	NA	Bacillus thuringiensis strain MYBT18246 plasmid p101287, complete sequence	0.269	93.391
 N219_BC07	16179	0	NA	Bacillus thuringiensis strain MYBT18246 plasmid p46701, complete sequence	0.257	91.488
+N181_BC11	6015	1	VgaA;	Staphylococcus haemolyticus isolate 131A plasmid p131A, complete sequence	1.007	99.145
+N181_BC11	2727	0	NA	Staphylococcus aureus strain RIVM6519 plasmid pRIVM6519-2, complete sequence	0.855	98.437
+N181_BC11	4090	0	NA	Staphylococcus aureus strain RIVM0677 plasmid pRIVM0677, complete sequence	0.775	90.714
+N181_BC11	58899	0	NA	Staphylococcus sp. CDC3 plasmid SAP020A, complete sequence	0.762	80.986
 N217_BC01	70030	0	NA	Acinetobacter baumannii strain ABNIH28 plasmid pABA-2f10, complete sequence	0.898	99.468
 N203_BC11	2450	1	ErmC;	Staphylococcus aureus strain SVH7513 plasmid pSVH7513b, complete sequence	1.020	97.906
 N141_BC02	28194	1	AadD;	Staphylococcus epidermidis strain DAR1907 plasmid unnamed2, complete sequence	0.631	96.899
+N181_BC02	2034	0	NA	Enterococcus faecium isolate Ef aus00233 genome assembly, plasmid: 5	1.006	98.711
+N181_BC02	61075	0	NA	Enterococcus faecium strain E745 plasmid pl6, complete sequence	0.961	98.693
 N185_BC04	195046	0	NA	Delftia acidovorans plasmid pMC1, partial sequence	0.080	87.721
 N177_BC02	169862	0	NA	Bacillus cereus strain FORC 047 plasmid pFORC47 2, complete sequence	0.711	95.626
 N175_BC04	62042	4	Aph3''Ia;SulI;TetC;AadB;	Uncultured bacterium plasmid pRSB105, complete sequence	0.353	96.306
@@ -138,6 +153,7 @@ N238_BC11	5363	0	NA	Bacillus cereus 03BB108 plasmid pBFI 7, complete sequence	0.
 N110_BC08	71429	0	NA	Bacillus thuringiensis Bt407 plasmid BTB 78p, complete sequence	0.779	97.242
 N110_BC08	9034	0	NA	Bacillus thuringiensis serovar kurstaki str. YBT-1520 plasmid pBMB7921, complete sequence	0.690	91.766
 N110_BC08	4639	0	NA	Uncultured organism plasmid pK5, complete sequence	0.554	97.008
+N182_BC12	4957	1	TetK;	Listeria monocytogenes strain LM-C-273 plasmid pLM-C-273 clone contig000004 genomic sequence	0.773	90.095
 N185_BC11	5176	0	NA	Enterococcus faecium strain ISMMS VRE 4 plasmid ISMMS VRE4 p5, complete sequence	1.016	97.893
 N185_BC11	6240	0	NA	Enterococcus faecium strain 2014-VREF-41 plasmid p41-2, complete sequence	1.006	98.361
 N185_BC11	253210	0	NA	Enterococcus faecium strain 6E6 plasmid unnamed1, complete sequence	0.993	99.094
@@ -257,6 +273,8 @@ N233_BC02	78110	0	NA	Bacillus thuringiensis HD-789 plasmid pBTHD789-3, complete 
 N233_BC02	4645	0	NA	Uncultured prokaryote from Rat gut metagenome metamobilome, plasmid pRGRH0240	0.398	86.196
 N177_BC07	9916	0	NA	Acinetobacter baumannii strain A297(RUH875) plasmid pA297-2, complete sequence	1.000	99.124
 N177_BC07	70415	0	NA	Acinetobacter baumannii strain A85 plasmid pA85-3 clone GC1 AbaR4 resistance island, complete sequence	0.992	99.384
+N181_BC05	3934	0	NA	Staphylococcus epidermidis plasmid SAP108C, complete sequence	0.888	94.059
+N181_BC05	5218	0	NA	Staphylococcus sp. CDC25 plasmid SAP018B, complete sequence	0.763	88.233
 N215_BC04	71946	0	NA	Bacillus thuringiensis MC28 plasmid pMC189, complete sequence	0.444	88.716
 N215_BC04	59142	0	NA	Bacillus thuringiensis strain MYBT18246 plasmid p142098, complete sequence	0.400	89.580
 N136_BC09	20251	1	BlaZ;	Staphylococcus epidermidis strain ATCC 12228 plasmid pAMT2, complete sequence	1.011	98.684
@@ -355,6 +373,7 @@ N142_BC01	4966	1	TetK;	Listeria monocytogenes strain LM-C-273 plasmid pLM-C-273 
 N142_BC01	25787	3	VgaA;Sat4A;Aph3-III;	Staphylococcus aureus strain HUV05 plasmid pHUV05-03, complete sequence	0.367	98.085
 N105_BC06	2965	0	NA	Staphylococcus aureus subsp. aureus LGA251 plasmid pLGA251 complete sequence	1.015	94.772
 N105_BC06	4818	0	NA	Staphylococcus epidermidis ATCC 12228 plasmid pSE-12228-02, complete sequence	0.556	87.382
+N180_BC06	23708	1	MsrA;	Staphylococcus aureus TY825 plasmid pETB DNA, complete sequence	0.274	94.612
 N173_BC06	2977	0	NA	Staphylococcus aureus subsp. aureus LGA251 plasmid pLGA251 complete sequence	1.008	94.639
 N173_BC06	3132	0	NA	Bacillus cereus strain CC-1 plasmid p2, complete sequence	0.873	98.488
 N173_BC06	7834	0	NA	Acinetobacter baumannii strain SGH0823 plasmid pS30-1, complete sequence	0.571	87.338
@@ -462,6 +481,10 @@ N189_BC05	19491	0	NA	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir
 N189_BC05	4928	0	NA	Uncultured organism plasmid pK5, complete sequence	0.588	96.829
 N129_BC04	20379	2	MsrA;MphC;	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	1.003	98.799
 N129_BC04	8251	0	NA	Staphylococcus epidermidis strain ATCC 12228 plasmid pAMT3, complete sequence	0.446	84.813
+N178_BC01	4404	1	TetK;	Staphylococcus aureus plasmid pT181, complete sequence	1.010	98.685
+N178_BC01	24726	2	MsrA;MphC;	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	1.001	99.024
+N178_BC01	1269	0	NA	Staphylococcus aureus plasmid SAP052A, complete sequence	0.965	80.689
+N178_BC01	10837	0	NA	Staphylococcus haemolyticus strain 83131A plasmid p83131A-A, complete sequence	0.574	91.899
 N123_BC10	6009	1	VgaA;	Staphylococcus haemolyticus isolate 131A plasmid p131A, complete sequence	1.008	99.236
 N123_BC10	4089	0	NA	Staphylococcus epidermidis plasmid SAP108C, complete sequence	0.811	93.683
 N123_BC10	6558	0	NA	Staphylococcus simulans strain FDAARGOS 383 plasmid unnamed, complete sequence	0.639	93.964
@@ -489,6 +512,7 @@ N130_BC05	9444	0	NA	Staphylococcus epidermidis plasmid SAP016A, complete sequenc
 N216_BC11	109938	0	NA	Acinetobacter baumannii strain ABNIH28 plasmid pABA-1fe1, complete sequence	0.936	97.778
 N216_BC11	3661	0	NA	Acinetobacter johnsonii XBB1 plasmid pXBB1-1, complete sequence	0.344	79.230
 N216_BC11	2795	0	NA	Acinetobacter sp. M131 plasmid pM131-9, complete sequence	0.112	75.630
+N181_BC07	3549	0	NA	Staphylococcus aureus strain USA300-SUR15 plasmid pUSA07-1-SUR15, complete sequence	0.942	99.041
 N197_BC06	3747	1	CatA;	Staphylococcus aureus R-plasmid pSBK203 replication initiation protein gene, chloramphenicol acetyltransferase gene, and Pre protein gene, complete cds	1.009	90.022
 N197_BC06	31536	2	BlaZ;AadD;	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	0.780	98.511
 N199_BC03	2982	0	NA	Staphylococcus aureus strain JY43 plasmid pKH12, complete sequence	1.011	98.803
@@ -501,6 +525,10 @@ N098_BC04	18510	0	NA	Comamonas testosteroni P19 genome assembly Comamonas testos
 N159_BC10	5487	0	NA	Staphylococcus pasteuri plasmid pSP187	0.968	98.580
 N101_BC12	29049	1	AadD;	Staphylococcus epidermidis strain DAR1907 plasmid unnamed2, complete sequence	0.743	97.973
 N154_BC06	54556	0	NA	Enterococcus faecalis ATCC 29212 plasmid 2, complete sequence	0.579	97.687
+N182_BC08	7588	0	NA	Sphingomonas sp. DC-6 plasmid pDC09, complete sequence	0.735	88.719
+N182_BC08	14878	0	NA	Sphingomonas taxi strain ATCC 55669 plasmid STP2, complete sequence	0.423	85.459
+N182_BC08	14864	0	NA	Sphingomonas sp. SH plasmid pSH, complete sequence	0.355	86.059
+N198_BC01	200168	0	NA	Achromobacter insolitus strain FDAARGOS 88 plasmid unnamed1, complete sequence	0.152	97.776
 N122_BC09	11853	0	NA	Staphylococcus aureus subsp. aureus strain 1971.C01 plasmid p1971.C01b, complete sequence	0.760	93.530
 N122_BC09	29067	1	AadD;	Staphylococcus epidermidis strain DAR1907 plasmid unnamed2, complete sequence	0.640	97.451
 N175_BC06	4969	0	NA	Listeria monocytogenes strain LM-C-273 plasmid pLM-C-273 clone contig000004 genomic sequence	0.766	90.747
@@ -526,6 +554,7 @@ N106_BC03	6031	1	AadB;	Acinetobacter sp. SUN resistance plasmid pRAY, complete g
 N106_BC03	109837	0	NA	Acinetobacter baumannii strain ABNIH28 plasmid pABA-1fe1, complete sequence	0.944	98.089
 N106_BC03	13597	1	Tet-39;	Acinetobacter baumannii strain RCH52 plasmid pRCH52-1, complete sequence	0.511	98.522
 N106_BC03	13624	1	Tet-39;	Acinetobacter baumannii strain ML plasmid pAB-ML, complete sequence	0.495	98.531
+N180_BC05	70313	0	NA	Acinetobacter baumannii strain A85 plasmid pA85-3 clone GC1 AbaR4 resistance island, complete sequence	0.992	99.235
 N146_BC07	15549	1	BlaZ;	Staphylococcus aureus plasmid SAP063A, complete sequence	0.842	96.888
 N146_BC07	11421	0	NA	Staphylococcus epidermidis strain FDAARGOS 161 plasmid unnamed2, complete sequence	0.619	95.357
 N146_BC07	11378	0	NA	Staphylococcus epidermidis strain FDAARGOS 161 plasmid unnamed2, complete sequence	0.555	94.714
@@ -629,6 +658,7 @@ N131_BC12	109739	0	NA	Acinetobacter baumannii strain ABNIH28 plasmid pABA-1fe1, 
 N131_BC12	19358	0	NA	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	0.721	95.880
 N131_BC12	4544	1	CatA;	Staphylococcus pseudintermedius strain 081661 plasmid unnamed1, complete sequence	0.624	84.837
 N131_BC12	13628	1	Tet-39;	Acinetobacter baumannii strain AB20C15 plasmid pIBAC oxa58 20C15, complete sequence	0.527	95.381
+N152_BC03	94937	0	NA	Bacillus thuringiensis strain HD1011 plasmid 1, complete sequence	0.024	76.831
 N206_BC02	65018	0	NA	Enterococcus faecalis ATCC 29212 plasmid 2, complete sequence	0.386	99.023
 N137_BC12	8649	0	NA	Acinetobacter baumannii 107m plasmid p1ABIBUN complete genome	1.010	98.949
 N186_BC11	2033	0	NA	Enterococcus faecium isolate Ef aus00233 genome assembly, plasmid: 5	1.005	98.417
@@ -640,6 +670,8 @@ N173_BC11	62962	0	NA	Enterococcus faecium strain VRE001 plasmid unnamed1, comple
 N173_BC11	6227	0	NA	Enterococcus faecium strain 2014-VREF-41 plasmid p41-2, complete sequence	1.003	97.908
 N173_BC11	253352	0	NA	Enterococcus faecium strain 6E6 plasmid unnamed1, complete sequence	0.994	99.262
 N173_BC11	98211	3	Aph3-III;Ant6-Ia;TetL;	Enterococcus faecium strain ISMMS VRE 8 plasmid ISMMS VRE8 p2, complete sequence	0.806	96.300
+N183_BC05	8006	0	NA	Bacillus thuringiensis serovar kurstaki str. YBT-1520 plasmid pBMB7921, complete sequence	0.781	92.065
+N183_BC05	29928	0	NA	Acinetobacter sp. ACNIH2 plasmid pACI-3569, complete sequence	0.411	97.458
 N141_BC03	41523	0	NA	Bacillus cereus FRI-35 plasmid p02, complete sequence	0.687	88.471
 N176_BC06	2383	1	ErmC;	Staphylococcus chromogenes plasmid pPV141 erythromycin resistance plasmid, rRNA N-6-methyltransferase (ermM) and plasmid replication protein genes, complete cds	1.016	97.828
 N176_BC06	11874	0	NA	Staphylococcus aureus subsp. aureus strain 1971.C01 plasmid p1971.C01b, complete sequence	0.740	94.046
@@ -660,6 +692,11 @@ N230_BC03	4293	0	NA	Bacillus thuringiensis serovar tolworthi plasmid pKK8 DNA, c
 N169_BC10	481567	0	NA	Bacillus thuringiensis strain KNU-07 plasmid pBTKNU07-01, complete sequence	0.608	95.961
 N169_BC10	5328	0	NA	Staphylococcus warneri SG1 plasmid pSZ4, complete sequence	0.556	80.493
 N169_BC10	45165	0	NA	Staphylococcus aureus strain USA300-SUR15 plasmid pUSA08-1-SUR15, complete sequence	0.091	87.011
+N182_BC06	67351	0	NA	Bacillus thuringiensis strain MYBT18246 plasmid p55166, complete sequence	0.681	94.597
+N182_BC06	124527	0	NA	Bacillus thuringiensis strain MYBT18246 plasmid p120510, complete sequence	0.432	92.489
+N182_BC06	51249	0	NA	Bacillus weihenstephanensis KBAB4 plasmid pBWB404, complete genome	0.340	85.933
+N182_BC06	4318	0	NA	Bacillus toyonensis BCT-7112 plasmid pBCT8, complete sequence	0.323	80.580
+N182_BC06	5761	0	NA	Bacillus cereus 03BB108 plasmid pBFI 3, complete sequence	0.175	71.963
 N216_BC02	68198	0	NA	Enterococcus faecalis strain FDAARGOS 324 plasmid unnamed2, complete sequence	1.007	99.033
 N216_BC02	109322	0	NA	Acinetobacter pittii strain HUMV-6483 plasmid p11, complete sequence	1.000	98.923
 N216_BC02	3127	0	NA	Bacillus cereus strain CC-1 plasmid p2, complete sequence	0.957	98.589
@@ -676,6 +713,7 @@ N175_BC12	4645	0	NA	Uncultured organism plasmid pK5, complete sequence	0.535	95.
 N175_BC12	378679	0	NA	Bacillus cereus AH187 plasmid pAH187 270, complete sequence	0.481	95.930
 N132_BC04	19560	3	LnuA;AadD;TetK;	Staphylococcus lugdunensis strain Tlug8G-4 plasmid pT8G, complete sequence	0.868	97.119
 N105_BC03	31494	5	ErmC;LnuA;AadD;TetK;Aac6-Aph2;	Staphylococcus lugdunensis strain Tlug8G-4 plasmid pT8G, complete sequence	0.874	98.684
+N180_BC08	2446	0	NA	Staphylococcus aureus strain SVH7513 plasmid pSVH7513b, complete sequence	1.022	97.667
 N115_BC06	68275	0	NA	Klebsiella pneumoniae strain NY9 plasmid pNY9 2, complete sequence	0.910	96.674
 N115_BC06	2784	0	NA	Salmonella enterica subsp. enterica serovar Typhimurium plasmid pFPTB1 delta tnpA, ORF294, tetA, tetR, blaTEM, tnpR and tnp genes	0.479	94.185
 N189_BC10	60170	0	NA	Staphylococcus capitis subsp. capitis strain AYP1020 plasmid pAYP1020, complete sequence	0.944	96.943
@@ -821,6 +859,7 @@ N221_BC11	55976	0	NA	Bacillus megaterium strain YC4-R4 plasmid unnamed2	0.106	90
 N103_BC02	2330	0	NA	Staphylococcus aureus strain SVH7513 plasmid pSVH7513b, complete sequence	1.023	97.127
 N103_BC02	11054	0	NA	Staphylococcus epidermidis plasmid SAP024B, partial sequence	0.461	88.432
 N158_BC04	2303	0	NA	Staphylococcus aureus strain SR434 plasmid pSR04, complete genome	0.875	90.524
+N158_BC04	40203	2	MsrA;MphC;	Staphylococcus lugdunensis strain Tlug63N-4 plasmid pT63N, complete sequence	0.668	98.003
 N174_BC01	2389	1	ErmC;	Staphylococcus epidermidis plasmid pNE131, complete sequence	1.014	97.369
 N174_BC01	21774	0	NA	Staphylococcus epidermidis ATCC 12228 plasmid pSE-12228-05, complete sequence	0.315	80.016
 N114_BC07	4296	0	NA	Acinetobacter soli strain GFJ2 plasmid pGFJ6, complete sequence	0.741	92.294
@@ -884,6 +923,7 @@ N204_BC11	57434	0	NA	Enterococcus faecalis plasmid pMG2200 DNA, complete sequenc
 N204_BC11	58501	0	NA	Enterococcus faecalis strain CK135 plasmid pPD1, complete sequence	0.470	94.671
 N122_BC02	5996	0	NA	Staphylococcus haemolyticus isolate 131A plasmid p131A, complete sequence	1.010	98.902
 N122_BC02	13960	0	NA	Staphylococcus aureus subsp. aureus strain 1971.C01 plasmid p1971.C01b, complete sequence	0.624	93.461
+N180_BC12	35004	2	TetL;TetM;	Enterococcus faecalis strain EF123 plasmid pEF123, complete sequence	0.727	98.828
 N155_BC04	4103	0	NA	Enterococcus faecium strain A 020709 82 plasmid unnamed4, complete sequence	1.012	88.883
 N155_BC04	3152	0	NA	Staphylococcus aureus subsp. aureus ST398 plasmid pUR2940, isolate C2940, partial sequence	0.933	93.522
 N155_BC04	50569	0	NA	Enterococcus faecium strain AUSMDU00004055 plasmid unnamed2, complete sequence	0.928	95.589
@@ -966,6 +1006,8 @@ N172_BC02	5766	0	NA	Bacillus cereus 03BB108 plasmid pBFI 3, complete sequence	0.
 N166_BC09	4953	1	TetK;	Listeria monocytogenes strain LM-C-273 plasmid pLM-C-273 clone contig000004 genomic sequence	0.650	90.003
 N166_BC09	29146	1	AadD;	Staphylococcus epidermidis strain DAR1907 plasmid unnamed2, complete sequence	0.632	97.833
 N160_BC01	4944	1	TetK;	Listeria monocytogenes strain LM-C-273 plasmid pLM-C-273 clone contig000004 genomic sequence	0.706	91.515
+N180_BC04	8664	0	NA	Acinetobacter baumannii strain AR 0056 plasmid unnamed3, complete sequence	1.009	98.927
+N180_BC04	70319	0	NA	Acinetobacter baumannii strain A85 plasmid pA85-3 clone GC1 AbaR4 resistance island, complete sequence	0.991	99.239
 N107_BC11	8666	0	NA	Acinetobacter baumannii strain A297(RUH875) plasmid pA297-2, complete sequence	1.008	99.166
 N107_BC11	8375	2	CatA;Aac6-Aph2;	Staphylococcus haemolyticus isolate 131A plasmid p131A, complete sequence	0.559	95.324
 N110_BC12	4002	0	NA	Enterococcus faecium Aus0085 plasmid p5, complete sequence	1.019	95.489
@@ -1044,6 +1086,10 @@ N125_BC01	26366	0	NA	Staphylococcus epidermidis plasmid SAP107A, complete sequen
 N125_BC01	45836	1	BlaZ;	Staphylococcus capitis CR01 plasmid CR01, complete sequence	0.286	98.228
 N117_BC04	22180	1	BlaZ;	Staphylococcus epidermidis strain ATCC 12228 plasmid pAMT2, complete sequence	1.010	97.961
 N117_BC04	40111	2	BlaZ;Aac6-Aph2;	Staphylococcus aureus subsp. aureus strain 5118.N plasmid p5118.Nb, complete sequence	0.575	95.855
+N188_BC03	20185	0	NA	Staphylococcus aureus strain HUV05 plasmid pHUV05-02, complete sequence	1.008	98.926
+N188_BC03	25279	1	BlaZ;	Staphylococcus aureus plasmid pTZ2162 DNA, complete sequence	1.002	98.722
+N188_BC03	4950	1	TetK;	Listeria monocytogenes strain LM-C-273 plasmid pLM-C-273 clone contig000004 genomic sequence	0.733	89.456
+N188_BC03	3477	0	NA	Staphylococcus aureus subsp. aureus strain 1971.C01 plasmid p1971.C01c, complete sequence	0.367	86.710
 N206_BC06	10157	0	NA	Bacillus cereus 03BB108 plasmid pBFI 6, complete sequence	0.823	91.774
 N185_BC12	58642	0	NA	Staphylococcus sp. CDC3 plasmid SAP020A, complete sequence	0.785	81.267
 N200_BC09	2985	0	NA	Staphylococcus aureus subsp. aureus LGA251 plasmid pLGA251 complete sequence	1.008	94.709
@@ -1068,6 +1114,8 @@ N178_BC08	4710	1	Str;	Staphylococcus aureus strain RIVM0677 plasmid pRIVM0677, c
 N134_BC10	8643	0	NA	Acinetobacter baumannii strain A297(RUH875) plasmid pA297-2, complete sequence	1.010	98.960
 N133_BC03	141042	0	NA	Bacillus cereus G9842 plasmid pG9842 140, complete sequence	0.959	97.104
 N133_BC03	63603	0	NA	Bacillus cereus strain K8 plasmid pBCK802, complete sequence	0.552	92.127
+N183_BC03	18607	0	NA	Klebsiella oxytoca strain CAV1374 plasmid pCAV1374-16, complete sequence	0.457	98.241
+N183_BC03	62042	4	Aph3''Ia;SulI;TetC;AadB;	Pseudomonas aeruginosa plasmid Rms149	0.364	93.418
 N113_BC06	17677	0	NA	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	0.829	95.918
 N178_BC03	20900	0	NA	Staphylococcus epidermidis strain ATCC 12228 plasmid pAMT2, complete sequence	0.880	98.753
 N178_BC03	20798	0	NA	Staphylococcus epidermidis plasmid SAP045A, complete sequence	0.753	98.101
@@ -1128,7 +1176,10 @@ N208_BC06	4516	1	TetK;	Staphylococcus aureus strain JY10 plasmid pKH16, complete
 N208_BC06	30088	1	BlaZ;	Staphylococcus warneri plasmid pPI-1 DNA, complete sequence	0.415	96.394
 N142_BC04	2318	0	NA	Staphylococcus haemolyticus JCSC1435 plasmid pSHaeA DNA, complete sequence	0.995	93.640
 N142_BC04	4946	0	NA	Listeria monocytogenes strain LM-C-273 plasmid pLM-C-273 clone contig000004 genomic sequence	0.679	89.930
+N184_BC07	38440	4	ErmB;Sat4A;Aph3-III;Ant6-Ia;	Enterococcus faecalis strain CLB21560 plasmid pB, complete sequence	0.992	98.930
 N117_BC11	2243	1	LnuA;	Staphylococcus haemolyticus plasmid pLNU3, isolate coa101	0.964	90.389
+N182_BC02	1639	0	NA	Staphylococcus aureus plasmid pSK3, complete genome	0.899	98.192
+N182_BC02	58933	0	NA	Staphylococcus sp. CDC3 plasmid SAP020A, complete sequence	0.770	82.651
 N240_BC04	170029	0	NA	Bacillus cereus strain FORC 047 plasmid pFORC47 2, complete sequence	0.691	95.643
 N132_BC03	9044	0	NA	Bacillus thuringiensis serovar kurstaki str. YBT-1520 plasmid pBMB7921, complete sequence	0.695	90.184
 N132_BC03	4697	0	NA	Uncultured organism plasmid pK5, complete sequence	0.495	95.587
@@ -1162,7 +1213,17 @@ N135_BC09	8074	0	NA	Bacillus thuringiensis Bt407 plasmid BTB 8p, complete sequen
 N135_BC09	19983	0	NA	Staphylococcus aureus plasmid pSK57, partial sequence	1.005	98.670
 N135_BC09	12779	0	NA	Bacillus thuringiensis strain HD12 plasmid pHD120017, complete sequence	0.124	76.842
 N118_BC10	31912	1	TetL;	Staphylococcus simulans strain FDAARGOS 383 plasmid unnamed, complete sequence	0.473	93.318
+N182_BC09	58476	0	NA	Acinetobacter sp. ACNIH1 plasmid pACI-df08, complete sequence	0.711	97.177
+N182_BC09	5975	0	NA	Acinetobacter sp. M131 plasmid pM131-6, complete sequence	0.658	86.094
+N182_BC09	58404	0	NA	Acinetobacter pittii strain HGSA488 plasmid pLS488, complete sequence	0.637	97.385
+N182_BC09	143075	0	NA	Klebsiella oxytoca strain KONIH2 plasmid pKPC-55bf, complete sequence	0.590	96.358
+N182_BC09	48555	0	NA	Enterobacter cloacae strain AR 0093 plasmid unnamed2, complete sequence	0.546	95.732
+N182_BC09	4665	0	NA	Uncultured organism plasmid pK5, complete sequence	0.510	95.955
+N182_BC09	7134	0	NA	Bacillus cereus strain CC-1 plasmid p3, complete sequence	0.468	92.197
+N182_BC09	14791	0	NA	Acinetobacter sp. ACNIH1 plasmid pACI-a283, complete sequence	0.321	97.141
+N182_BC09	24665	0	NA	Acinetobacter baumannii strain D36 plasmid pD36-4, complete sequence	0.294	94.390
 N174_BC10	24674	2	MsrA;MphC;	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	1.001	98.494
+N183_BC01	61822	4	Aph3''Ia;SulI;TetC;AadB;	Pseudomonas aeruginosa plasmid Rms149	0.375	92.831
 N190_BC12	14583	0	NA	Bacillus cereus AH820 plasmid pAH820 10, complete sequence	0.722	94.624
 N190_BC12	33486	1	MsrA;	Staphylococcus epidermidis isolate BPH0662 genome assembly, plasmid: 2	0.695	98.573
 N190_BC12	222698	0	NA	Bacillus cereus strain S2-8 plasmid pBFR 2, complete sequence	0.604	94.671
@@ -1288,6 +1349,7 @@ N136_BC03	104487	0	NA	Enterobacter cloacae strain AR 0050 plasmid unitig 3 pilon
 N107_BC03	186474	11	Aph3''Ia;SulI;DfrA;DfrA1;TetA;DHA;QnrB;Qnr-S;FloR;AadA;SulIII;	Klebsiella pneumoniae strain KPNIH48 plasmid pKPN-10f7, complete sequence	0.595	97.020
 N199_BC07	98619	3	SulII;StrA;StrB;	Acinetobacter sp. LoGeW2-3 plasmid unnamed1, complete sequence	0.570	96.595
 N199_BC07	9402	0	NA	Acinetobacter sp. ACNIH1 plasmid unnamed, complete sequence	0.191	83.106
+N199_BC07	9425	0	NA	Acinetobacter sp. ACNIH1 plasmid unnamed, complete sequence	0.087	83.027
 N171_BC02	3203	0	NA	Enterobacter cloacae strain CAV1311 plasmid pCAV1311-3223, complete sequence	1.008	98.788
 N171_BC02	85259	4	TEM-1D;SulII;StrA;StrB;	Klebsiella pneumoniae strain Klebsiella pneumoniae KLPN57 genome assembly, plasmid: I	0.964	97.789
 N171_BC02	2672	0	NA	Enterobacter hormaechei strain AR432 plasmid unnamed1, complete sequence	0.956	98.675
@@ -1464,10 +1526,15 @@ N161_BC08	3524	0	NA	Staphylococcus aureus subsp. aureus strain 1971.C01 plasmid 
 N170_BC08	67412	0	NA	Bacillus thuringiensis strain MYBT18246 plasmid p55166, complete sequence	0.659	93.548
 N170_BC08	94580	0	NA	Bacillus cereus strain MLY1 plasmid pMLY1.2, complete sequence	0.363	92.744
 N227_BC03	6832	0	NA	Bacillus pumilus strain GR-8 plasmid pGR8, complete sequence	0.699	92.676
+N184_BC12	3164	0	NA	Enterococcus faecium strain VREfm1 plasmid pPEC013, complete sequence	1.012	98.136
+N184_BC12	60979	0	NA	Enterococcus faecium strain E745 plasmid pl6, complete sequence	0.963	98.567
+N184_BC12	98058	4	ErmB;Aph3-III;Ant6-Ia;TetL;	Enterococcus faecium strain ISMMS VRE 8 plasmid ISMMS VRE8 p2, complete sequence	0.829	96.376
 N227_BC02	17732	0	NA	Comamonas testosteroni P19 genome assembly Comamonas testosteroni P19, plasmid : II	0.707	97.475
 N227_BC02	25199	1	AacAad;	Pseudomonas aeruginosa plasmid pJB35, complete sequence	0.514	85.309
 N227_BC02	62096	4	Aph3''Ia;SulI;TetC;AadB;	Uncultured bacterium plasmid pRSB105, complete sequence	0.329	96.426
 N148_BC11	18616	1	BlaZ;	Staphylococcus epidermidis RP62A plasmid pSERP, complete sequence	0.638	98.278
+N181_BC01	216527	2	CatA;Aac6-Aph2;	Enterococcus faecium strain E1 plasmid pE1 230, complete sequence	0.902	99.224
+N181_BC01	5190	0	NA	Staphylococcus plasmid pC221	0.721	88.105
 N121_BC10	20393	1	MphC;	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	1.004	98.817
 N121_BC10	19845	3	LnuA;AadD;TetK;	Staphylococcus lugdunensis strain Tlug8G-4 plasmid pT8G, complete sequence	0.857	98.548
 N229_BC11	297700	0	NA	Bacillus cereus AH187 plasmid pAH187 270, complete sequence	0.742	97.747
@@ -1502,6 +1569,7 @@ N107_BC05	19699	0	NA	Staphylococcus aureus subsp. aureus strain CC1 plasmid p140
 N130_BC03	2967	0	NA	Staphylococcus aureus subsp. aureus LGA251 plasmid pLGA251 complete sequence	1.017	94.538
 N195_BC01	4259	0	NA	Klebsiella pneumoniae strain FDAARGOS 436 plasmid unnamed	0.473	81.265
 N195_BC01	4249	0	NA	Klebsiella pneumoniae strain Kp81 plasmid pKp81 2	0.462	81.385
+N187_BC10	4953	1	TetK;	Listeria monocytogenes strain LM-C-273 plasmid pLM-C-273 clone contig000004 genomic sequence	0.736	90.602
 N199_BC11	2506	1	ErmC;	Staphylococcus simulans erythromycin resistance plasmid pPV142 rRNA N-6-methyltransferase (ermM) and replication protein (rep) genes, complete cds	1.013	97.982
 N199_BC11	74462	0	NA	Bacillus thuringiensis serovar chinensis CT-43 plasmid pCT72, complete sequence	0.768	97.621
 N199_BC11	7118	0	NA	Bacillus thuringiensis serovar chinensis CT-43 plasmid pCT8252, complete sequence	0.604	88.844
@@ -1525,6 +1593,7 @@ N215_BC10	7814	0	NA	Enterococcus faecium isolate Ef aus00233 genome assembly, pl
 N215_BC10	11901	0	NA	Staphylococcus aureus subsp. aureus strain 1971.C01 plasmid p1971.C01b, complete sequence	0.725	93.924
 N215_BC10	4319	0	NA	Bacillus cereus F837/76 plasmid pF837 10, complete sequence	0.307	79.975
 N215_BC10	5770	0	NA	Bacillus cereus 03BB108 plasmid pBFI 3, complete sequence	0.154	71.970
+N182_BC03	3748	1	CatA;	Staphylococcus aureus plasmid pOC160-2 DNA, complete sequence, strain: OC160	0.912	93.364
 N233_BC05	3881	0	NA	Staphylococcus aureus plasmid pOC160-2 DNA, complete sequence, strain: OC160	0.690	96.223
 N233_BC05	336340	0	NA	Bacillus cereus AH187 plasmid pAH187 270, complete sequence	0.560	96.395
 N208_BC08	61088	0	NA	Enterococcus faecium strain E745 plasmid pl6, complete sequence	0.963	98.716
@@ -1539,9 +1608,12 @@ N210_BC11	3774	1	ErmC;	Staphylococcus aureus strain CMRSA plasmid pWBG738, compl
 N186_BC10	2985	0	NA	Staphylococcus aureus plasmid SAP070A, complete sequence	1.012	98.737
 N186_BC10	2982	0	NA	Staphylococcus aureus plasmid pKH3, complete sequence	1.011	96.198
 N186_BC10	20129	0	NA	Staphylococcus aureus strain HUV05 plasmid pHUV05-02, complete sequence	1.008	99.038
+N186_BC10	25278	1	BlaZ;	Staphylococcus aureus plasmid pTZ2162 DNA, complete sequence	1.005	98.506
+N186_BC10	3541	0	NA	Staphylococcus aureus strain USA300-SUR15 plasmid pUSA07-1-SUR15, complete sequence	0.974	98.955
 N186_BC10	4955	1	TetK;	Listeria monocytogenes strain LM-C-273 plasmid pLM-C-273 clone contig000004 genomic sequence	0.739	90.040
 N186_BC10	4959	1	TetK;	Listeria monocytogenes strain LM-C-273 plasmid pLM-C-273 clone contig000004 genomic sequence	0.637	90.436
 N186_BC10	3475	0	NA	Staphylococcus aureus plasmid pWBG756, partial sequence	0.385	86.255
+N186_BC10	94449	0	NA	Bacillus cereus strain MLY1 plasmid pMLY1.2, complete sequence	0.382	92.437
 N186_BC10	4321	0	NA	Bacillus toyonensis BCT-7112 plasmid pBCT8, complete sequence	0.282	80.750
 N186_BC10	4262	0	NA	Bacillus thuringiensis plasmid pTX14-1, MOB, REP, and collagen-like protein genes, complete sequence	0.280	76.025
 N186_BC10	51244	0	NA	Bacillus weihenstephanensis KBAB4 plasmid pBWB404, complete genome	0.253	85.701
@@ -1564,6 +1636,7 @@ N215_BC09	114486	0	NA	Bacillus thuringiensis strain MYBT18246 plasmid p150790, c
 N229_BC08	415308	0	NA	Bacillus thuringiensis strain KNU-07 plasmid pBTKNU07-01, complete sequence	0.907	98.637
 N229_BC08	289787	0	NA	Bacillus thuringiensis strain KNU-07 plasmid pBTKNU07-02, complete sequence	0.818	97.573
 N201_BC01	6065	0	NA	Acinetobacter baumannii strain 11510 plasmid pAba11510a	0.582	92.106
+N156_BC01	10943	0	NA	Sphingobium yanoikuyae plasmid pYAN-1 DNA, complete sequence	0.686	91.908
 N233_BC09	3132	0	NA	Bacillus cereus strain CC-1 plasmid p2, complete sequence	0.895	98.638
 N233_BC09	133995	0	NA	Enterobacter cloacae ECR091 plasmid pENT-4bd, complete sequence	0.502	97.745
 N142_BC05	2454	1	ErmC;	Staphylococcus aureus strain SVH7513 plasmid pSVH7513b, complete sequence	1.026	95.910
@@ -1578,6 +1651,10 @@ N107_BC08	4952	0	NA	Listeria monocytogenes strain LM-C-273 plasmid pLM-C-273 clo
 N186_BC01	2366	0	NA	Staphylococcus aureus plasmid pWBG764, complete sequence	1.012	98.627
 N118_BC11	4634	0	NA	Uncultured organism plasmid pK5, complete sequence	0.534	96.124
 N118_BC11	10788	0	NA	Bacillus sp. FDAARGOS 235 plasmid 3, complete sequence	0.151	84.581
+N181_BC04	5987	1	VgaA;	Staphylococcus haemolyticus isolate 131A plasmid p131A, complete sequence	1.012	98.416
+N181_BC04	17313	2	MsrA;MphC;	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	0.995	99.075
+N181_BC04	33521	1	BlaZ;	Staphylococcus capitis strain FDAARGOS 378 plasmid unnamed1, complete sequence	0.963	92.144
+N181_BC04	4961	1	TetK;	Listeria monocytogenes strain LM-C-273 plasmid pLM-C-273 clone contig000004 genomic sequence	0.737	91.260
 N113_BC11	8099	0	NA	Bacillus thuringiensis Bt407 plasmid BTB 8p, complete sequence	1.018	97.856
 N113_BC11	9056	0	NA	Bacillus thuringiensis serovar kurstaki str. YBT-1520 plasmid pBMB7921, complete sequence	0.690	89.351
 N113_BC11	54632	0	NA	Acinetobacter baumannii strain RCH51 plasmid pRCH51-3, complete sequence	0.486	96.556
@@ -1629,6 +1706,8 @@ N169_BC12	4961	1	TetK;	Listeria monocytogenes strain LM-C-273 plasmid pLM-C-273 
 N169_BC12	51804	2	MsrA;BlaZ;	Staphylococcus lugdunensis strain Tlug63N-4 plasmid pT63N, complete sequence	0.529	96.663
 N170_BC01	8358	0	NA	Listonella anguillarum strain 13YK-003 plasmid pJV, complete sequence	0.208	87.649
 N224_BC06	3269	0	NA	Staphylococcus aureus subsp. aureus strain ST20071176 plasmid pT45, complete sequence	0.762	88.716
+N166_BC07	2986	0	NA	Staphylococcus aureus subsp. aureus LGA251 plasmid pLGA251 complete sequence	1.010	95.021
+N166_BC07	30360	1	TetK;	Staphylococcus lugdunensis strain Tlug33G-4 plasmid pT33G-1, complete sequence	0.526	97.870
 N135_BC02	28741	2	DfrC;BlaZ;	Staphylococcus pasteuri strain JS7 plasmid pSNJS702, complete sequence	0.827	98.421
 N135_BC02	16808	0	NA	Staphylococcus lugdunensis strain Tlug63N-4 plasmid pT63N, complete sequence	0.439	97.875
 N135_BC02	43131	0	NA	Staphylococcus epidermidis PM221 plasmid 1, complete sequence	0.337	93.183
@@ -1654,6 +1733,7 @@ N169_BC08	2386	0	NA	Staphylococcus chromogenes plasmid pPV141 erythromycin resis
 N111_BC01	11799	0	NA	Staphylococcus aureus subsp. aureus strain 1971.C01 plasmid p1971.C01b, complete sequence	0.807	93.215
 N111_BC01	8693	0	NA	Staphylococcus haemolyticus JCSC1435 plasmid pSHaeC DNA, complete sequence	0.599	94.784
 N111_BC01	8694	0	NA	Staphylococcus epidermidis strain ATCC 12228 plasmid pAMT3, complete sequence	0.385	79.845
+N184_BC01	4419	1	TetK;	Staphylococcus aureus plasmid pT181, complete sequence	1.010	98.252
 N150_BC03	104547	0	NA	Enterobacter cloacae strain AR 0050 plasmid unitig 3 pilon, complete sequence	0.546	96.569
 N102_BC05	23930	1	TetL;	Staphylococcus epidermidis plasmid SAP016A, complete sequence	0.561	93.031
 N219_BC06	2367	0	NA	Staphylococcus aureus plasmid SAP087A, complete sequence	1.013	98.598
@@ -1681,6 +1761,8 @@ N216_BC05	74495	0	NA	Bacillus thuringiensis serovar chinensis CT-43 plasmid pCT7
 N216_BC05	4928	0	NA	Bacillus cereus strain CC-1 plasmid p1, complete sequence	0.725	87.852
 N216_BC05	27833	2	MsrA;MphC;	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	0.580	98.422
 N216_BC05	345038	0	NA	Bacillus cereus AH187 plasmid pAH187 270, complete sequence	0.511	97.074
+N181_BC06	37398	0	NA	Staphylococcus capitis strain FDAARGOS 378 plasmid unnamed1, complete sequence	0.885	93.282
+N181_BC06	28828	2	DfrC;BlaZ;	Staphylococcus pasteuri strain JS7 plasmid pSNJS702, complete sequence	0.806	98.515
 N122_BC08	73064	0	NA	Bacillus thuringiensis Bt407 plasmid BTB 78p, complete sequence	0.759	97.330
 N122_BC08	9047	0	NA	Bacillus thuringiensis serovar kurstaki str. YBT-1520 plasmid pBMB7921, complete sequence	0.691	91.752
 N122_BC08	337949	0	NA	Bacillus cereus AH187 plasmid pAH187 270, complete sequence	0.579	97.142
@@ -1873,6 +1955,7 @@ N188_BC06	2476	0	NA	Staphylococcus aureus strain SVH7513 plasmid pSVH7513b, comp
 N188_BC06	3543	0	NA	Staphylococcus aureus strain USA300-SUR15 plasmid pUSA07-1-SUR15, complete sequence	1.008	99.115
 N188_BC06	3481	0	NA	Staphylococcus aureus plasmid SAP051B, complete sequence	0.564	86.605
 N164_BC07	185815	0	NA	Klebsiella pneumoniae strain KPNIH48 plasmid pKPN-10f7, complete sequence	0.900	98.280
+N180_BC10	20038	0	NA	Staphylococcus epidermidis plasmid SAP016A, complete sequence	0.596	97.714
 N102_BC04	31504	5	ErmC;LnuA;AadD;TetK;Aac6-Aph2;	Staphylococcus lugdunensis strain Tlug8G-4 plasmid pT8G, complete sequence	0.909	98.714
 N102_BC04	6297	0	NA	Staphylococcus haemolyticus isolate 131A plasmid p131A, complete sequence	0.596	93.640
 N122_BC04	180226	0	NA	Delftia acidovorans plasmid pMC1, partial sequence	0.081	93.768
@@ -1887,6 +1970,7 @@ N136_BC10	40568	2	MsrA;MphC;	Staphylococcus haemolyticus strain SGAir0252 plasmi
 N136_BC10	24119	0	NA	Staphylococcus aureus plasmid pSK156, complete sequence	0.600	92.467
 N187_BC11	2375	1	ErmC;	Staphylococcus chromogenes plasmid pPV141 erythromycin resistance plasmid, rRNA N-6-methyltransferase (ermM) and plasmid replication protein genes, complete cds	1.017	97.687
 N187_BC11	33175	1	BlaZ;	Staphylococcus capitis strain FDAARGOS 378 plasmid unnamed1, complete sequence	0.941	93.949
+N183_BC08	30018	0	NA	Acinetobacter sp. DUT-2 plasmid unnamed1, complete sequence	0.374	99.071
 N212_BC04	2630	0	NA	Uncultured prokaryote from Rat gut metagenome metamobilome, plasmid pRGRH0087	0.992	88.402
 N212_BC04	20828	0	NA	Staphylococcus epidermidis plasmid SAP045A, complete sequence	0.763	98.248
 N212_BC04	43333	2	MsrA;BlaZ;	Staphylococcus aureus subsp. aureus strain 5118.N plasmid p5118.Nb, complete sequence	0.363	94.390
@@ -1939,6 +2023,8 @@ N234_BC07	39614	4	ErmC;Far1;TetL;AadD;	Staphylococcus epidermidis isolate BPH066
 N234_BC07	4035	0	NA	Bacillus thuringiensis serovar chinensis CT-43 plasmid pCT6880, complete sequence	0.415	91.398
 N234_BC07	84160	0	NA	Bacillus thuringiensis strain MYBT18246 plasmid p142098, complete sequence	0.410	88.765
 N152_BC01	51435	0	NA	Bacillus thuringiensis strain MYBT18246 plasmid p142098, complete sequence	0.560	89.583
+N180_BC07	19943	1	BlaZ;	Staphylococcus capitis strain FDAARGOS 378 plasmid unnamed1, complete sequence	0.562	94.325
+N180_BC07	5889	0	NA	Staphylococcus epidermidis plasmid SAP024B, partial sequence	0.556	86.228
 N116_BC10	29358	2	MsrA;MphC;	Staphylococcus saprophyticus strain FDAARGOS 168 plasmid unnamed2, complete sequence	1.010	99.053
 N116_BC10	28725	2	DfrC;BlaZ;	Staphylococcus pasteuri strain JS7 plasmid pSNJS702, complete sequence	0.766	98.350
 N116_BC10	19635	0	NA	Staphylococcus aureus subsp. aureus strain CC1 plasmid p140355, complete sequence	0.579	98.014
@@ -2162,11 +2248,14 @@ N136_BC01	75337	0	NA	Enterobacter cloacae strain MS7884A plasmid pMS7884B, compl
 N103_BC08	10755	0	NA	Staphylococcus sp. AntiMn-1 plasmid AM1 232, complete sequence	0.447	94.489
 N103_BC08	10725	0	NA	Staphylococcus sp. AntiMn-1 plasmid AM1 232, complete sequence	0.425	95.282
 N103_BC08	5005	0	NA	Listeria monocytogenes strain LM-C-273 plasmid pLM-C-273 clone contig000004 genomic sequence	0.350	86.994
+N187_BC06	3884	1	CatA;	Staphylococcus pseudintermedius strain 081661 plasmid unnamed1, complete sequence	0.981	93.436
 N197_BC10	3162	0	NA	Enterococcus faecium strain VREfm1 plasmid pPEC013, complete sequence	1.013	98.648
 N197_BC10	6116	0	NA	Enterococcus faecium plasmid pB82 bacA, bacB, mobC, mobA, orf5, orf6, repA, repB, orf9 genes for bacteriocin precursor, hypothetical protein, mobilization protein, mobilization protein, hypothetical protein, hypothetical protein, replication protein, replication protein, hypothetical protein, complete cds	1.009	99.021
 N197_BC10	70390	0	NA	Acinetobacter baumannii strain A85 plasmid pA85-3 clone GC1 AbaR4 resistance island, complete sequence	0.986	99.343
 N197_BC10	4349	0	NA	Enterococcus faecium strain Efaecium ER04484.3A plasmid pER04484.3A.4, complete sequence	0.970	94.174
 N197_BC10	61032	0	NA	Enterococcus faecium strain E745 plasmid pl6, complete sequence	0.959	98.703
+N183_BC11	2986	0	NA	Staphylococcus aureus plasmid SAP070A, complete sequence	1.010	98.971
+N183_BC11	40952	2	MsrA;MphC;	Staphylococcus lugdunensis strain Tlug63N-4 plasmid pT63N, complete sequence	0.718	98.008
 N118_BC01	9291	0	NA	Acinetobacter lwoffii strain ZS207 plasmid pmZS sequence	0.897	93.730
 N118_BC01	5782	0	NA	Acinetobacter baumannii strain Ab14 plasmid pAB14 transposon Tn2007, complete sequence; and MobA (MobA) gene, complete cds	0.715	94.530
 N118_BC01	103867	0	NA	Acinetobacter sp. ACNIH1 plasmid pACI-df08, complete sequence	0.680	95.675
@@ -2282,6 +2371,7 @@ N113_BC05	5994	1	VgaA;	Staphylococcus haemolyticus isolate 131A plasmid p131A, c
 N113_BC05	6549	0	NA	Staphylococcus simulans strain FDAARGOS 383 plasmid unnamed, complete sequence	0.665	93.458
 N113_BC02	4027	0	NA	Staphylococcus pseudintermedius strain 081661 plasmid unnamed1, complete sequence	0.742	85.520
 N113_BC02	5008	0	NA	Listeria monocytogenes strain LM-C-273 plasmid pLM-C-273 clone contig000004 genomic sequence	0.481	86.240
+N182_BC01	1644	0	NA	Staphylococcus aureus plasmid pSK3, complete genome	0.864	98.316
 N205_BC12	3195	0	NA	Klebsiella pneumoniae strain KpN01 plasmid pKpN01-COL, complete sequence	1.010	98.644
 N205_BC12	83954	2	Aac3-IIa;AadB;	Citrobacter freundii plasmid pCTX-M3, complete sequence	0.845	97.051
 N205_BC12	180073	0	NA	Delftia acidovorans plasmid pMC1, partial sequence	0.058	90.641
@@ -2338,6 +2428,7 @@ N175_BC10	26704	2	MsrA;MphC;	Staphylococcus haemolyticus strain SGAir0252 plasmi
 N175_BC10	29170	4	LnuA;AadD;TetK;Aac6-Aph2;	Staphylococcus lugdunensis strain Tlug8G-4 plasmid pT8G, complete sequence	0.951	99.093
 N175_BC10	4253	0	NA	Bacillus thuringiensis plasmid pTX14-1, MOB, REP, and collagen-like protein genes, complete sequence	0.365	76.265
 N175_BC10	3941	0	NA	Staphylococcus epidermidis plasmid SAP110B, complete sequence	0.082	83.530
+N193_BC01	6275	1	VgaA;	Staphylococcus haemolyticus isolate 131A plasmid p131A, complete sequence	0.683	96.138
 N213_BC09	3140	0	NA	Bacillus cereus strain CC-1 plasmid p2, complete sequence	0.965	98.668
 N213_BC09	4102	0	NA	Bacillus cereus strain CC-1 plasmid p1, complete sequence	0.832	97.013
 N213_BC09	74448	0	NA	Bacillus thuringiensis serovar chinensis CT-43 plasmid pCT72, complete sequence	0.807	97.628
@@ -2392,6 +2483,9 @@ N207_BC05	184785	0	NA	Bacillus thuringiensis strain SCG04-02 plasmid PSCG364, co
 N207_BC05	9092	0	NA	Bacillus thuringiensis serovar kurstaki str. YBT-1520 plasmid pBMB7921, complete sequence	0.687	91.445
 N207_BC05	4648	0	NA	Uncultured organism plasmid pK5, complete sequence	0.609	96.194
 N207_BC05	7140	0	NA	Bacillus cereus strain CC-1 plasmid p3, complete sequence	0.566	92.510
+N183_BC06	30040	0	NA	Acinetobacter sp. DUT-2 plasmid unnamed1, complete sequence	0.442	98.940
+N183_BC06	8537	0	NA	Acinetobacter lwoffii strain ZS207 plasmid pZS-20, complete sequence	0.408	93.159
+N183_BC06	8448	0	NA	Acinetobacter schindleri strain ACE plasmid p1AsACE, complete sequence	0.397	92.642
 N222_BC08	8683	0	NA	Acinetobacter baumannii strain WCHAB005078 plasmid p2 005078, complete sequence	1.007	99.292
 N214_BC10	2441	1	ErmC;	Staphylococcus aureus strain SVH7513 plasmid pSVH7513b, complete sequence	1.019	97.937
 N214_BC10	352614	0	NA	Bacillus cereus H3081.97 plasmid pH308197 258, complete sequence	0.518	96.041
@@ -2444,6 +2538,7 @@ N185_BC10	11521	0	NA	Enterococcus faecium strain Efaecium ER03933.3A isolate iso
 N209_BC03	42145	0	NA	Bacillus thuringiensis YBT-1518 plasmid pBMB0230, complete sequence	0.780	88.362
 N209_BC03	35556	0	NA	Staphylococcus epidermidis PM221 plasmid 1, complete sequence	0.536	94.507
 N209_BC03	8045	1	TetK;	Staphylococcus aureus subsp. aureus strain ST20071176 plasmid pT45, complete sequence	0.475	94.547
+N146_BC03	4952	1	TetK;	Listeria monocytogenes strain LM-C-273 plasmid pLM-C-273 clone contig000004 genomic sequence	0.623	89.448
 N134_BC08	8697	0	NA	Acinetobacter baumannii strain WCHAB005078 plasmid p2 005078, complete sequence	1.009	98.805
 N234_BC05	42116	0	NA	Bacillus cereus 03BB108 plasmid pBFI 5, complete sequence	0.450	89.121
 N186_BC07	3775	1	ErmC;	Staphylococcus aureus strain SVH7513 plasmid pSVH7513b, complete sequence	0.671	97.686
@@ -2487,6 +2582,17 @@ N158_BC12	109097	0	NA	Acinetobacter pittii strain HUMV-6483 plasmid p11, complet
 N156_BC08	60849	0	NA	Enterococcus faecium strain E745 plasmid pl6, complete sequence	0.927	98.414
 N218_BC12	195108	0	NA	Delftia acidovorans plasmid pMC1, partial sequence	0.085	88.704
 N120_BC11	19413	0	NA	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	0.770	96.498
+N167_BC05	3269	0	NA	Staphylococcus aureus plasmid pOC160-2 DNA, complete sequence, strain: OC160	0.811	90.238
+N167_BC05	67365	0	NA	Bacillus thuringiensis strain MYBT18246 plasmid p55166, complete sequence	0.642	94.095
+N167_BC05	124586	0	NA	Bacillus thuringiensis YBT-1518 plasmid pBMB0230, complete sequence	0.465	98.078
+N167_BC05	97127	0	NA	Bacillus cereus strain MLY1 plasmid pMLY1.2, complete sequence	0.349	92.384
+N167_BC05	97579	0	NA	Bacillus thuringiensis strain MYBT18246 plasmid p101287, complete sequence	0.314	92.828
+N167_BC05	4318	0	NA	Bacillus cereus F837/76 plasmid pF837 10, complete sequence	0.290	80.343
+N167_BC05	51236	0	NA	Bacillus thuringiensis strain Bt185 plasmid pBT1850055, complete sequence	0.268	89.208
+N167_BC05	4137	0	NA	Bacillus thuringiensis strain YGd22-03 plasmid pYGD83, complete sequence	0.267	85.515
+N167_BC05	16188	0	NA	Bacillus thuringiensis strain MYBT18246 plasmid p46701, complete sequence	0.231	91.553
+N167_BC05	11154	0	NA	Bacillus mycoides strain ATCC 6462 plasmid pBMX 2, complete sequence	0.181	90.385
+N167_BC05	5767	0	NA	Bacillus cereus 03BB108 plasmid pBFI 3, complete sequence	0.122	72.050
 N237_BC04	1900	0	NA	Klebsiella pneumoniae strain KSB1 10J plasmid unnamed5, complete sequence	1.016	85.416
 N237_BC04	3819	0	NA	Klebsiella pneumoniae strain KP38731 plasmid unnamed5 sequence	1.004	98.828
 N237_BC04	3447	0	NA	Erwinia amylovora ATCC BAA-2158 plasmid pEAR5.2, complete sequence	0.930	85.577
@@ -2511,6 +2617,9 @@ N120_BC03	10269	0	NA	Bacillus cereus AH187 plasmid pAH187 270, complete sequence
 N194_BC06	83204	0	NA	Bacillus thuringiensis Bt18247 plasmid p113275, complete sequence	0.455	94.911
 N194_BC06	4529	0	NA	Bacillus cereus H3081.97 plasmid pH308197 11, complete sequence	0.318	80.276
 N194_BC06	335270	0	NA	Bacillus thuringiensis strain HS18-1 plasmid pHS18-2, complete sequence	0.228	89.600
+N178_BC11	2338	1	ErmC;	Staphylococcus epidermidis plasmid pNE131, complete sequence	1.013	97.577
+N178_BC11	2132	0	NA	Staphylococcus aureus strain ST2594 isolate 004 plasmid unnamed9	0.953	91.422
+N178_BC11	58560	0	NA	Staphylococcus sp. CDC3 plasmid SAP020A, complete sequence	0.743	81.009
 N192_BC10	30678	1	BlaZ;	Staphylococcus capitis strain FDAARGOS 378 plasmid unnamed1, complete sequence	0.421	95.221
 N192_BC04	22344	0	NA	Staphylococcus hominis strain FDAARGOS 136 plasmid unnamed1, complete sequence	1.009	99.083
 N192_BC04	13379	0	NA	Staphylococcus epidermidis ATCC 12228 plasmid pSE-12228-03, complete sequence	0.382	89.967
@@ -2534,6 +2643,12 @@ N237_BC10	32920	0	NA	Acinetobacter sp. ACNIH1 plasmid pACI-df08, complete sequen
 N237_BC10	7900	0	NA	Acinetobacter baumannii strain SGH0823 plasmid pS30-1, complete sequence	0.612	89.572
 N237_BC10	7320	0	NA	Acinetobacter lwoffii strain ZS207 plasmid pZS-13, complete sequence	0.484	85.507
 N237_BC10	13289	0	NA	Acinetobacter lwoffii strain VS15 plasmid pALWVS1.1, complete sequence	0.271	96.675
+N188_BC11	26769	1	MsrA;	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	1.003	99.162
+N188_BC11	8975	0	NA	Staphylococcus pasteuri plasmid pSP187	0.951	99.154
+N188_BC11	3124	0	NA	Bacillus cereus strain CC-1 plasmid p2, complete sequence	0.891	98.526
+N188_BC11	49984	0	NA	Bacillus thuringiensis serovar indiana strain HD521 plasmid pBTHD521-2, complete sequence	0.880	95.960
+N188_BC11	2139	0	NA	Staphylococcus aureus strain SR434 plasmid pSR04, complete genome	0.781	88.078
+N188_BC11	5892	0	NA	Staphylococcus epidermidis plasmid SAP024B, partial sequence	0.544	84.007
 N146_BC10	2664	0	NA	Uncultured prokaryote from Rat gut metagenome metamobilome, plasmid pRGRH0276	1.014	98.488
 N191_BC06	29136	4	LnuA;AadD;TetK;Aac6-Aph2;	Staphylococcus lugdunensis strain Tlug8G-4 plasmid pT8G, complete sequence	0.930	98.784
 N191_BC06	4076	0	NA	Staphylococcus epidermidis plasmid SAP108C, complete sequence	0.857	94.436
@@ -2613,6 +2728,7 @@ N220_BC09	4324	0	NA	Bacillus thuringiensis YBT-1518 plasmid pBMB0228, complete s
 N220_BC09	11156	0	NA	Bacillus mycoides strain ATCC 6462 plasmid pBMX 2, complete sequence	0.212	90.267
 N220_BC09	4264	0	NA	Bacillus thuringiensis plasmid pTX14-1, MOB, REP, and collagen-like protein genes, complete sequence	0.205	76.300
 N220_BC09	5771	0	NA	Bacillus cereus 03BB108 plasmid pBFI 3, complete sequence	0.134	71.890
+N171_BC07	6241	0	NA	Enterococcus faecium strain 2014-VREF-41 plasmid p41-2, complete sequence	1.006	97.838
 N141_BC08	41395	0	NA	Elizabethkingia endophytica strain F3201 plasmid, complete sequence	0.822	93.213
 N118_BC06	9190	0	NA	Bacillus cereus F837/76 plasmid pF837 10, complete sequence	0.999	98.515
 N118_BC06	7223	0	NA	Bacillus cereus strain S2-8 plasmid pBFR 1, complete sequence	0.395	91.641
@@ -2637,6 +2753,8 @@ N111_BC03	2374	1	ErmC;	Staphylococcus aureus strain USA300-SUR15 plasmid pUSA05-
 N111_BC03	2124	0	NA	Staphylococcus epidermidis plasmid SAP108D, complete sequence	1.004	89.614
 N111_BC03	4039	1	CatA;	Staphylococcus pseudintermedius strain 081661 plasmid unnamed1, complete sequence	0.738	86.366
 N185_BC08	194311	0	NA	Delftia acidovorans plasmid pMC1, partial sequence	0.087	88.698
+N183_BC10	4660	0	NA	Uncultured organism plasmid pK5, complete sequence	0.507	95.971
+N183_BC10	93187	0	NA	Bacillus thuringiensis strain MYBT18246 plasmid p101287, complete sequence	0.082	94.553
 N125_BC11	12268	0	NA	Staphylococcus haemolyticus strain 83131A plasmid p83131A-A, complete sequence	0.738	97.767
 N145_BC09	2196	0	NA	Staphylococcus aureus plasmid pWBG754, complete sequence	1.010	98.038
 N145_BC09	67959	0	NA	Enterococcus faecalis plasmid pMG2200 DNA, complete sequence	1.007	98.593
@@ -2678,10 +2796,13 @@ N103_BC10	4060	0	NA	Staphylococcus epidermidis plasmid SAP108C, complete sequenc
 N115_BC11	6676	0	NA	Staphylococcus epidermidis plasmid pSWS581 vga(A) gene region, isolate Rd581	0.657	89.999
 N205_BC05	302352	4	ErmB;Aac6-Aph2;Aph3-III;Ant6-Ia;	Enterococcus faecium strain 6E6 plasmid unnamed1, complete sequence	0.919	98.605
 N205_BC05	36454	0	NA	Acinetobacter sp. ACNIH2 plasmid pACI-3569, complete sequence	0.340	97.307
+N182_BC04	38512	4	ErmB;Sat4A;Aph3-III;Ant6-Ia;	Enterococcus faecalis strain CLB21560 plasmid pB, complete sequence	0.994	99.275
+N182_BC04	55272	0	NA	Enterococcus faecalis strain sorialis plasmid Efsorialis-p2, complete sequence	0.593	96.713
 N164_BC09	185775	0	NA	Klebsiella pneumoniae strain KPNIH48 plasmid pKPN-10f7, complete sequence	0.902	98.199
 N191_BC09	135683	7	CatBx;Aac3-IIa;TetA;OXA-1;QnrB;SHV-OKP-LEN;AacAad;	Klebsiella pneumoniae strain RJ119 plasmid pRJ119-NDM1, complete sequence	0.925	98.733
 N191_BC09	207744	0	NA	Klebsiella pneumoniae strain KPNIH48 plasmid pKPN-10f7, complete sequence	0.918	98.634
 N191_BC09	5929	0	NA	Klebsiella pneumoniae strain Kpn1144 plasmid pKP-M1144 In1144 integron, complete sequence	0.768	97.383
+N184_BC02	2977	0	NA	Staphylococcus aureus plasmid pKH3, complete sequence	0.971	95.949
 N160_BC07	4712	0	NA	Enterobacter sp. FY-07 plasmid pAKI40B, complete sequence	0.678	97.444
 N141_BC10	41376	0	NA	Elizabethkingia endophytica strain F3201 plasmid, complete sequence	0.745	93.539
 N153_BC04	67968	0	NA	Enterococcus faecalis strain FDAARGOS 324 plasmid unnamed2, complete sequence	1.010	98.670
@@ -2725,6 +2846,7 @@ N171_BC05	4250	0	NA	Bacillus thuringiensis plasmid pTX14-1, MOB, REP, and collag
 N171_BC05	97577	0	NA	Bacillus thuringiensis strain MYBT18246 plasmid p101287, complete sequence	0.275	93.428
 N171_BC05	51219	0	NA	Bacillus weihenstephanensis KBAB4 plasmid pBWB404, complete genome	0.268	85.608
 N171_BC05	11177	0	NA	Bacillus mycoides strain ATCC 6462 plasmid pBMX 2, complete sequence	0.127	90.350
+N169_BC06	2387	1	ErmC;	Staphylococcus aureus strain SVH7513 plasmid pSVH7513b, complete sequence	1.015	97.543
 N235_BC02	1278	0	NA	Staphylococcus aureus plasmid pSN2 Includes an unknown gene	1.017	88.146
 N235_BC02	4767	0	NA	Staphylococcus epidermidis plasmid SAP108C, complete sequence	0.953	94.935
 N235_BC02	23572	1	BlaZ;	Staphylococcus epidermidis strain ATCC 12228 plasmid pAMT2, complete sequence	0.894	98.426
@@ -2759,6 +2881,7 @@ N124_BC09	4299	0	NA	Bacillus cereus E33L plasmid pBCO 4, complete sequence	0.264
 N124_BC09	5727	0	NA	Bacillus cereus 03BB108 plasmid pBFI 3, complete sequence	0.226	71.930
 N153_BC03	67851	0	NA	Enterococcus faecalis strain FDAARGOS 324 plasmid unnamed2, complete sequence	1.009	98.472
 N153_BC03	4640	0	NA	Uncultured organism plasmid pK5, complete sequence	0.678	96.190
+N162_BC09	39084	0	NA	Elizabethkingia endophytica strain F3201 plasmid, complete sequence	0.901	93.173
 N102_BC06	28028	1	BlaZ;	Staphylococcus epidermidis strain DAR1907 plasmid unnamed2, complete sequence	0.308	88.517
 N116_BC07	19691	0	NA	Staphylococcus aureus subsp. aureus strain 1971.C01 plasmid p1971.C01b, complete sequence	0.569	96.301
 N115_BC08	28229	0	NA	Staphylococcus epidermidis strain 14-01514 plasmid p14-01514, complete sequence	0.961	86.712
@@ -2766,6 +2889,7 @@ N115_BC08	8497	0	NA	Staphyloccous epidermidis trimethoprim resistance plasmid pS
 N115_BC08	4659	0	NA	Staphylococcus epidermidis strain ATCC 12228 plasmid pAMT5, complete sequence	0.221	79.120
 N157_BC01	109733	0	NA	Acinetobacter baumannii strain ABNIH28 plasmid pABA-1fe1, complete sequence	0.939	97.895
 N157_BC01	4949	0	NA	Listeria monocytogenes strain LM-C-273 plasmid pLM-C-273 clone contig000004 genomic sequence	0.777	90.765
+N161_BC01	79519	7	VanY-A;VanR-A;VanH-Pt;VanX;VanS-A;VanA;VanX-M;	Enterococcus faecium strain SC4 plasmid p2, complete sequence	0.864	98.567
 N118_BC08	6003	1	VgaA;	Staphylococcus haemolyticus isolate 131A plasmid p131A, complete sequence	1.009	99.056
 N118_BC08	30080	0	NA	Staphylococcus epidermidis isolate BPH0662 genome assembly, plasmid: 2	0.713	97.912
 N207_BC08	3131	0	NA	Bacillus cereus strain CC-1 plasmid p2, complete sequence	0.959	98.781
@@ -2814,6 +2938,7 @@ N212_BC09	183977	0	NA	Bacillus thuringiensis strain SCG04-02 plasmid PSCG364, co
 N212_BC09	4838	0	NA	Bacillus cereus strain CC-1 plasmid p1, complete sequence	0.690	88.420
 N212_BC09	378953	0	NA	Bacillus cereus AH187 plasmid pAH187 270, complete sequence	0.492	96.103
 N192_BC11	432001	0	NA	Pseudomonas aeruginosa PA96 plasmid pOZ176, complete sequence	0.854	98.631
+N192_BC11	126831	2	StrA;StrB;	Pseudomonas putida strain DOT-T1E plasmid pGRT1, complete sequence	0.667	87.807
 N111_BC07	3141	1	ErmC;	Staphylococcus aureus subsp. aureus ST398 plasmid pUR2940, isolate C2940, partial sequence	0.887	94.348
 N197_BC04	8674	0	NA	Acinetobacter baumannii strain A297(RUH875) plasmid pA297-2, complete sequence	1.009	99.028
 N197_BC04	55278	0	NA	Enterococcus faecalis strain sorialis plasmid Efsorialis-p2, complete sequence	0.522	96.682

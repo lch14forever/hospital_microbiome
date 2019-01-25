@@ -81,3 +81,8 @@ Save plot
 ggsave('../plots/hai_ar_species_abundance_in_illumina.pdf', g + facet_wrap(~species,nrow=1), 
        width=12, height=3)
 ```
+
+### Session informaton
+```{r}
+sessionInfo()
+```

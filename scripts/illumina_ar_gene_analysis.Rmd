@@ -1,0 +1,94 @@
+---
+title: "Antibiotics resistance gene prevalence in illumina shotgun metagenomic data"
+output:
+  html_document:
+    df_print: paged
+---
+
+### Antibiotics resistance gene prevalence in illumina shotgun metagenomic data
+
+Load generic libraries
+```{r}
+source('configuration.r')
+```
+
+Load plot specific libraries
+```{r}
+library(pheatmap)
+library(RColorBrewer)
+```
+
+Merge data
+```{r}
+metadata <-read.table("../metadata/illumina_metadata.txt",sep="\t",head=T) %>% 
+  filter(Room_type != 'GIS')
+anti <-read.table("../tables/illumina_AR_gene_assignment.dat",sep="\t",head=T)
+df.anti <- merge(metadata, anti, by.x='Site', by.y='Lib') %>% 
+  mutate(Anti_type=gsub('.*_','',Anti)) %>%
+  group_by(Sample_type,Anti_type,Anti,Library) %>%
+  summarise() %>%
+  group_by (Sample_type, Anti_type, Anti) %>%
+    tally()
+
+plot.dat <- group_by(metadata, Sample_type) %>%
+  tally() %>%
+  merge(df.anti, by='Sample_type') %>%
+  mutate(prev=n.y/n.x) %>% 
+  mutate(Sample_type= str_replace(Sample_type, "_"," ") %>% 
+      str_replace("Door_handle-interior", "Door Handle")) %>% 
+  mutate(Anti= str_replace(Anti, "_[a-zA-Z]+$","") %>% 
+    str_replace("_"," "))
+```
+
+Helper function to plot
+```{r}
+plot.heatmap <- function(anti_type, col='PuBu', cluster_rows=TRUE, cluster_cols=TRUE){
+  plot.dat.w <- filter(plot.dat,Anti_type==anti_type) %>% 
+    select(-Anti_type,-n.x,-n.y) %>% 
+    spread(Sample_type, prev, fill=0) %>% 
+    column_to_rownames("Anti") 
+  pheatmap(plot.dat.w*100,color=(colorRampPalette(brewer.pal(9, col))(1000)), main=anti_type,
+           border_color="black",cluster_rows = cluster_rows, cluster_cols = cluster_cols, silent=TRUE)
+}
+```
+
+Run plot
+```{r fig.height=6, fig.width=4}
+#Fig 1e
+m1 <- plot.heatmap("Bla", 'Reds', TRUE, TRUE)
+#Suppl 2
+s1 <- plot.heatmap("AGly")
+s2 <- plot.heatmap("Tet", 'Greens')
+s3 <- plot.heatmap("Phe", 'Purples')
+s4 <- plot.heatmap("MLS", 'RdPu')
+s5 <- plot.heatmap("Sul", 'YlGn')
+s6 <- plot.heatmap("Gly",'Blues')
+s7 <- plot.heatmap("Rif", 'Greys', cluster_rows = F, cluster_cols = F)
+s8 <- plot.heatmap("Tmt", 'Oranges')
+s9 <- plot.heatmap("Flq", 'GnBu')
+```
+
+Main
+```{r fig.height=7, fig.width=4}
+cowplot::plot_grid(m1$gtable)
+ggsave('../plots/fig1e_antibiotics_profile.pdf', height = 12, width = 15)
+```
+
+Supplementary figures
+
+```{r fig.height=12, fig.width=15}
+cowplot::plot_grid(
+  cowplot::plot_grid(s1$gtable, s2$gtable, s3$gtable, s4$gtable, nrow=1),
+  NULL,
+  cowplot::plot_grid(s5$gtable, s6$gtable, s7$gtable, s8$gtable, s9$gtable, nrow=1, align='h'),
+  NULL,
+  ncol=1,
+  rel_heights = c(4,0.5,2,0.5)
+)
+ggsave('../plots/sup3_antibiotics_profile.pdf', height = 12, width = 15)
+```
+
+### Session informaton
+```{r}
+sessionInfo()
+```

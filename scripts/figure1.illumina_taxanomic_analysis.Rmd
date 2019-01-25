@@ -1,0 +1,368 @@
+---
+title: "Scripts to generate Figure 1"
+output:
+  html_document:
+    df_print: paged
+---
+
+### (Fig1a) MDS plot for illumina metagenomics data
+
+Load generic libraries
+```{r}
+source('configuration.r')
+```
+
+Load specific libraries
+```{r}
+library(vegan)
+library(pheatmap)
+library(RColorBrewer)
+```
+
+Preprocess data
+```{r fig.height=5, fig.width=9}
+meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2)
+dat <- read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
+dat[dat < 0.1] <- 0
+dat <- dat[rowSums(dat)>0, ]
+
+meta.fil <- meta %>% select(Library,Room_type, Sample_type, Cubicle_room, timept)
+fil <- filter(meta.fil, Room_type != 'GIS' & timept == 1)  ## remove samples from GIS, take only the first time point
+dat.fil <- dat[, as.character(fil$Library)]
+
+## do MDS
+dist.mat <- vegdist(t(dat.fil))
+cmds <- cmdscale(dist.mat, k=3, eig=TRUE)
+eigen <- cmds$eig / sum(cmds$eig) * 100
+
+dat.merged <- (merge(cmds$points, meta.fil, by.x=0, by.y=0, all.x=TRUE)) %>% 
+  mutate(Sample_type=str_replace(Sample_type, '_', ' ')) %>% 
+  mutate(Sample_type=str_replace(Sample_type, 'Door handle-interior', 'Door Handle'))
+dat.merged$Sample_type <- relevel(factor(dat.merged$Sample_type), 'Sink Trap')
+
+## PCoA
+ggplot(dat.merged, aes(x=V1, y=V2, col=Sample_type), lwd=2) +
+	geom_point(size=4.5) +
+	labs(x=paste0('MDS2 (',round(eigen[1], 1),'%)'),
+       y=paste0('MDS1 (',round(eigen[2], 1),'%)')) +
+	scale_color_manual(values=pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)]) + 
+  theme(legend.title = element_blank())
+ggsave('../plots/f1a_mds_genus.pdf', width =9, height = 5)
+```
+
+### (Fig1b) Differential abundance taxa between wet and dry
+
+Genus level
+
+```{r fig.width=4, fig.height=4}
+rowMedians <- function(x) apply(x, 1, median) ## aux function
+wet.sel <- with(fil, Sample_type == "Aerator" | Sample_type == "Sink_Trap")
+dat.fil.ordered <- dat.fil[,c(which(!wet.sel), which(wet.sel))] ## put dry samples together
+g <- factor(rep(1:2, c(151, 25)), labels = c("D","W"))
+
+## Select common and abundant species in Wet/Dry 
+medianDry <- rowMedians(dat.fil.ordered[1:151])
+medianWet <- rowMedians(dat.fil.ordered[152:176])
+data1 <- dat.fil.ordered[which(medianDry > 0.5 | medianWet > 0.5),]
+data1 <- data1[-grep("unclassified",rownames(data1)),]
+rownames(data1) <- gsub("g__","",rownames(data1))
+rownames(data1) <- gsub("_noname","",rownames(data1))
+
+## wilcoxon test
+p.values <- sapply(seq(dim(data1)[1]), function(x) wilcox.test(as.numeric(data1[x,(g=="D")]),as.numeric(data1[x,g=="W"]))$p.value)
+q.values <- p.adjust(p.values, method="fdr")
+
+#filter data to plot heatmap
+data2 <- data1[which(q.values<0.01),]
+data2dry <- data2[rowMedians(data2[,1:151])>rowMedians(data2[,152:176]),]
+data2wet <- data2[rowMedians(data2[,1:151])<rowMedians(data2[,152:176]),]
+
+data2Vdry <- cbind(rowMedians(data2dry[,1:151]),rowMedians(data2dry[,152:176]))
+data2Vwet <- cbind(rowMedians(data2wet[,1:151]),rowMedians(data2wet[,152:176]))
+data2all <- rbind(data2Vdry,data2Vwet)
+rownames(data2all) <- rownames(rbind(data2dry,data2wet))
+colnames(data2all) <- c('D', 'W')
+#plot heatmap
+
+fig1bi <- pheatmap(log(data2all+1,2), color=(colorRampPalette(brewer.pal(9,'Blues'))(50)),
+ border_color="black",cluster_rows = F, cluster_cols = F, cellwidth =10, cellheight=10,
+ gp=gpar(fontface = "bold.italic"), silent=TRUE)
+cowplot::plot_grid(fig1bi$gtable)
+
+ggsave('../plots/fig1bi_dry_wet_genus_comparison.pdf', 
+       width = 4, height = 5)
+```
+
+Species
+
+```{r fig.height=5, fig.width=10, message=FALSE, warning=FALSE}
+dat.species <- read.table('../tables/metagenomics.metaphlan2.table.s', head=TRUE, row.names=1)
+dat.species[dat.species < 0.1] <- 0
+dat.species <- dat.species[rowSums(dat.species)>0, ]
+
+dat.fil.ordered.species <- dat.species[, as.character(fil$Library)][,c(which(!wet.sel), which(wet.sel))]
+g <- factor(rep(1:2, c(151, 25)), labels = c("D","W"))
+medianDry <- rowMedians(dat.fil.ordered.species[1:151])
+medianWet <- rowMedians(dat.fil.ordered.species[152:176])
+data1 <- dat.fil.ordered.species[which(medianDry > 0.5 | medianWet > 0.5),]
+data1 <- data1[-grep("unclassified",rownames(data1)),]
+rownames(data1)=gsub("s__","",rownames(data1))
+rownames(data1)=gsub("_noname","",rownames(data1))
+rownames(data1)=gsub("_"," ",rownames(data1))
+
+p.values <- sapply(seq(dim(data1)[1]), function(x) wilcox.test(as.numeric(data1[x,(g=="D")]),as.numeric(data1[x,g=="W"]))$p.value)
+q.values <- p.adjust(p.values, method="fdr")
+
+data2 <- data1%>% mutate(Species=paste0(rownames(data1)))
+data2 <- data2[which(q.values<0.01),]
+
+data2dry <- data2[rowMedians(as.matrix(data2[,1:151]))>rowMedians(as.matrix(data2[,152:176])),]
+data2wet <- data2[rowMedians(as.matrix(data2[,1:151]))<rowMedians(as.matrix(data2[,152:176])),]
+
+data2dryP=filter(data2dry,Species=="Propionibacterium acnes")
+data2dry=filter(data2dry,Species!="Propionibacterium acnes")
+
+data2dryP=melt(data2dryP,id=c("Species"))
+data2dry=melt(data2dry,id=c("Species"))
+data2wet=melt(data2wet,id=c("Species"))
+data2dry$group=rep(g,each=6)
+data2dryP$group=g
+data2wet$group=rep(g,each=3)
+
+### Enrich in dry
+p1 <- ggplot(data = data2dry, aes(x=Species,y=value,fill=group, grp=group)) +
+	geom_boxplot(width=1,outlier.shape=NA, lwd=1) +
+  scale_y_continuous(limits=c(0,10)) +
+  scale_fill_manual(values=pal_npg(c("nrc"))(10)[c(7,1)]) + 
+  labs(y=NULL, x=NULL) +
+	theme(axis.text.x = element_text(angle=40, hjust=1, size=10), legend.position =  c(0.8, 0.7), legend.title = element_blank()) 
+### Enrich in dry (C. acnes)
+p2 <- ggplot(data = data2dryP, aes(x=Species,y=value,fill=group, grp=group)) +
+	geom_boxplot(width=1,outlier.shape=NA, lwd=1) +
+  labs(y=NULL, x=NULL) +
+  scale_fill_manual(values=pal_npg(c("nrc"))(10)[c(7,1)]) + 
+	theme(axis.text.x = element_text(angle=40, hjust=1, size=10),legend.position = 'none') 
+### Enrich in wet
+p3 <- ggplot(data = data2wet, aes(x=Species,y=value,fill=group, grp=group)) +
+	geom_boxplot(width=1,outlier.shape=NA, lwd=1) +
+  scale_fill_manual(values=pal_npg(c("nrc"))(10)[c(7,1)]) + 
+  scale_y_continuous(limits=c(0,30)) +
+  labs(y=NULL, x=NULL) +
+	theme(axis.text.x = element_text(angle=40, hjust=1, size=10), legend.position = 'none')
+
+cowplot::plot_grid(p1, p2, p3, nrow=1, rel_widths=c(12,4.5,8),align ='h')
+ggsave('../plots/fig1bii_dry_wet_species_comparison.pdf', height = 5, width = 10)
+```
+
+### (Fig1c) Spatial-temporal analysis
+
+```{r fig.height=8, fig.width=16}
+meta.fil <- meta %>% select(Sample_ID, Room_type, Sample_type, timept, bed_number, Cubicle_room, Library)
+##group
+meta.fil[which(is.na(meta.fil$bed_number)),]$bed_number <- 1
+dat_t <- data.frame((t(dat)))%>% rownames_to_column('Library')
+meta.select <- meta.fil %>%
+  group_by(Room_type,Cubicle_room,Sample_ID,Sample_type,timept,Library)%>% 
+  summarise()%>% 
+  merge(dat_t,by="Library",all.y=T)
+
+dat_select=data.frame(select(meta.select,-Sample_type, -timept, -Sample_ID, -Room_type, -Cubicle_room),row.names = "Library")
+metadat_select=data.frame(select(meta.select, Sample_type, timept, Library, Sample_ID, Room_type, Cubicle_room),row.names = "Library")
+
+## PCoA
+dist.mat <- vegdist(dat_select)
+cmds <- cmdscale(dist.mat, eig=TRUE)
+eigen <- cmds$eig / sum(cmds$eig) * 100
+dat.merged <- (merge(cmds$points, metadat_select, by.x=0, by.y=0, all.x=TRUE))
+
+dat.merged <- filter(dat.merged, !is.na(Room_type), Room_type!="GIS") 
+levels(dat.merged$Sample_type) <- stringr::str_replace_all(levels(dat.merged$Sample_type), c('_'=' ','-'=' ','Door handle interior'='Door Handle'))
+levels(dat.merged$Room_type) <- stringr::str_replace_all(levels(dat.merged$Room_type), c('_'=' ', 'Non-cohort'='Non-controlled'))
+dat.merged$Sample_type <- relevel(factor(dat.merged$Sample_type), 'Sink Trap')
+
+## links:
+from <- dat.merged %>% filter(timept==1) %>% arrange(Sample_ID) %>%
+  select(V1,V2,Sample_ID) 
+to <- dat.merged %>% filter(timept==2) %>% arrange(Sample_ID)%>%
+  select(V1,V2,Sample_ID)
+arrows <- (merge(from, to, by='Sample_ID'))
+
+plot.dat <- merge(dat.merged, arrows, by='Sample_ID')
+plot.dat$Time_point <- as.factor(plot.dat$timept)
+
+ggplot(plot.dat, aes(x=V1, y=V2, col=Sample_type, shape=Time_point), lwd=2) +
+  geom_curve(data=plot.dat, aes(x=V1.x,y=V2.x,xend=V1.y, yend=V2.y),
+             arrow = arrow(length = unit(0.02, "npc")), lwd=1, alpha=0.5,
+             inherit.aes = FALSE) +
+  geom_point(size=3, alpha=0.9) + coord_cartesian(ylim = c(-0.5, 0.5), xlim = c(-0.75,0.5)) +
+  labs(x=paste0('MDS1 (',round(eigen[1], 1),'%)'),
+       y=paste0('MDS2 (',round(eigen[2], 1),'%)')) +
+  scale_shape_manual(values=c(17, 19)) + 
+  scale_color_manual(values=pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)]) +
+  facet_wrap(~Sample_type,dir="v")
+
+ggsave('../plots/fig1c_pcoa_spatial_temporal.pdf', height = 8, width = 20)
+```
+
+### (Fig1d) Distance between samples
+
+```{r fig.height=8, fig.width=4}
+meta.fil <- meta %>% select(Library, Room_type, Sample_type, timept, Cubicle_room, bed_number)
+fil <- filter(meta.fil, Room_type != 'GIS' & Room_type != 'Negative controls' & timept == 1) %>% 
+  filter((Sample_type == "Bed_Rail" | Sample_type == "Bedside_Locker" | Sample_type == "Cardiac_Table")) %>% 
+  mutate(MDRO=ifelse(Room_type == "MDRO_cubicles", "MDRO_","")) %>% unite(MDRO,Cubicle_room,col="Cubicle_room",sep="")
+fil[which(is.na(fil$bed_number)),]$bed_number <- 1
+
+dat.fil <- dat[, as.character(fil$Library)]
+
+braymatrix <- as.matrix(vegdist(t(dat.fil),method="bray"))
+
+grouped_ids <- sapply((group_by(fil,Cubicle_room,bed_number) %>%
+                         summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_sameroom <- sapply((group_by(fil,Cubicle_room) %>%
+                                  summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_samemat <- sapply((group_by(fil,Sample_type) %>%
+                                 summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+
+aux <- function(x){
+  tmp = braymatrix[x, x]
+	tmp[upper.tri(tmp)]
+}
+
+same_bed=c(sapply(grouped_ids, aux))
+braymatrix.copy <- braymatrix
+
+for(x in grouped_ids_sameroom){
+  braymatrix.copy[x, x] <- NA
+}
+for(x in grouped_ids_samemat){
+  braymatrix.copy[x, x] <- NA
+}
+diff_rooms <- braymatrix.copy[upper.tri(braymatrix.copy)]
+diff_rooms <- diff_rooms[!is.na(diff_rooms)]
+
+braymatrix.copy <- braymatrix
+for(x in grouped_ids){
+  braymatrix.copy[x, x] <- NA
+}
+for(x in grouped_ids_samemat){
+  braymatrix.copy[x, x] <- NA
+}
+
+aux_room <- function(x){
+  tmp = braymatrix.copy[x, x]
+	tmp[upper.tri(tmp)]
+}
+
+same_room <- unlist(sapply(grouped_ids_sameroom, aux_room),use.names=F)
+same_room <- same_room[!is.na(same_room)]
+
+fil=filter(meta.fil,Room_type != 'GIS' & Room_type != 'Negative controls') %>% 
+  filter((Sample_type == "Bed_Rail" | Sample_type == "Bedside_Locker" | Sample_type == "Cardiac_Table")) %>% 
+  mutate(MDRO=ifelse(Room_type == "MDRO_cubicles", "MDRO_","")) %>% unite(MDRO,Cubicle_room,col="Cubicle_room",sep="")
+fil[which(is.na(fil$bed_number)),]$bed_number=1
+timedat.fil <- dat[, as.character(fil$Library)]
+
+braymatrix=as.matrix(vegdist(t(timedat.fil),method="bray"))
+grouped_ids_timepoints <- sapply((group_by(fil,Cubicle_room,bed_number,timept) %>%
+                                    summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+
+timepoint_tmp=list()
+for (i in (seq(from = 1, to = length(grouped_ids_timepoints), by =2))) {
+	timepoint_tmp[[(i+1)/2]]=braymatrix[grouped_ids_timepoints[[i]], grouped_ids_timepoints[[i+1]]]
+}
+
+for (i in (1:length(timepoint_tmp))){
+  timepoint_tmp[[i]][1,1]<-NA  
+	timepoint_tmp[[i]][2,2]<-NA  
+	timepoint_tmp[[i]][3,3]<-NA  
+}
+
+timepoint_mat=unlist(timepoint_tmp)
+timepoint_mat=timepoint_mat[!is.na(timepoint_mat)]
+
+rbind(
+  data.frame(dist=same_bed, lab='Within bed (T1)'),
+  data.frame(dist=timepoint_mat, lab='Across time'),
+  data.frame(dist=same_room, lab='Within ward (T1)'),
+  data.frame(dist=diff_rooms, lab='Across wards (T1)')
+) %>% 
+  ggplot(aes(x=lab, y=dist, fill=lab)) + 
+  geom_boxplot(lwd=1, outlier.colour = NA) + 
+  scale_fill_npg(guide=F) + 
+  labs(x=NULL, y=NULL) +
+  scale_y_continuous(limits=c(0,1)) +
+  theme(axis.text.x = element_text(angle=45, hjust=1))
+ggsave('../plots/fig1d_distance_spatial_temporal.pdf', height = 8, width = 4)
+## ad hoc analysis
+#median(same_bed) 
+#median(timepoint_mat)
+#median(same_room)
+#median(diff_rooms)
+
+#wilcox.test(same_bed,timepoint_mat)
+#wilcox.test(same_bed,same_room)
+#wilcox.test(same_bed,diff_rooms)
+#wilcox.test(same_room,diff_rooms)
+```
+
+### (Fig1f) Distance between samples
+
+```{r fig.height=8, fig.width=5}
+mat.sel <- rownames_to_column(dat.species, "species") %>% 
+  filter(grepl("Burkholderia", species) | 
+               species %in% c("s__Acinetobacter_baumannii","s__Candida_albicans",
+                         "s__Clostridium_difficile", "s__Clostridium_sordellii", 
+                         "s__Klebsiella_pneumoniae", "s__Klebsiella_oxytoca",
+                         "s__Escherichia_coli", "s__Staphylococcus_aureus",
+                         "s__Pseudomonas_aeruginosa","s__Mycobacterium_abscessus",
+                         "s__Mycobacterium_tuberculosis","s__Enterococcus_faecalis",
+                         "s__Enterococcus_faecium", "s__Staphylococcus_epidermidis")) %>% 
+  column_to_rownames("species")
+
+df <- merge(meta, data.frame(t(mat.sel), Site=colnames(mat.sel)), by=0,all.y=T) %>% 
+  filter(!is.na(Sample_type)) %>% 
+  filter(Room_type!='GIS') %>% 
+  select(-Site,-Sample_ID,-Cubicle_room,-Material,-Human_Traffic,-timept,-bed_number) %>% 
+  column_to_rownames("Row.names")
+colnames(df)=gsub("g__","",colnames(df))
+colnames(df)=gsub("s__","",colnames(df))
+df[,"Sample_type"]=gsub("_"," ",df[,"Sample_type"])
+df[(which(df[,"Sample_type"]=="Door handle-interior")),"Sample_type"] = "Door Handle"
+
+filter(df,Sample_type!="Door handle") %>% 
+  mutate(Env=ifelse((Sample_type=="Aerator" | Sample_type=="Sink Trap"),"Wet","Dry")) %>%
+  select(-Sample_type, -Library) %>% 
+  filter(Env=="Dry") %>% 
+  select(-Env) -> all.dat.dry.fil
+
+### Test for significance
+dry.species <- group_by(all.dat.dry.fil,Room_type) %>%
+  summarise_all(median) %>% 
+  select_if(~is.numeric(.)) %>% 
+  select_if(~max(.)>=0.5) %>% 
+  colnames()
+pvalueD=p.adjust(sapply(dry.species, function(x) kruskal.test(as.formula(paste0(x, "~Room_type")),data=all.dat.dry.fil)$p.value),method="fdr")
+
+all.dat.dry.fil <- melt(all.dat.dry.fil,id="Room_type") %>% 
+  filter(variable%in%names(pvalueD[which(pvalueD<0.01)])) %>% 
+  mutate(variable=str_replace_all(variable,"s__","")) %>% 
+  mutate(variable=str_replace_all(variable,"_"," ")) %>%
+  mutate(Room_type=str_replace_all(Room_type,"_"," ")) %>% 
+  mutate(variable=str_replace(variable, '[a-z]+ ', '. '))
+
+ggplot(data = all.dat.dry.fil, aes(x=variable,y=value,fill=Room_type)) +
+  geom_boxplot(outlier.shape = NA, lwd=1) +
+  theme(axis.text.x = element_text(angle=270, hjust=0, vjust=0.5, size=12, face = 'bold.italic'), 
+        legend.position = c(0.5,0.8), legend.title = element_blank()) +
+  scale_fill_npg() + 
+  labs(y='Relative abundance (%)', x=NULL) +
+  coord_cartesian(ylim =c(0,17))
+ggsave('../plots/fig1f_species_in_dry_environments.pdf', height = 8, width = 5)
+```
+
+
+### Session informaton
+```{r}
+sessionInfo()
+```
