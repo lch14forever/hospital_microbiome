@@ -1,0 +1,74 @@
+---
+title: "Supplimentary Figure 1"
+output:
+  html_document:
+    df_print: paged
+---
+
+### Supplementary Figure 1
+
+Load generic libraries
+```{r}
+source('configuration.r')
+```
+
+Load plot specific libraries
+```{r message=FALSE}
+library(vegan)
+library(reshape2)
+```
+
+#### Suppl Fig 1i
+
+```{r fig.height=8, fig.width=10}
+meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2)
+dat <- read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
+dat[dat < 0.1] <- 0
+dat <- dat[rowSums(dat)>0, ]
+meta.filled <- meta %>% select(Library,Room_type, Sample_type, Cubicle_room, timept)
+dat.fil=filter(meta.filled,Room_type != 'GIS' & Room_type != 'Negative controls' & timept == 1)
+dat.fil = mutate(dat.fil, MDRO=ifelse(Room_type == "MDRO_cubicles", "MDRO_","")) %>% unite(MDRO,Cubicle_room,col="Cubicle_room",sep="")
+dat.fil.dat=select(dat,matrix(unlist(dat.fil["Library"]))[,1])
+Shan=data.frame(Shannon=(diversity(t(dat.fil.dat),index="shannon"))) %>% 
+  rownames_to_column('Library')
+Simp=data.frame(Simpson=diversity(t(dat.fil.dat),index="simpson"))%>% 
+  rownames_to_column('Library')
+diversity=group_by(dat.fil,Sample_type,Library) %>% summarise() %>% merge(Shan, by ="Library") %>% merge(Simp, by="Library")
+
+melt(diversity) %>% 
+  mutate(Sample_type=str_replace(Sample_type, '_', ' ')) %>%
+  mutate(Sample_type=str_replace(Sample_type, '-interior', '')) %>%
+  ggplot(aes(x=Sample_type,y=value,fill=Sample_type)) +
+  geom_violin() +
+  theme(axis.text.x = element_text(angle=40, vjust=1, hjust=1)) + 
+  scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-c(2,8)]) + 
+  facet_wrap(~variable, nrow=2, scale='free_y')
+ggsave('../plots/sup1a.metagenomics_diversity.pdf', height = 8, width=10)
+```
+
+#### Suppl Fig 1ii
+
+```{r fig.height=8, fig.width=10}
+dat <- read.table('../tables/illumina.read_counts.tsv')
+colnames(dat) <- c('LIBID','READS_TRIM','READS_DECONT')
+dat$READS_DECONT <- dat$READS_DECONT/dat$READS_TRIM
+
+df.m <- merge(meta, dat, by.x='Library',by.y='LIBID', all=TRUE) 
+
+subset(df.m, !is.na(Cubicle_room)) %>%
+  mutate(HUMAN_READS=(1-READS_DECONT)*100) %>%
+  select(Sample_type, READS_TRIM, HUMAN_READS) %>%
+  melt %>%
+  mutate(variable=str_replace(variable, 'READS_TRIM', 'Number of reads')) %>%
+  mutate(variable=str_replace(variable, 'HUMAN_READS', 'Percentage human reads')) %>%
+  mutate(Sample_type=str_replace(Sample_type, '_', ' ')) %>%
+  mutate(Sample_type=str_replace(Sample_type, '-interior', '')) %>%
+  ggplot(aes(x=Sample_type, y=value, fill=Sample_type)) +
+  geom_boxplot() +
+  scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-c(2,8)]) +
+  facet_wrap(~variable, ncol=1, scale='free_y') +
+  theme(axis.text.x = element_text(angle=40, vjust=1, hjust=1))
+
+ggsave('../plots/sup1b.metagenomics_read_qc.pdf', height = 8, width=10)
+```
+

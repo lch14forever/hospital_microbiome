@@ -14,12 +14,13 @@ source('configuration.r')
 Load plot specific libraries
 ```{r message=FALSE}
 library(ggbeeswarm)
+library(ggridges)
 ```
 
 ```{r fig.height=5, fig.width=15}
 meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2)
 df.nanopore <- read.table('../tables/species_in_assembly_qc_pass.dat')
-df.metaphlan <- read.table('../tables/illumina_metaphlan2_species.tsv', head=TRUE, stringsAsFactors=FALSE)
+df.metaphlan <- read.table('../tables/metagenomics.metaphlan2.table.s', head=TRUE, stringsAsFactors=FALSE)
 rownames(df.metaphlan) <- gsub('s__', '',  df.metaphlan$Index)
 df.metaphlan <- df.metaphlan[,-1]
 tmp2 <- melt(as.matrix(df.metaphlan)) %>% mutate(tmp=paste0(Var1, Var2))
@@ -47,40 +48,46 @@ dat = filter(dat, !(grepl("Burkholderia", V1) | V1 %in% c("Acinetobacter baumann
                                                         "Mycobacterium abscessus", "Mycobacterium tuberculosis",
                                                         "Enterococcus faecalis","Enterococcus faecium", 
                                                         "Staphylococcus epidermidis")))
-test = group_by(dat,V1) %>% 
-  tally() %>%
-  merge(dat, by='V1') %>%
-  filter(n>10)
 
 o <- c('Ill','BHI', 'AMP', 'CHLOR', 'KAN', 'STREP', 'TET')
-g.a <- ggplot(data=test,aes(x=factor(Antibiotics,level=o), y=log(value+1,2),color=Antibiotics)) +
+plot.dat <- group_by(dat,V1) %>% 
+  tally() %>%
+  merge(dat, by='V1') %>%
+  filter(n>10) %>% 
+  mutate(Antibiotics=factor(Antibiotics,level=o, ordered = T)) 
+
+ggplot(plot.dat, aes(x=Antibiotics, y=log(value+1,2),color=Antibiotics)) +
   geom_quasirandom(dodge.width = 1) +
+  scale_color_simpsons() +
   theme(axis.text.x = element_text(angle=40, hjust=1, size=8),strip.text = element_text(size=10, face='bold.italic'))+
-  facet_wrap(~V1,nrow=2)
+  facet_wrap(~V1,nrow=3) -> g.a
 g.a
 ```
 
-```{r fig.height=5, fig.width=15}
+```{r fig.height=8, fig.width=12}
 N=read.table('../tables/nanopore_assembly_contiguity.dat', head=TRUE, row.names=1)
 N=data.frame(N,Index=rownames(N))
 reassemble <- function(x, ind) paste(x[ind], collapse=" ") 
 N[,"Index"]=vapply(strsplit(rownames(N),"_"), reassemble, "" , c(1,2)) 
 
-N=filter(N,Index %in% test[,"V1"])
+N=filter(N,Index %in% plot.dat[,"V1"])
 colnames(N)=c("Total","N50","Index")
 N=filter(N,Total>1000000)
 
-g.b <- ggplot(data = N, aes(x=Index,y=log(N50,10),fill=Index)) +
-  geom_violin(scale="width") +
-  scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-c(2,8)])+
-  theme(axis.text.x = element_text(angle=40, hjust=1, size=10))+
-  coord_cartesian(ylim =c(4,7))
+g.b <- ggplot(data =N, aes(y=Index,x=N50/1e6, fill=Index)) +
+  stat_density_ridges(quantile_lines = TRUE, quantiles = 2, alpha = 0.7) +
+  scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-c(2,8)], guide=FALSE)+
+  theme(axis.text.y = element_text(face='bold.italic'))  + 
+  scale_x_log10() + 
+  labs(y=NULL, x='N50 (MB)') +
+  coord_cartesian(ylim =c(1,10))
 g.b
+
 ```
 
 Save plot
 ```{r}
-ggsave('../plots/sup9_a_b.pdf', cowplot::plot_grid(g.a, g.b, nrow=2), width = 15, height = 10)
+ggsave('../plots/sup9_a_b.pdf', cowplot::plot_grid(g.a, g.b, nrow=2), width = 12, height = 12)
 ```
 
 ### Session informaton

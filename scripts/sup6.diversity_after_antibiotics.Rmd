@@ -21,7 +21,7 @@ library(reshape2)
 Sup. Fig. 6A
 ```{r}
 df.mapping <- read.table('../metadata/nanopore.metadata.txt',head=T,sep='\t')
-df.nanopore <- read.table('../tables/nanopore_kraken_genus.dat',head=T,sep='\t',row.names=1)
+df.nanopore <- read.table('../tables/nanopore.kraken.table.g',head=T,sep='\t',row.names=1)
 df.nanopore[df.nanopore < 0.1] <- 0
 df.nanopore <- df.nanopore[rowSums(df.nanopore)>0, ]
 shan=data.frame(diversity(t(df.nanopore),index="shannon"))
@@ -35,7 +35,9 @@ diversity=merge(diversity,simp,by="Library")
 diversity1=select(diversity,Antibiotics,Simpson,Shannon)
 diversity1=melt(diversity1,id="Antibiotics")
 level_order <- c('BHI', 'AMP', 'CHLOR', 'KAN', 'STREP', 'TET')
-g.a <- ggplot(data = diversity1, aes(x=factor(Antibiotics,level=level_order),y=value,fill=Antibiotics)) +
+diversity1 <- mutate(diversity1, Antibiotics=factor(Antibiotics,level=level_order, ordered = T))
+
+g.a <- ggplot(data = diversity1, aes(x=Antibiotics,y=value,fill=Antibiotics)) +
   geom_violin() +
   theme(axis.text.x = element_text(angle=40, hjust=1, size=10)) +
   scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-c(2,8)])+
@@ -46,7 +48,7 @@ g.a
 
 Sup. Fig. 6B
 ```{r}
-df.nanopore <- read.table('../tables/nanopore_kraken_species.dat',head=T,sep='\t',row.names=1, quote='&', comment.char='&')
+df.nanopore <- read.table('../tables/nanopore.kraken.table.s',head=T,sep='\t',row.names=1, quote='&', comment.char='&')
 nanopore <- merge(t(df.nanopore), df.mapping,by.x=0,by.y="Nanopore_ID")%>%
   select(-contains("virus"))
 Anticount <- group_by(nanopore,Antibiotics) %>% count()
@@ -67,11 +69,13 @@ nanopore_final=merge(Anticount,nanopore,by=("Antibiotics"))%>%
   select(-n.x,-n.y) %>% 
   mutate(variable=str_replace(variable, '_', ' '))
 
-o <- c('Ill','BHI', 'AMP', 'CHLOR', 'KAN', 'STREP', 'TET')
-g.b <- ggplot(data=nanopore_final, aes(x=variable,y=freq,fill=factor(Antibiotics,level=o))) +
+o <- c('BHI', 'AMP', 'CHLOR', 'KAN', 'STREP', 'TET')
+nanopore_final <- mutate(nanopore_final, Antibiotics=factor(Antibiotics,level=o, ordered = T))
+
+g.b <- ggplot(data=nanopore_final, aes(x=variable,y=freq,fill=Antibiotics)) +
   geom_bar(width=0.8,color="black",position="dodge",stat="identity") +
-  theme(axis.text.x = element_text(angle=40, hjust=1, size=10, face='bold.italic'),legend.title=element_text(size=10))+
-  scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-(7:8)])
+  theme(axis.text.x = element_text(angle=40, hjust=1, size=10, face='bold.italic') ) +
+  scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-c(2,8)])
 g.b
 ```
 

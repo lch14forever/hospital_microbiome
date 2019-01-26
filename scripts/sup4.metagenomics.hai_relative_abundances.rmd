@@ -1,0 +1,89 @@
+---
+title: "Supplimentary Figure 4"
+output:
+  html_document:
+    df_print: paged
+---
+
+### Supplimentary Figure 4
+
+Load generic libraries
+```{r}
+source('configuration.r')
+```
+
+Load plot specific libraries
+```{r message=FALSE}
+library(vegan)
+library(reshape2)
+```
+
+HAI relative abundances
+
+```{r fig.height=6, fig.width=18}
+meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names = 2)
+dat <- read.table('../tables/metagenomics.metaphlan2.table.s', head=TRUE, row.names=1)
+dat[dat < 0.1] <- 0
+dat <- dat[rowSums(dat)>0, ]
+
+mat.sel <- rownames_to_column(dat, "species") %>% 
+  filter(grepl("Burkholderia", species) | 
+               species %in% c("s__Acinetobacter_baumannii","s__Candida_albicans",
+                         "s__Clostridium_difficile", "s__Clostridium_sordellii", 
+                         "s__Klebsiella_pneumoniae", "s__Klebsiella_oxytoca",
+                         "s__Escherichia_coli", "s__Staphylococcus_aureus",
+                         "s__Pseudomonas_aeruginosa","s__Mycobacterium_abscessus",
+                         "s__Mycobacterium_tuberculosis","s__Enterococcus_faecalis",
+                         "s__Enterococcus_faecium", "s__Staphylococcus_epidermidis")) %>% 
+  column_to_rownames("species")
+
+
+df_plot <- merge(meta, t(mat.sel) ,by=0,all.y=T) %>% 
+  filter(!is.na(Sample_type)) %>% 
+  filter(Room_type!='GIS') %>% 
+  select(-Sample_ID,-Cubicle_room,-Material,-Human_Traffic,-timept,-Room_type,-bed_number, -Library) %>% 
+  column_to_rownames("Row.names") %>% 
+  mutate(Sample_type=str_replace(Sample_type, '_', ' ') %>% 
+           str_replace('Door handle-interior', 'Door Handle'))
+
+colnames(df_plot) <- gsub("g__","",colnames(df_plot))
+colnames(df_plot) <- gsub("s__","",colnames(df_plot))
+colnames(df_plot) <- gsub("_"," ",colnames(df_plot))
+
+
+burk.id <- str_detect(colnames(df_plot), 'Burkholderia')
+tmp <- rowSums(df_plot[, burk.id])
+df_plot <- df_plot[, !burk.id]
+df_plot$"Burkholderia spp." <- tmp 
+
+
+p1 <- melt(df_plot) %>% 
+  filter(variable!="Burkholderia spp.") %>% 
+  mutate(variable=str_replace(variable, '[a-z]+ ', '. '))%>% 
+ggplot(aes(x=variable, y=value,fill=`Sample type`)) +
+	geom_boxplot(outlier.shape=NA) +
+  labs(x=NULL, y='Relative Abundances (%)') +
+	theme(axis.text.x = element_text(angle=40, hjust=1, size=14, face='bold.italic')) +
+	scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-c(2,8)], guide=F) +
+	coord_cartesian(ylim =c(0,7.5))
+
+
+p2 <- melt(df_plot) %>% 
+  filter(variable=="Burkholderia spp.") %>% 
+ggplot(aes(x=variable, y=value,fill=`Sample type`)) +
+	geom_boxplot(outlier.shape=NA) +
+  labs(x=NULL, y=NULL) +
+	theme(axis.text.x = element_text(angle=40, hjust=1, size=14, face='bold.italic')) +
+	scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-c(2,8)]) +
+  coord_cartesian(ylim =c(0,80))
+
+cowplot::plot_grid(p1, p2, nrow=1, rel_widths=c(10,4), align = 'h' )
+
+ggsave('../plots/sup4.hai_abundances_in_metagenomcs.pdf', height=8, width = 15)
+```
+
+
+### Session informaton
+```{r}
+sessionInfo()
+```
