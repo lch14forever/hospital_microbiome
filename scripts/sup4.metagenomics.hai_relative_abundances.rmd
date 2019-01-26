@@ -79,7 +79,7 @@ ggplot(aes(x=variable, y=value,fill=`Sample type`)) +
 
 cowplot::plot_grid(p1, p2, nrow=1, rel_widths=c(10,4), align = 'h' )
 
-ggsave('../plots/sup4.hai_abundances_in_metagenomcs.pdf', height=8, width = 15)
+ggsave('../plots/sup4.hai_abundances_in_metagenomcs.pdf', height=8, width = 18)
 ```
 
 
