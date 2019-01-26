@@ -1,0 +1,78 @@
+---
+title: "HAI species abundance in the environment"
+output:
+  html_document:
+    df_print: paged
+---
+
+### HAI species abundance in the environment
+
+Load generic libraries
+```{r}
+source('configuration.r')
+```
+
+Load specific libraries
+```{r}
+library(pheatmap)
+library(RColorBrewer)
+```
+
+
+```{r fig.height=5, fig.width=4}
+meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names = 2)
+dat <- read.table('../tables/metagenomics.metaphlan2.table.s', head=TRUE, row.names=1)
+dat[dat < 0.1] <- 0
+dat <- dat[rowSums(dat)>0, ]
+
+mat.sel <- rownames_to_column(dat, "species") %>% 
+  filter(grepl("Burkholderia", species) | 
+               species %in% c("s__Acinetobacter_baumannii","s__Candida_albicans",
+                         "s__Clostridium_difficile", "s__Clostridium_sordellii", 
+                         "s__Klebsiella_pneumoniae", "s__Klebsiella_oxytoca",
+                         "s__Escherichia_coli", "s__Staphylococcus_aureus",
+                         "s__Pseudomonas_aeruginosa","s__Mycobacterium_abscessus",
+                         "s__Mycobacterium_tuberculosis","s__Enterococcus_faecalis",
+                         "s__Enterococcus_faecium", "s__Staphylococcus_epidermidis")) %>% 
+  column_to_rownames("species")
+
+df <- merge(meta, data.frame(t(mat.sel), Site=colnames(mat.sel)), by=0,all.y=T) %>% 
+  filter(!is.na(Sample_type)) %>% 
+  filter(Room_type!='GIS') %>% 
+  select(-Site,-Sample_ID,-Cubicle_room,-Material,-Human_Traffic,-timept,-Room_type,-bed_number) %>% 
+  column_to_rownames("Row.names")
+
+df_plot <- select(df,-Library) %>%
+  group_by(Sample_type) %>% 
+  summarise_all(funs(median)) %>% 
+  data.frame(row.names=1)
+
+colnames(df_plot) <- gsub("g__","",colnames(df_plot))
+colnames(df_plot) <- gsub("s__","",colnames(df_plot))
+colnames(df_plot) <- gsub("_"," ",colnames(df_plot))
+rownames(df_plot) <- gsub("_"," ",rownames(df_plot))
+rownames(df_plot)[5] <-  "Door Handle"
+
+burk.id <- str_detect(colnames(df_plot), 'Burkholderia')
+tmp <- rowSums(df_plot[, burk.id])
+df_plot <- df_plot[, !burk.id]
+df_plot$"Burkholderia spp." <- tmp 
+
+df_plot$"Burkholderia spp."[7] <- 2
+mat <- t(df_plot)
+p <- pheatmap(mat, #color=pal_rickandmorty('schwifty')(12)[c(10,4,12,1,9,8,5,7,6,3,2)], 
+              legend_breaks=c(10^(-1:ceiling(log10(max(mat)))), 
+                                        round(max(mat), 10)),
+              border_color="black",cluster_rows = F, cluster_cols = F, silent = TRUE)
+
+grid.arrange(p$gtable)
+
+ggsave('../plots/fig2a.hai_species_abundance_heatmap.pdf', 
+       grid.arrange(p$gtable),
+       width = 4, height = 5)
+```
+
+### Session informaton
+```{r}
+sessionInfo()
+```

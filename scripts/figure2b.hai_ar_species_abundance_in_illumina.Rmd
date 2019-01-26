@@ -1,0 +1,88 @@
+---
+title: "HAI AR species abundance in the environment"
+output:
+  html_document:
+    df_print: paged
+---
+
+### HAI abundance in the environment
+
+Load generic libraries
+```{r}
+source('configuration.r')
+```
+
+Load plot specific libraries
+```{r}
+library(ggbeeswarm)
+```
+
+Read and process nanopore data
+```{r}
+meta.nanopore <- read.table('../metadata/nanopore.metadata.txt',head=T,sep='\t')
+df.nanopore <- read.table('../tables/species_in_assembly_qc_pass.dat') %>% 
+  merge(meta.nanopore, by.x='V2', by.y='Nanopore_ID') %>%
+  unite('lab', V1, Illumina_Library_ID, sep='#', remove=FALSE)
+df.nanopore
+```
+
+Read and process illumina data
+```{r}
+meta.illumina <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2)
+df.metaphlan <- 
+  read.table('../tables/metagenomics.metaphlan2.table.s', head=TRUE, stringsAsFactors=FALSE) %>% 
+    mutate(Index=str_replace(Index, 's__', '')) %>%
+    melt %>% 
+    unite('lab', Index, variable, sep='#', remove=FALSE) 
+df.metaphlan
+```
+
+Merge data
+```{r}
+dat <-
+  merge(df.metaphlan, df.nanopore, by='lab') %>% 
+  mutate(lab=paste0(V1,'@',V2, '@', Illumina_Library_ID)) %>% 
+  mutate(species=str_replace(V1, '_', ' '))
+dat
+```
+
+Select HAI species of interest
+```{r}
+dat <-  filter(dat, grepl("Burkholderia", species) | 
+               species %in% c("Acinetobacter baumannii","Candida albicans",
+                         "Clostridium difficile", "Clostridium sordellii", 
+                         "Klebsiella pneumoniae", "Klebsiella oxytoca",
+                         "Escherichia coli", "Staphylococcus aureus",
+                         "Pseudomonas aeruginosa","Mycobacterium abscessus",
+                         "Mycobacterium tuberculosis","Enterococcus faecalis",
+                         "Enterococcus faecium", "Staphylococcus epidermidis"))
+```
+
+Plot
+```{r}
+plot.dat <- group_by(dat,V1) %>% 
+  tally() %>%
+  merge(dat, by='V1') %>%
+  filter(n>19)
+
+o <- c('Ill','BHI', 'AMP', 'CHLOR', 'KAN', 'STREP', 'TET')
+
+g <- ggplot(data=plot.dat, aes(x=factor(Antibiotics,level=o), y=log(value+1,2),color=Antibiotics)) +
+  geom_quasirandom(dodge.width = 1) +
+  scale_color_d3(guide=FALSE) + 
+  labs(x='Antibiotics', y='log2(% + 1)')+
+  theme(axis.text.x = element_text(angle=40, hjust=1, size=8),
+        strip.text = element_text(size=7, face='bold.italic'))
+g + facet_wrap(~species,nrow=3)
+```
+
+Save plot
+```{r, echo=FALSE}
+ggsave('../plots/fig2b.hai_ar_species_abundance_in_illumina.pdf', g + facet_wrap(~species,nrow=1), 
+       width=12, height=3)
+```
+
+### Session informaton
+```{r}
+sessionInfo()
+```

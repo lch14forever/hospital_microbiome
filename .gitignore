@@ -1,6 +1,6 @@
 *~
 *#
-data-raw/
+output_tables/
 .DS_Store
 .Rproj.user
 .Rhistory
