@@ -23,12 +23,15 @@ Function to plot tree
 ```{r}
 get_tree_data <- function(species, filter.patient.only=TRUE, outlier=''){
   dist.dat <- read.table(paste0('../tables/',species,'_mummer_heatmap.dat'))
-  
+  meta <- read.table('../output_tables/merged_assembly_metadata.tsv', head=TRUE) %>% filter(Species==species)
+  idx <- rownames(dist.dat) %in% (filter(meta, genome_quality=='HIGH_QUAL'))$genomeID |## High quality genomes
+    str_detect(rownames(dist.dat), 'G_')
+  dist.dat <- dist.dat[idx, idx]
   clustering.all <- hclust(as.dist(dist.dat), method='single')
   clusters.all <- cutree(clustering.all, h=0.001)
   strains <- foreach(x=unique(clusters.all), .combine=rbind) %do% {
     tmp <- clusters.all[clusters.all==x]
-    dat <- data.frame(strain=tmp[1])
+    dat <- data.frame(strain=tmp[order(names(tmp), decreasing = T)][1]) ## select hospital if possible
     dat$n <- length(tmp)
     dat$Hospital <- sum(str_detect(names(tmp), 's'))/dat$n
     dat$Patient <- sum(str_detect(names(tmp), 'G'))/dat$n
@@ -45,7 +48,6 @@ get_tree_data <- function(species, filter.patient.only=TRUE, outlier=''){
   
   clustering <- hclust(as.dist(dist.dat[idx, idx]), method='single')
   
-  meta <- read.table('../output_tables/merged_assembly_metadata.tsv', head=TRUE) %>% filter(Species==species)
   merge(data.frame(clusters=clusters.all), meta, by.x=0, by.y=1, all.x=TRUE) %>%
      mutate(strain=paste0('s', clusters)) %>%
      mutate(lab=ifelse(str_detect(Row.names, 's'), 'Hospital', 'Patient')) -> merged
@@ -60,6 +62,7 @@ get_tree_data <- function(species, filter.patient.only=TRUE, outlier=''){
   anno <- antibiotics %>% 
     mutate_at(vars(AMP, CHLOR, KAN, STREP, TET), function(x) ifelse(x>0, 'Hospital', NA))
   rownames(anno) <- rownames(antibiotics)
+  
   # ## generate barplot
   # bars <- foreach(r=1:nrow(strains)) %do% {
   #   data <- melt(strains[r,], id.vars = c('n', 'strain', 'rep')) 
@@ -126,14 +129,6 @@ tree <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, off
          colnames_angle = 60, hjust =1) +
   scale_fill_npg(guide=F)
 
-# ## Add bar plot
-# tree <- inset(tree, bars, width=0.0006, height=1., hjust=-0.0003)
-# ## Add legend for bars
-# l1 <- cowplot::get_legend(bars[[1]] + theme_bw() + theme(legend.title =element_blank()))
-# l2 <- cowplot::get_legend(tree)
-# l <- cowplot::plot_grid(l1, l2, nrow=2)
-# tree <- cowplot::plot_grid(l, tree + theme(legend.position="none"),
-#           rel_widths=c(0.1,1) , nrow=1)
 tree
 ggsave('../plots/sup14.e_anophelis_tree_w_patient_data.pdf', tree, width=10, height=10)
 ```
@@ -157,14 +152,7 @@ tree <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, off
          colnames_angle = 60, hjust =1) +
   scale_fill_npg(guide=F)
 
-# ## Add bar plot
-# tree <- inset(tree, bars, width=0.0006, height=1.5, hjust=-0.0003)
-# ## Add legend for bars
-# l1 <- cowplot::get_legend(bars[[1]] + theme_bw() + theme(legend.title =element_blank()))
-# l2 <- cowplot::get_legend(tree)
-# l <- cowplot::plot_grid(l1, l2, nrow=2)
-# tree <- cowplot::plot_grid(l, tree + theme(legend.position="none"),
-#           rel_widths=c(0.1,1) , nrow=1)
+
 tree
 ggsave('../plots/fig4b.s_epidermidis_tree_w_patient_data.pdf', tree, width=10, height=15)
 ```

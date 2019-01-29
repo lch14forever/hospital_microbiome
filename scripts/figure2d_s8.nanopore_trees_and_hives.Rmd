@@ -41,7 +41,8 @@ Function to plot the tree with heatmap
 plot.tree <- function(x, color, offset=0.01, title=NULL){
   dist.dat <- read.table(x)
   #idx <- str_detect(rownames(dist.dat), 's_') & rownames(dist.dat) %in% meta.merged[,1]
-  #dist.dat <- dist.dat[idx, idx]
+  idx <- rownames(dist.dat) %in% (filter(meta.merged, genome_quality=='HIGH_QUAL'))$genomeID ## High quality genomes
+  dist.dat <- dist.dat[idx, idx]
   
   ## clustering
   cluster.full <- hclust(as.dist(dist.dat), method='single')
