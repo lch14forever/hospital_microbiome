@@ -80,6 +80,8 @@ get_tree_data <- function(species, filter.patient.only=TRUE, outlier=''){
 #### *Staphylococcus aureus*
 
 ```{r fig.height=10, fig.width=10, message=FALSE}
+colors <- pal_d3('category20')(20)
+
 dat <- get_tree_data('Staphylococcus_aureus', outlier = 's_3217')
 attach(dat)
 ## create a tree
@@ -95,7 +97,7 @@ p <- ggtree(as.phylo(clustering)) %<+%
 ## Add heatmap
 tree <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, offset=0.0008, font.size=3.5,
          colnames_angle = 60, hjust =1) +
-  scale_fill_npg(guide=F)
+  scale_fill_manual(values=colors[3], guide=F)
 
 # ## Add bar plot
 # tree <- inset(tree, bars, width=0.0006, height=1.4, hjust=-0.0003)
@@ -127,12 +129,37 @@ p <- ggtree(as.phylo(clustering)) %<+%
 ## Add heatmap
 tree <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, offset=0.002, font.size=3.5,
          colnames_angle = 60, hjust =1) +
-  scale_fill_npg(guide=F)
-
+  scale_fill_manual(values=colors[8], guide=F)
+  
 tree
 ggsave('../plots/sup14.e_anophelis_tree_w_patient_data.pdf', tree, width=10, height=10)
 ```
-### 
+
+#### *Acinetobacter baumannii*
+
+```{r fig.height=5, fig.width=10, message=FALSE}
+dat <- get_tree_data('Acinetobacter_baumannii',  outlier = '')
+attach(dat)
+## create a tree
+p <- ggtree(as.phylo(clustering)) %<+%
+  strains +
+  geom_tippoint(aes(size=n, color=lab), shape=19) +
+  geom_tiplab(aes(label=paste0('s', strain), color=lab),size=4, fontface='bold', offset=5e-4) +
+  scale_size_continuous(trans='log2') + 
+  scale_color_lancet() + 
+  geom_treescale(x=0, y=8, width=0.001) +
+  theme(legend.position="left")
+
+## Add heatmap
+tree <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, offset=0.002, font.size=3.5,
+         colnames_angle = 60, hjust =1) +
+  scale_fill_manual(values=colors[1], guide=F)
+
+tree
+ggsave('../plots/sup14.a_baumannii_tree_w_patient_data.pdf', tree, width=10, height=10)
+```
+
+### *Staphylococcus epidermidis*
 
 ```{r fig.height=15, fig.width=10, message=FALSE}
 dat <- get_tree_data('Staphylococcus_epidermidis', outlier = '')
@@ -150,7 +177,7 @@ p <- ggtree(as.phylo(clustering)) %<+%
 ## Add heatmap
 tree <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, offset=0.0008, font.size=3.5,
          colnames_angle = 60, hjust =1) +
-  scale_fill_npg(guide=F)
+  scale_fill_manual(values=colors[7], guide=F)
 
 
 tree

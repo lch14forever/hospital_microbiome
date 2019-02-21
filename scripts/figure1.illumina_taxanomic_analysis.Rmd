@@ -306,7 +306,7 @@ ggsave('../plots/fig1d_distance_spatial_temporal.pdf', height = 8, width = 4)
 #wilcox.test(same_room,diff_rooms)
 ```
 
-### (Fig1f) Distance between samples
+### (Fig1f) Species differentially abundant in dry environments
 
 ```{r fig.height=8, fig.width=5}
 mat.sel <- rownames_to_column(dat.species, "species") %>% 
@@ -361,6 +361,17 @@ ggplot(data = all.dat.dry.fil, aes(x=variable,y=value,fill=Room_type)) +
 ggsave('../plots/fig1f_species_in_dry_environments.pdf', height = 8, width = 5)
 ```
 
+
+
+```{r echo=FALSE, eval=FALSE}
+### PERMANOVA test
+df.fil <- df[rowSums(df[,-c(1:3)]) > 0, -c(1,3)]
+df.fil %>% filter(!Sample_type %in% c('Aerator','Sink Trap')) %>% 
+  dplyr::select(-1,-3) -> dry.dat
+
+adonis2(df.fil[,-1] ~ site, data = data.frame(site=df.fil$Sample_type))
+adonis2(dry.dat[,-1] ~ site, data = data.frame(site=dry.dat$Sample_type))
+```
 
 ### Session informaton
 ```{r}
