@@ -91,13 +91,14 @@ p <- ggtree(as.phylo(clustering)) %<+%
   geom_tiplab(aes(label=paste0('s', strain), color=lab),size=4, fontface='bold', offset=2e-4) +
   scale_size_continuous(trans='log2') + 
   scale_color_lancet() + 
-  geom_treescale(x=0, y=20, width=0.001) +
+  geom_treescale(x=0, y=15, width=0.001) +
   theme(legend.position="left")
 
 ## Add heatmap
-tree <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, offset=0.0008, font.size=3.5,
+tree1 <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, offset=0.0008, font.size=3.5,
          colnames_angle = 60, hjust =1) +
-  scale_fill_manual(values=colors[3], guide=F)
+  scale_fill_manual(values=colors[3], guide=F) +
+  ylim(-1, 17)
 
 # ## Add bar plot
 # tree <- inset(tree, bars, width=0.0006, height=1.4, hjust=-0.0003)
@@ -107,8 +108,8 @@ tree <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, off
 # l <- cowplot::plot_grid(l1, l2, nrow=2)
 # tree <- cowplot::plot_grid(l, tree + theme(legend.position="none"),
 #           rel_widths=c(0.1,1) , nrow=1)
-tree
-ggsave('../plots/fig4a.s_aureus_tree_w_patient_data.pdf', tree, width=10, height=10)
+tree1
+ggsave('../plots/fig4a.s_aureus_tree_w_patient_data.pdf', tree1, width=10, height=10)
 ```
 
 #### *Elizabethkingia anophelis*
@@ -120,19 +121,20 @@ attach(dat)
 p <- ggtree(as.phylo(clustering)) %<+%
   strains +
   geom_tippoint(aes(size=n, color=lab), shape=19) +
-  geom_tiplab(aes(label=paste0('s', strain), color=lab),size=4, fontface='bold', offset=5e-4) +
+  geom_tiplab(aes(label=paste0('s', strain), color=lab),size=4, fontface='bold', offset=1.5e-3, hjust=0.5) +
   scale_size_continuous(trans='log2') + 
   scale_color_lancet() + 
-  geom_treescale(x=0, y=8, width=0.001) +
+  geom_treescale(x=0.05, y=5, width=0.001) +
   theme(legend.position="left")
 
 ## Add heatmap
-tree <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, offset=0.002, font.size=3.5,
-         colnames_angle = 60, hjust =1) +
-  scale_fill_manual(values=colors[8], guide=F)
+tree2 <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, offset=0.002, font.size=3.5, 
+                  colnames_angle = 60, hjust=1) + 
+  scale_fill_manual(values=colors[8], guide=F) + 
+  ylim(-1, 6.5)
   
-tree
-ggsave('../plots/sup14.e_anophelis_tree_w_patient_data.pdf', tree, width=10, height=10)
+tree2
+ggsave('../plots/sup14.e_anophelis_tree_w_patient_data.pdf', tree2, width=10, height=10)
 ```
 
 #### *Acinetobacter baumannii*
@@ -144,44 +146,63 @@ attach(dat)
 p <- ggtree(as.phylo(clustering)) %<+%
   strains +
   geom_tippoint(aes(size=n, color=lab), shape=19) +
-  geom_tiplab(aes(label=paste0('s', strain), color=lab),size=4, fontface='bold', offset=5e-4) +
+  geom_tiplab(aes(label=paste0('s', strain), color=lab),size=4, fontface='bold', offset=-5e-4, hjust=0.5) +
   scale_size_continuous(trans='log2') + 
   scale_color_lancet() + 
-  geom_treescale(x=0, y=8, width=0.001) +
+  geom_treescale(x=0, y=25, width=0.001, offset=1) +
   theme(legend.position="left")
 
 ## Add heatmap
-tree <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, offset=0.002, font.size=3.5,
-         colnames_angle = 60, hjust =1) +
+tree3 <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, offset=0.001, font.size=3.5,
+         hjust =1) +
+  scale_x_reverse() + 
+  coord_flip() +
+  ylim(-0.5,27) +
   scale_fill_manual(values=colors[1], guide=F)
 
-tree
-ggsave('../plots/sup14.a_baumannii_tree_w_patient_data.pdf', tree, width=10, height=10)
+tree3
+ggsave('../plots/sup14.a_baumannii_tree_w_patient_data.pdf', tree3, width=10, height=10)
 ```
 
 ### *Staphylococcus epidermidis*
 
-```{r fig.height=15, fig.width=10, message=FALSE}
+```{r fig.height=10, fig.width=15, message=FALSE}
 dat <- get_tree_data('Staphylococcus_epidermidis', outlier = '')
 attach(dat)
 ## create a tree
 p <- ggtree(as.phylo(clustering)) %<+%
   strains +
   geom_tippoint(aes(size=n, color=lab), shape=19) +
-  geom_tiplab(aes(label=paste0('s', strain), color=lab),size=4, fontface='bold', offset=2.5e-4) +
+  geom_tiplab(aes(label=paste0('s', strain), color=lab),size=4, fontface='bold', offset=-2.5e-4, hjust = 0.5) +
   scale_size_continuous(trans='log2') + 
   scale_color_lancet() + 
-  geom_treescale(x=0, y=50, width=0.001) +
+  geom_treescale(x=0, y=40, width=0.001, offset = 1) +
   theme(legend.position="left")
 
 ## Add heatmap
-tree <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, offset=0.0008, font.size=3.5,
-         colnames_angle = 60, hjust =1) +
+tree4 <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.5, offset=0.0004, font.size=3.5,
+         hjust =1) +
+  scale_x_reverse() + 
+  coord_flip() +
   scale_fill_manual(values=colors[7], guide=F)
 
+tree4
+ggsave('../plots/fig4b.s_epidermidis_tree_w_patient_data.pdf', tree4, width=10, height=15)
+```
 
-tree
-ggsave('../plots/fig4b.s_epidermidis_tree_w_patient_data.pdf', tree, width=10, height=15)
+```{r echo=FALSE}
+bc <- cowplot::plot_grid(tree2 + theme(legend.position = 'none'),
+                   tree3 + theme(legend.position = 'none'),
+                   labels=c('b','c'), ncol=1, rel_heights = c(0.6,1), label_size = 30
+                     )
+abc <- cowplot::plot_grid(tree1 + theme(legend.position = 'none'),
+                          bc,
+                          labels=c('a',NULL), nrow=1,label_size = 30
+                          )
+abcd <- cowplot::plot_grid(abc, tree4,
+                   labels=c(NA, 'd'), ncol=1,label_size = 30
+                   )
+ggsave('../plots/fig4.trees_w_patient.png', abcd, height=15, width = 15)
 ```
 
 ### Session informaton

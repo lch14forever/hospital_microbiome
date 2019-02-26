@@ -111,7 +111,7 @@ p <- ggraph(g, layout = 'fr')+#, circular=TRUE) +
                 end_cap=circle(1.5, 'mm'), start_cap=circle(1.5, 'mm'))   +
   scale_edge_color_manual(values=g_cols, 
                           na.value = rgb(0.8,0.8,0.8,0.5)) +
-  geom_node_point(aes(fill=Type, color=carb),size= as.numeric(as.factor(V(g)$carb) )*5, shape=21) +
+  geom_node_point(aes(fill=Type, color=carb),size=5, shape=21) +
   scale_color_manual(values=c('grey','firebrick')) + 
   geom_node_text(aes(label = name), size=5, repel = TRUE, fontface='bold') +
   scale_edge_width(range = c(0.5,3)) +

@@ -8,14 +8,15 @@ output:
 ### (Fig1a) MDS plot for illumina metagenomics data
 
 Load generic libraries
-```{r}
+```{r message=FALSE, warning=FALSE}
 source('configuration.r')
 ```
 
 Load specific libraries
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(vegan)
 library(pheatmap)
+library(ComplexHeatmap)
 library(RColorBrewer)
 ```
 
@@ -42,6 +43,7 @@ dat.merged$Sample_type <- relevel(factor(dat.merged$Sample_type), 'Sink Trap')
 
 ## PCoA
 ggplot(dat.merged, aes(x=V1, y=V2, col=Sample_type), lwd=2) +
+  geom_density_2d(aes(x=V1, y=V2), inherit.aes = FALSE, col='grey', lwd=1) + 
 	geom_point(size=4.5) +
 	labs(x=paste0('MDS2 (',round(eigen[1], 1),'%)'),
        y=paste0('MDS1 (',round(eigen[2], 1),'%)')) +
@@ -54,7 +56,7 @@ ggsave('../plots/f1a_mds_genus.pdf', width =9, height = 5)
 
 Genus level
 
-```{r fig.width=4, fig.height=4}
+```{r fig.width=2.5, fig.height=4}
 rowMedians <- function(x) apply(x, 1, median) ## aux function
 wet.sel <- with(fil, Sample_type == "Aerator" | Sample_type == "Sink_Trap")
 dat.fil.ordered <- dat.fil[,c(which(!wet.sel), which(wet.sel))] ## put dry samples together
@@ -83,14 +85,15 @@ data2all <- rbind(data2Vdry,data2Vwet)
 rownames(data2all) <- rownames(rbind(data2dry,data2wet))
 colnames(data2all) <- c('D', 'W')
 #plot heatmap
-
-fig1bi <- pheatmap(log(data2all+1,2), color=(colorRampPalette(brewer.pal(9,'Blues'))(50)),
- border_color="black",cluster_rows = F, cluster_cols = F, cellwidth =10, cellheight=10,
- gp=gpar(fontface = "bold.italic"), silent=TRUE)
-cowplot::plot_grid(fig1bi$gtable)
-
-ggsave('../plots/fig1bi_dry_wet_genus_comparison.pdf', 
-       width = 4, height = 5)
+p <- Heatmap(log(data2all+1,2), col=(colorRampPalette(brewer.pal(9,'Blues'))(60)),
+        rect_gp = gpar(col = "black", lty = 1, lwd = 1),
+        heatmap_legend_param = list(title='', legend_height=unit(7, "cm"), labels_gp=gpar(fontsize=15), at=0:5),
+        row_names_gp=gpar(fontface = "bold.italic"),
+ border="black",cluster_rows = F, cluster_columns = F)
+p
+pdf('../plots/fig1bi_dry_wet_genus_comparison.pdf', width=2.7, height=5)
+p
+dev.off()
 ```
 
 Species
@@ -151,7 +154,7 @@ p3 <- ggplot(data = data2wet, aes(x=Species,y=value,fill=group, grp=group)) +
 	theme(axis.text.x = element_text(angle=40, hjust=1, size=10), legend.position = 'none')
 
 cowplot::plot_grid(p1, p2, p3, nrow=1, rel_widths=c(12,4.5,8),align ='h')
-ggsave('../plots/fig1bii_dry_wet_species_comparison.pdf', height = 5, width = 10)
+ggsave('../plots/fig1bii_dry_wet_species_comparison.pdf', height = 7, width = 10)
 ```
 
 ### (Fig1c) Spatial-temporal analysis
@@ -351,13 +354,24 @@ all.dat.dry.fil <- melt(all.dat.dry.fil,id="Room_type") %>%
   mutate(Room_type=str_replace_all(Room_type,"_"," ")) %>% 
   mutate(variable=str_replace(variable, '[a-z]+ ', '. '))
 
-ggplot(data = all.dat.dry.fil, aes(x=variable,y=value,fill=Room_type)) +
+p1 <- ggplot(data = all.dat.dry.fil, aes(x=variable,y=value,fill=Room_type)) +
   geom_boxplot(outlier.shape = NA, lwd=1) +
   theme(axis.text.x = element_text(angle=270, hjust=0, vjust=0.5, size=12, face = 'bold.italic'), 
-        legend.position = c(0.5,0.8), legend.title = element_blank()) +
+        legend.position = c(0.5,0.92), legend.title = element_blank()) +
   scale_fill_npg() + 
   labs(y='Relative abundance (%)', x=NULL) +
   coord_cartesian(ylim =c(0,17))
+
+p.zoom <- ggplot(data = all.dat.dry.fil, aes(x=variable,y=value,fill=Room_type)) +
+  geom_boxplot(outlier.shape = NA, lwd=1) +
+  theme(axis.text.x = element_blank(), 
+        legend.position = 'none')+
+  scale_fill_npg() + 
+  labs(y=NULL, x=NULL) + 
+  coord_cartesian(ylim =c(0,3))
+
+p1 +  
+  annotation_custom(grob = ggplotGrob(p.zoom), xmin = 0.4, xmax = 3.8, ymin = 8, ymax = 14)
 ggsave('../plots/fig1f_species_in_dry_environments.pdf', height = 8, width = 5)
 ```
 
