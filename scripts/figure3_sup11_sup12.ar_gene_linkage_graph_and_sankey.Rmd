@@ -25,7 +25,8 @@ Create graph edge data
 ```{r cache=TRUE}
 dat <- read.table('../tables/antibiotics_gene_linkage.tsv', head=FALSE, stringsAsFactors = FALSE) %>% 
   mutate(id=paste0(V1,':',V2, ':', V3)) %>% 
-  mutate(V6=str_replace(V6, 'PheCmlA5', 'Phe'))
+  mutate(V6=str_replace(V6, 'PheCmlA5', 'Phe')) %>% 
+  mutate(V6=str_replace(V6, 'Far1_Fcd', 'Far1_Bla'))
 
 edges.full <- foreach(id=unique(dat$id), .combine=rbind) %do% {
     tmp <- dat[dat$id == id, ]
@@ -109,10 +110,9 @@ get_graph_data <- function(pattern='', reverse=FALSE, dist.fil=Inf){
 Main figure of all genes
 ```{r fig.height=18, fig.width=20,message=FALSE, warning=FALSE}
 g <- get_graph_data(dist.fil = 5e3)
-igraph_layouts <- c('star', 'circle', 'gem', 'dh', 'graphopt', 'grid', 'mds', 
-                    'randomly', 'fr', 'kk', 'drl', 'lgl')
-g_cols <- c(pal_lancet("lanonc")(9), pal_ucscgb("default")(26))[-c(2,8,10,12,17,18,19,20)] 
 
+g_cols <- c((pal_lancet("lanonc")(9))[c(2:8,1)], pal_ucscgb("default")(26))[-c(2,7,8,9,10,12,17,18,19,20,21,23,24,26,27)] 
+## plot(1:19, 1:19, type="p", pch=65:(65+19-1), cex=2, col=g_cols) ## get legend alphabets
 layout = create_layout(g, layout = 'igraph', algorithm = 'kk', kkconst=0.1)
 p <- ggraph(layout)+#, circular=TRUE) +
   geom_edge_arc(aes(width=((!is.na(community))+1), alpha=as.factor(is.na(community)), color=community),
@@ -130,7 +130,7 @@ p <- ggraph(layout)+#, circular=TRUE) +
   theme_void() 
 p
 
-ggsave('../plots/fig3a.ar_gene_linkage_graph.pdf', p, width=18, height=20)
+ggsave('../plots/fig3a.ar_gene_linkage_graph.pdf', p, width=15, height=17)
 ```
 
 
@@ -152,22 +152,48 @@ sankey.dat <-
   count %>% 
   mutate(Antibiotics_cluster=as.character(g)) %>% 
   filter(n>3) %>% 
-  ungroup() %>% 
-  mutate(Species=sapply(Species, function(x) ifelse(x=='plasmid', NA, x)))
+  ungroup() 
+
+sankey.dat$Species <- factor(sankey.dat$Species, ordered = TRUE, levels = c("Acinetobacter baumannii",
+"Acinetobacter sp.",
+"Burkholderia lata",
+"Enterobacter cloacae",
+"Klebsiella pneumoniae",
+"Pseudomonas aeruginosa",
+"Corynebacterium striatum",
+"Enterococcus faecalis",
+"Enterococcus faecium",
+"Enterococcus sp.",
+"Staphylococcus aureus",
+"Staphylococcus capitis",
+"Staphylococcus cohnii",
+"Staphylococcus epidermidis",
+"Staphylococcus haemolyticus",
+"Staphylococcus hominis",
+"Staphylococcus lugdunensis",
+"Staphylococcus warneri",
+"plasmid"))
+
+sankey.dat$Antibiotics_cluster <- factor(sankey.dat$Antibiotics_cluster, ordered=TRUE, levels=c(
+  "A", "G",  "J", "K", "L", "M", "N", "B", "C", "D", "E", "F", "H", "I"
+))
+
+##  mutate(Species=sapply(Species, function(x) ifelse(x=='plasmid', NA, x)))
 ```
 
 Plot
-```{r fig.height=18, fig.width=18}
-p <- ggplot(sankey.dat,aes(y=log10(n), axis1=Species, axis2=Antibiotics_cluster)) +
+```{r fig.height=25, fig.width=25}
+p <- ggplot(subset(sankey.dat, Species!='plasmid'),aes(y=log10(n), axis1=Species, axis2=Antibiotics_cluster)) +
   geom_alluvium(aes(fill=Antibiotics_cluster), width=1/5)  +
   geom_stratum(width=1/5, fill=NA) +
   geom_text(stat = "stratum", label.strata = TRUE, size=6, fontface = "italic", nudge_x=-0.12, hjust=1) +
-  scale_fill_manual(values=g_cols) +
+  scale_fill_manual(values=g_cols[match(levels(sankey.dat$Antibiotics_cluster) , LETTERS[1:14])]) +
   scale_x_discrete(limits = c("Species", "Antibiotics Cluster"), expand = c(.5, .05)) +
   theme_void() +
   theme()
+  
 p
-ggsave('../plots/fig3b.ar_gene_linkage_sankey.pdf', p, width=18, height=18)
+ggsave('../plots/fig3b.ar_gene_linkage_sankey.pdf', p, width=25, height=25)
 ```
 
 ### Supplementary figures

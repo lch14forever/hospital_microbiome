@@ -21,12 +21,13 @@ library(ape)
 
 Function to plot tree
 ```{r}
-get_tree_data <- function(species, filter.patient.only=TRUE, outlier=''){
+get_tree_data <- function(species, filter.patient.only=TRUE, outlier='', get.dist=FALSE){
   dist.dat <- read.table(paste0('../tables/',species,'_mummer_heatmap.dat'))
   meta <- read.table('../output_tables/merged_assembly_metadata.tsv', head=TRUE) %>% filter(Species==species)
   idx <- rownames(dist.dat) %in% (filter(meta, genome_quality=='HIGH_QUAL'))$genomeID |## High quality genomes
     str_detect(rownames(dist.dat), 'G_')
   dist.dat <- dist.dat[idx, idx]
+  if(get.dist) return(dist.dat)
   clustering.all <- hclust(as.dist(dist.dat), method='single')
   clusters.all <- cutree(clustering.all, h=0.001)
   strains <- foreach(x=unique(clusters.all), .combine=rbind) %do% {
@@ -80,7 +81,7 @@ get_tree_data <- function(species, filter.patient.only=TRUE, outlier=''){
 #### *Staphylococcus aureus*
 
 ```{r fig.height=10, fig.width=10, message=FALSE}
-colors <- pal_d3('category20')(20)
+colors <- pal_npg('nrc')(9)
 
 dat <- get_tree_data('Staphylococcus_aureus', outlier = 's_3217')
 attach(dat)
@@ -130,7 +131,7 @@ p <- ggtree(as.phylo(clustering)) %<+%
 ## Add heatmap
 tree2 <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, offset=0.002, font.size=3.5, 
                   colnames_angle = 60, hjust=1) + 
-  scale_fill_manual(values=colors[8], guide=F) + 
+  scale_fill_manual(values=colors[1], guide=F) + 
   ylim(-1, 6.5)
   
 tree2
@@ -158,7 +159,7 @@ tree3 <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, of
   scale_x_reverse() + 
   coord_flip() +
   ylim(-0.5,27) +
-  scale_fill_manual(values=colors[1], guide=F)
+  scale_fill_manual(values=colors[4], guide=F)
 
 tree3
 ggsave('../plots/sup14.a_baumannii_tree_w_patient_data.pdf', tree3, width=10, height=10)
@@ -184,26 +185,56 @@ tree4 <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.5, of
          hjust =1) +
   scale_x_reverse() + 
   coord_flip() +
-  scale_fill_manual(values=colors[7], guide=F)
+  scale_fill_manual(values=colors[2], guide=F)
 
 tree4
 ggsave('../plots/fig4b.s_epidermidis_tree_w_patient_data.pdf', tree4, width=10, height=15)
 ```
 
-```{r echo=FALSE}
-bc <- cowplot::plot_grid(tree2 + theme(legend.position = 'none'),
-                   tree3 + theme(legend.position = 'none'),
-                   labels=c('b','c'), ncol=1, rel_heights = c(0.6,1), label_size = 30
-                     )
-abc <- cowplot::plot_grid(tree1 + theme(legend.position = 'none'),
-                          bc,
-                          labels=c('a',NULL), nrow=1,label_size = 30
-                          )
-abcd <- cowplot::plot_grid(abc, tree4,
-                   labels=c(NA, 'd'), ncol=1,label_size = 30
-                   )
-ggsave('../plots/fig4.trees_w_patient.png', abcd, height=15, width = 15)
+### Overview tree
+```{r fig.height=10, fig.width=10}
+full_mat <- read.table('../tables/genome_mash_dist.dat')/4
+idx <- 
+  str_detect(row.names(full_mat), 'Staphylococcus_aureus') |
+  str_detect(row.names(full_mat), 'Acinetobacter_baumannii') | 
+  str_detect(row.names(full_mat), 'Staphylococcus_epidermidis') |
+  str_detect(row.names(full_mat), 'Elizabethkingia_anophelis') 
+full_mat <- full_mat[idx, idx]
+
+meta <- read.table('../output_tables/merged_assembly_metadata.tsv', head=TRUE) %>% 
+  select(genomeID, Species, lib) %>% unite(id, Species, lib, remove = FALSE)
+## remove duplicates
+idx <- rownames(full_mat) %in% meta$id
+full_mat <- full_mat[idx, idx]
+rownames(full_mat) <- colnames(full_mat) <- meta$genomeID[match(rownames(full_mat), meta$id)]
+
+aux <- function(species){ ## function with side effect to fill in the mummer distance
+  dist.ab <- get_tree_data(species, get.dist = TRUE)
+  sel <- str_subset(rownames(dist.ab) ,'s_')
+  full_mat[sel, sel] <<- dist.ab[sel, sel]
+  return(sel)
+}
+## fill mash matrix with mummer distance
+se <- aux('Staphylococcus_epidermidis')
+sa <- aux('Staphylococcus_aureus')
+ab <- aux('Acinetobacter_baumannii')
+ea <- aux('Elizabethkingia_anophelis')
+
+clustering <- hclust(as.dist(full_mat), method='single')
+#anno <- meta[match(rownames(full_mat), meta$genomeID), ]
+tree <- groupOTU(as.phylo(clustering), list(ea=ea, se=se, sa=sa, ab=ab))
+
+p <- ggtree(tree, aes(color=group) , layout = 'circular', lwd=1.5) + 
+  ##geom_text2(aes(subset=!isTip, label=node), hjust=-0.8) + 
+  scale_color_manual(values=c("black", colors), guide=F) +
+  geom_hilight(node=540, alpha=0.2, fill = colors[4]) +
+  geom_hilight(node=535, alpha=0.2, fill = colors[1]) +
+  geom_hilight(node=533, alpha=0.2, fill = colors[2]) +
+  geom_hilight(node=539, alpha=0.2, fill = colors[3]) 
+ggtree::rotate(p, 536)
+  
 ```
+
 
 ### Session informaton
 ```{r}

@@ -41,7 +41,8 @@ Function to plot the tree with heatmap
 plot.tree <- function(x, color, offset=0.01, title=NULL){
   dist.dat <- read.table(x)
   #idx <- str_detect(rownames(dist.dat), 's_') & rownames(dist.dat) %in% meta.merged[,1]
-  idx <- rownames(dist.dat) %in% (filter(meta.merged, genome_quality=='HIGH_QUAL'))$genomeID ## High quality genomes
+  idx <- rownames(dist.dat) %in% (filter(meta.merged, genome_quality=='HIGH_QUAL'))$genomeID | ##High quality genomes
+    str_detect(rownames(dist.dat), 'G') # use ['G|F'] to include the new data 
   dist.dat <- dist.dat[idx, idx]
   
   ## clustering
@@ -75,16 +76,17 @@ plot.tree <- function(x, color, offset=0.01, title=NULL){
 ```
 
 Generate tree plots
-```{r}
-colors <- pal_d3('category20')(20)
-g1 <- plot.tree('../tables/Acinetobacter_baumannii_mummer_heatmap.dat', colors[1], 0.007, 'Acinetobacter baumannii')
-g2 <- plot.tree('../tables/Enterococcus_faecalis_mummer_heatmap.dat', colors[2], 0.005, 'Enterococcus faecalis')
+```{r message=FALSE, warning=FALSE}
+colors <- pal_npg('nrc')(8)
+g1 <- plot.tree('../tables/Elizabethkingia_anophelis_mummer_heatmap.dat', colors[1], 0.004, 'Elizabethkingia anophelis')
+g2 <- plot.tree('../tables/Staphylococcus_epidermidis_mummer_heatmap.dat', colors[2], 0.004, 'Staphylococcus epidermidis')
 g3 <- plot.tree('../tables/Staphylococcus_aureus_mummer_heatmap.dat', colors[3], 0.005, 'Staphylococcus aureus')
-g4 <- plot.tree('../tables/Klebsiella_pneumoniae_mummer_heatmap.dat', colors[4], 0.006, 'Klebsiella pneumoniae')
+g4 <- plot.tree('../tables/Acinetobacter_baumannii_mummer_heatmap.dat', colors[4], 0.007, 'Acinetobacter baumannii')
 g5 <- plot.tree('../tables/Pseudomonas_aeruginosa_mummer_heatmap.dat', colors[5], 0.004, 'Pseudomonas aeruginosa')
 g6 <- plot.tree('../tables/Enterococcus_faecium_mummer_heatmap.dat', colors[6], 0.0055, 'Enterococcus faecium')
-g7 <- plot.tree('../tables/Staphylococcus_epidermidis_mummer_heatmap.dat', colors[7], 0.004, 'Staphylococcus epidermidis')
-g8 <- plot.tree('../tables/Elizabethkingia_anophelis_mummer_heatmap.dat', colors[8], 0.004, 'Elizabethkingia anophelis')
+g7 <- plot.tree('../tables/Enterococcus_faecalis_mummer_heatmap.dat', colors[7], 0.005, 'Enterococcus faecalis')
+g8 <- plot.tree('../tables/Klebsiella_pneumoniae_mummer_heatmap.dat', colors[8], 0.006, 'Klebsiella pneumoniae')
+
 
 write.table(rbind(g1$dat, g2$dat, g3$dat, g4$dat, g5$dat, g6$dat, g7$dat, g8$dat), 
             '../output_tables/strain_cluster_summary.tsv', sep='\t', row.names = F, col.names = T, quote=F)
@@ -98,7 +100,7 @@ g3$p
 
 Supplementary figure part
 ```{r fig.height=10, fig.width=60}
-s1 <- cowplot::plot_grid(g1$p, g2$p, g4$p, g5$p, g6$p, g7$p, nrow=1)
+s1 <- cowplot::plot_grid(g2$p, g4$p, g5$p, g6$p, g7$p, g8$p, nrow=1)
 s1
 ```
 
@@ -107,13 +109,13 @@ s1
 
 Generate edge data
 ```{r}
-rbind(g1$dat, g2$dat, g3$dat, g4$dat, g5$dat, g6$dat, g7$dat) %>%
+rbind(g2$dat, g3$dat, g4$dat, g5$dat, g6$dat, g7$dat, g8$dat) %>%
   group_by(Species, clusters, Sample_type, Room_type, #bed_number,
            timept, Sample_ID.y, Cubicle_room) %>%
   tally()  %>% ungroup() %>% 
   mutate(clusters=sprintf("%02d", clusters)) %>% 
   group_by(Species, clusters, Sample_type, Cubicle_room, Room_type, timept) %>% 
-  count %>% select(-nn) %>% 
+  count %>% select(-n) %>% 
   mutate(label1='Strain', label2='Site', label3='Room') %>% 
   unite(n1,c(label1, Species, clusters), sep='=', remove=F) %>% 
   unite(n2,c(label2, Sample_type), sep='=', remove=F) %>% 
@@ -131,8 +133,8 @@ hiveplot <- function(species, col, silent=FALSE){
   edge_plot <- filter(edge_data ,Species==species)
   strain_col <- col
   
-  rbind(data.frame(x1=edge_plot$n1, x2=edge_plot$n2, color=edge_plot$timept) ,
-             data.frame(x1=edge_plot$n1, x2=edge_plot$n3, color=edge_plot$timept)
+  rbind(data.frame(x1=edge_plot$n1, x2=edge_plot$n2, color=edge_plot$timept, stringsAsFactors = F) ,
+             data.frame(x1=edge_plot$n1, x2=edge_plot$n3, color=edge_plot$timept, stringsAsFactors = F)
              ) %>% 
     group_by(x1, x2, color) %>% count() %>% 
     select(x1, x2, weight=n, color) %>% 
@@ -172,51 +174,58 @@ hiveplot <- function(species, col, silent=FALSE){
 ```
 
 Main figure part (*S. aureus*)
-```{r fig.height=10, fig.width=10}
+```{r fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
 hiveplot('Staphylococcus_aureus', colors[3])
+
+g3 <- plot.tree('../tables/Staphylococcus_aureus_mummer_heatmap.dat', colors[3], 0.005, 'Staphylococcus aureus')
+g4 <- plot.tree('../tables/Acinetobacter_baumannii_mummer_heatmap.dat', colors[4], 0.007, 'Acinetobacter baumannii')
+g5 <- plot.tree('../tables/Pseudomonas_aeruginosa_mummer_heatmap.dat', colors[5], 0.004, 'Pseudomonas aeruginosa')
+g6 <- plot.tree('../tables/Enterococcus_faecium_mummer_heatmap.dat', colors[6], 0.0055, 'Enterococcus faecium')
+g7 <- plot.tree('../tables/Enterococcus_faecalis_mummer_heatmap.dat', colors[7], 0.005, 'Enterococcus faecalis')
+g8 <- plot.tree('../tables/Klebsiella_pneumoniae_mummer_heatmap.dat', colors[8], 0.006, 'Klebsiella pneumoniae')
 ```
 
 
 
-```{r fig.height=10, fig.width=60, message=FALSE}
+```{r fig.height=10, fig.width=60, message=FALSE, warning=FALSE}
 aux <- function(){
   vplayout <- function(x, y) viewport(layout.pos.row = x, layout.pos.col = y)
   grid.newpage()
   pushViewport(viewport(layout = grid.layout(1, 6)))
   pushViewport(vplayout(1, 1)) # left plot
-  h <- hiveplot('Acinetobacter_baumannii', colors[1], silent = TRUE)
+  h <- hiveplot('Staphylococcus_epidermidis', colors[2], silent = TRUE)
   plotHive(h, ch=0.2, method='ranknorm', bkgnd='white', anNodes = 'tmp_hive.txt', np=FALSE,anNode.gpar=gpar(cex=1.5))
   popViewport(2)
   pushViewport(vplayout(1, 2))
-  h <- hiveplot('Enterococcus_faecalis', colors[2], silent=TRUE)
+  h <- hiveplot('Acinetobacter_baumannii', colors[4], silent=TRUE)
   plotHive(h, ch=0.2, method='ranknorm', bkgnd='white', anNodes = 'tmp_hive.txt', np=FALSE,anNode.gpar=gpar(cex=1.5))
   
   popViewport(2)
   pushViewport(vplayout(1, 3))
-  h <- hiveplot('Klebsiella_pneumoniae', colors[4], silent=TRUE)
+  h <- hiveplot('Pseudomonas_aeruginosa', colors[5], silent=TRUE) ## only one node -- cannot use 'ranknorm'
   plotHive(h, ch=0.2, method='rank', bkgnd='white', anNodes = 'tmp_hive.txt', np=FALSE,anNode.gpar=gpar(cex=1.5))
   
   popViewport(2)
   pushViewport(vplayout(1, 4))
-  h <- hiveplot('Pseudomonas_aeruginosa', colors[5], silent=TRUE)
-  plotHive(h, ch=0.2, method='rank', bkgnd='white', anNodes = 'tmp_hive.txt', np=FALSE,anNode.gpar=gpar(cex=1.5))
-  
-  popViewport(2)
-  pushViewport(vplayout(1, 5))
   h <- hiveplot('Enterococcus_faecium', colors[6], silent=TRUE)
   plotHive(h, ch=0.2, method='ranknorm', bkgnd='white', anNodes = 'tmp_hive.txt', np=FALSE,anNode.gpar=gpar(cex=1.5))
   
   popViewport(2)
-  pushViewport(vplayout(1, 6))
-  h <- hiveplot('Staphylococcus_epidermidis', colors[7], silent=TRUE)
+  pushViewport(vplayout(1, 5))
+  h <- hiveplot('Enterococcus_faecalis', colors[7], silent=TRUE)
   plotHive(h, ch=0.2, method='ranknorm', bkgnd='white', anNodes = 'tmp_hive.txt', np=FALSE,anNode.gpar=gpar(cex=1.5))
+  
+  popViewport(2)
+  pushViewport(vplayout(1, 6))
+  h <- hiveplot('Klebsiella_pneumoniae', colors[8], silent=TRUE) ## only one node -- cannot use 'ranknorm'
+  plotHive(h, ch=0.2, method='rank', bkgnd='white', anNodes = 'tmp_hive.txt', np=FALSE,anNode.gpar=gpar(cex=1.5))
 }
 aux()
 ```
 
 
 ### Save plots
-```{r}
+```{r message=FALSE, warning=FALSE}
 ggsave('../plots/fig2d.tree_main.pdf', g3$p, width=10, height=10)
 pdf('../plots/fig2d.hive_main.pdf', width = 10, height = 10)
 hiveplot('Staphylococcus_aureus', colors[3])
