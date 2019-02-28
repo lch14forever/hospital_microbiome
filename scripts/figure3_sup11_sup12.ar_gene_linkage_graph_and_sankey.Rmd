@@ -8,12 +8,12 @@ output:
 ### Antibiotics gene linkage graph
 
 Load generic libraries
-```{r}
+```{r message=FALSE, warning=FALSE}
 source('configuration.r')
 ```
 
 Load plot specific libraries
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(foreach)
 library(readr)
 suppressMessages(library(igraph))
@@ -34,7 +34,9 @@ edges.full <- foreach(id=unique(dat$id), .combine=rbind) %do% {
     }else{
         edge <- data.frame(t(combn(sort(tmp$V6), 2)), id=id)
         edge$dist <- foreach(r=1:nrow(edge), .combine = c) %do% {
-          abs(rowMeans(tmp[tmp$V6 == edge[r, ]$X1, 4:5]) - rowMeans(tmp[tmp$V6 == edge[r, ]$X2, 4:5]))
+          g1 <- sort(tmp[tmp$V6 == edge[r, ]$X1, 4:5])
+          g2 <- sort(tmp[tmp$V6 == edge[r, ]$X2, 4:5])
+          min(abs(g1[2]-g2[1]), abs(g1[1]-g2[2]))
         }
         edge
     }
@@ -45,7 +47,7 @@ write.table(edges.full, '../output_tables/ar_gene_linkage_edge_list_uncollapsed.
 
 Function for ploting
 ```{r}
-get_graph_data <- function(pattern='', reverse=FALSE){
+get_graph_data <- function(pattern='', reverse=FALSE, dist.fil=Inf){
   if(reverse){
     edges.collapsed <- filter(edges.full, !str_detect(id, pattern))
   }else{
@@ -53,21 +55,24 @@ get_graph_data <- function(pattern='', reverse=FALSE){
   }
     
   ## filtering and collapse into edge weights
-   edges.collapsed <- group_by(edges.collapsed, X1, X2) %>% 
-    tally() %>% 
-    filter(n>2)   ### keep edges with more than 2 support
+  edges.collapsed <- edges.collapsed %>% 
+    group_by(X1, X2) %>% 
+    summarise(n=length(dist), weight=sum(dist<dist.fil)) %>% 
+    filter(n>1)   ### keep edges with more than 1 support
   
   ## Run MCL graph clustering
-  write.table(edges.collapsed, 'tmp_edges.tsv', quote=F, sep='\t', col.names = F, row.names = F)
+  write.table(edges.collapsed %>% filter(weight>0) %>% select(-n), 
+              'tmp_edges.tsv', quote=F, sep='\t', col.names = F, row.names = F)
   system('/mnt/software/bin/mcl tmp_edges.tsv  --abc -o tmp_mcl.tsv -overlap keep -I 3 2>/dev/null')
   mcl <- read_tsv('tmp_mcl.tsv', col_names = F)
   grp <- foreach(c=1:nrow(mcl), .combine = 'rbind') %do%{
     tmp <- as.character(na.exclude(as.character(mcl[c,])))
     data.frame(vertex=tmp, grp=c, stringsAsFactors = F)
   } %>% data.frame(row.names = 1)
+  grp$grp[grp$grp >= (which(table(grp) < 3)[1])] <- NA ## no annotation for clusters with 2 genes only
   
   ## generate graph data
-  g <- graph_from_data_frame(edges.collapsed, directed=FALSE)
+  g <- graph_from_data_frame(edges.collapsed[,1:3], directed=FALSE)
   ## vertices
   colors <- pal_simpsons('springfield')(16)
   n.colors <- colors[as.numeric(as.factor(str_replace(V(g)$name, '.*_', '')))]
@@ -98,27 +103,34 @@ get_graph_data <- function(pattern='', reverse=FALSE){
   
   g
 }
+
 ```
 
 Main figure of all genes
 ```{r fig.height=18, fig.width=20,message=FALSE, warning=FALSE}
-g <- get_graph_data()
-g_cols <- c('burlywood', pal_npg('nrc')(10)[2:7], 'purple',  'blue', 'darkgreen', 'pink', 'red', 'gold', 'black')
-p <- ggraph(g, layout = 'fr')+#, circular=TRUE) +
-  geom_edge_arc(aes(width=width, color=community),
+g <- get_graph_data(dist.fil = 5e3)
+igraph_layouts <- c('star', 'circle', 'gem', 'dh', 'graphopt', 'grid', 'mds', 
+                    'randomly', 'fr', 'kk', 'drl', 'lgl')
+g_cols <- c(pal_lancet("lanonc")(9), pal_ucscgb("default")(26))[-c(2,8,10,12,17,18,19,20)] 
+
+layout = create_layout(g, layout = 'igraph', algorithm = 'kk', kkconst=0.1)
+p <- ggraph(layout)+#, circular=TRUE) +
+  geom_edge_arc(aes(width=((!is.na(community))+1), alpha=as.factor(is.na(community)), color=community),
                 curvature = 0.0,
-                alpha=0.7,
+                #alpha=0.7,
                 end_cap=circle(1.5, 'mm'), start_cap=circle(1.5, 'mm'))   +
   scale_edge_color_manual(values=g_cols, 
                           na.value = rgb(0.8,0.8,0.8,0.5)) +
+  scale_edge_alpha_manual(values=c(0.8, 0.3), guide=FALSE) +
   geom_node_point(aes(fill=Type, color=carb),size=5, shape=21) +
   scale_color_manual(values=c('grey','firebrick')) + 
   geom_node_text(aes(label = name), size=5, repel = TRUE, fontface='bold') +
-  scale_edge_width(range = c(0.5,3)) +
+  scale_edge_width(range = c(1,1.5)) +
   scale_fill_manual(values=pal_ucscgb('default')(16)[-c(1,3,4)]) +
-  theme_void()
+  theme_void() 
 p
-ggsave('../plots/fig3a.ar_gene_linkage_graph.pdf', p, width=16, height=16)
+
+ggsave('../plots/fig3a.ar_gene_linkage_graph.pdf', p, width=18, height=20)
 ```
 
 
@@ -126,19 +138,22 @@ ggsave('../plots/fig3a.ar_gene_linkage_graph.pdf', p, width=16, height=16)
 
 Format data
 ```{r}
-edge.dat <- data.frame(v=V(g)$name, g=LETTERS[V(g)$community])
+edge.dat <- data.frame(v=V(g)$name, g=LETTERS[V(g)$community]) %>% filter(!is.na(g))
 
 genome.info <- read.table('../tables/genome_info.dat', sep = '\t') 
-merge(dat, genome.info, by=c(1,2)) %>% ## only take the high/medium quality ones
-  select(Species=V1, gene=V6.x) %>% mutate(gene=str_replace(gene, '_.*','')) %>%
-  filter(Species!='plasmid') -> sp.dat
+merge(dat, genome.info, by=c(1,2), all.x=TRUE) %>% 
+  filter(!is.na(V6.y) | V1=='plasmid') %>% ## only take the high/medium quality ones
+  select(Species=V1, gene=V6.x) %>% mutate(gene=str_replace(gene, '_.*','')) -> sp.dat
 
-sankey.dat <- merge(sp.dat, edge.dat, by.x=2, by.y=1) %>% 
+sankey.dat <- 
+  merge(sp.dat, edge.dat, by.x=2, by.y=1, all.y=T)  %>% 
   mutate(Species=str_replace(Species,'_',' ')) %>% 
   group_by(Species, g) %>% 
   count %>% 
   mutate(Antibiotics_cluster=as.character(g)) %>% 
-  filter(n>2)
+  filter(n>3) %>% 
+  ungroup() %>% 
+  mutate(Species=sapply(Species, function(x) ifelse(x=='plasmid', NA, x)))
 ```
 
 Plot
@@ -168,7 +183,7 @@ p <- ggraph(g, layout = 'fr')+#, circular=TRUE) +
                 end_cap=circle(1.5, 'mm'), start_cap=circle(1.5, 'mm'))   +
   scale_edge_color_manual(values=g_cols, 
                           na.value = rgb(0.8,0.8,0.8,0.5)) +
-  geom_node_point(aes(fill=Type, color=carb),size= as.numeric(as.factor(V(g)$carb) )*5, shape=21) +
+  geom_node_point(aes(fill=Type, color=carb),size=5, shape=21) +
   scale_color_manual(values=c('grey','firebrick')) + 
   geom_node_text(aes(label = name), size=5, repel = TRUE, fontface='bold') +
   scale_edge_width(range = c(0.5,3)) +
@@ -189,7 +204,7 @@ p <- ggraph(g, layout = 'fr')+#, circular=TRUE) +
                 end_cap=circle(1.5, 'mm'), start_cap=circle(1.5, 'mm'))   +
   scale_edge_color_manual(values=g_cols, 
                           na.value = rgb(0.8,0.8,0.8,0.5)) +
-  geom_node_point(aes(fill=Type, color=carb),size= as.numeric(as.factor(V(g)$carb) )*5, shape=21) +
+  geom_node_point(aes(fill=Type, color=carb),size= 5, shape=21) +
   scale_color_manual(values=c('grey','firebrick')) + 
   geom_node_text(aes(label = name), size=5, repel = TRUE, fontface='bold') +
   scale_edge_width(range = c(0.5,3)) +
@@ -201,7 +216,7 @@ ggsave('../plots/sup12.genome_ar_gene_linkage_graph.pdf', p, width=16, height=16
 
 Plasmid network
 
-```{r fig.height=7, fig.width=10,message=FALSE, warning=FALSE}
+```{r fig.height=10, fig.width=15,message=FALSE, warning=FALSE}
 g <- get_graph_data('plasmid')
 p <- ggraph(g, layout = 'fr')+#, circular=TRUE) +
   geom_edge_arc(aes(width=width, color=community),
@@ -217,7 +232,7 @@ p <- ggraph(g, layout = 'fr')+#, circular=TRUE) +
   scale_fill_manual(values=pal_ucscgb('default')(16)[-c(1,3,4)]) +
   theme_void()
 p
-ggsave('../plots/sup12.plasmid_ar_gene_linkage_graph.pdf', p, width=10, height=7)
+ggsave('../plots/sup12.plasmid_ar_gene_linkage_graph.pdf', p, width=15, height=10)
 ```
 
 ### Session informaton

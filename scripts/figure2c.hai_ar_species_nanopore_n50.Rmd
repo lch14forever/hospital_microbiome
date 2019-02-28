@@ -45,7 +45,7 @@ plot.dat <- group_by(dat, species) %>%
 
 g <- ggplot(data =plot.dat, aes(y=species,x=n50/1e6, fill=species)) +
   stat_density_ridges(quantile_lines = TRUE, quantiles = 2, alpha = 0.7) +
-  scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-c(2,8)], guide=FALSE)+
+  scale_fill_npg(guide=FALSE)+
   theme(axis.text.y = element_text(face='bold.italic'))  + 
   scale_x_log10() + 
   labs(y=NULL, x='N50 (MB)') +

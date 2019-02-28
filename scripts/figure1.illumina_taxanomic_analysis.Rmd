@@ -202,7 +202,8 @@ ggplot(plot.dat, aes(x=V1, y=V2, col=Sample_type, shape=Time_point), lwd=2) +
        y=paste0('MDS2 (',round(eigen[2], 1),'%)')) +
   scale_shape_manual(values=c(17, 19)) + 
   scale_color_manual(values=pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)]) +
-  facet_wrap(~Sample_type,dir="v")
+  facet_wrap(~Sample_type,dir="v") + 
+  guides(color=guide_legend(title='Sample type'), shape=guide_legend('Time point'))
 
 ggsave('../plots/fig1c_pcoa_spatial_temporal.pdf', height = 8, width = 20)
 ```
@@ -311,7 +312,7 @@ ggsave('../plots/fig1d_distance_spatial_temporal.pdf', height = 8, width = 4)
 
 ### (Fig1f) Species differentially abundant in dry environments
 
-```{r fig.height=8, fig.width=5}
+```{r fig.height=6, fig.width=4}
 mat.sel <- rownames_to_column(dat.species, "species") %>% 
   filter(grepl("Burkholderia", species) | 
                species %in% c("s__Acinetobacter_baumannii","s__Candida_albicans",
@@ -354,25 +355,17 @@ all.dat.dry.fil <- melt(all.dat.dry.fil,id="Room_type") %>%
   mutate(Room_type=str_replace_all(Room_type,"_"," ")) %>% 
   mutate(variable=str_replace(variable, '[a-z]+ ', '. '))
 
-p1 <- ggplot(data = all.dat.dry.fil, aes(x=variable,y=value,fill=Room_type)) +
-  geom_boxplot(outlier.shape = NA, lwd=1) +
-  theme(axis.text.x = element_text(angle=270, hjust=0, vjust=0.5, size=12, face = 'bold.italic'), 
-        legend.position = c(0.5,0.92), legend.title = element_blank()) +
-  scale_fill_npg() + 
-  labs(y='Relative abundance (%)', x=NULL) +
-  coord_cartesian(ylim =c(0,17))
 
-p.zoom <- ggplot(data = all.dat.dry.fil, aes(x=variable,y=value,fill=Room_type)) +
+ggplot(data = all.dat.dry.fil, aes(x=variable,y=value,fill=Room_type)) +
   geom_boxplot(outlier.shape = NA, lwd=1) +
-  theme(axis.text.x = element_blank(), 
-        legend.position = 'none')+
+  theme(axis.text.x = element_text(angle=40, hjust=1), plot.margin = unit(c(0, 0, 0, 0.5), "cm"),
+        legend.position = 'top', legend.title = element_blank(), legend.key.size =unit(2,'line'))+
+  guides(fill = guide_legend(ncol = 1)) + 
   scale_fill_npg() + 
-  labs(y=NULL, x=NULL) + 
-  coord_cartesian(ylim =c(0,3))
+  labs(y="Relative Abundance", x=NULL) + 
+  coord_cartesian(ylim =c(0,5))
 
-p1 +  
-  annotation_custom(grob = ggplotGrob(p.zoom), xmin = 0.4, xmax = 3.8, ymin = 8, ymax = 14)
-ggsave('../plots/fig1f_species_in_dry_environments.pdf', height = 8, width = 5)
+ggsave('../plots/fig1f_species_in_dry_environments.pdf', height = 6, width = 4)
 ```
 
 

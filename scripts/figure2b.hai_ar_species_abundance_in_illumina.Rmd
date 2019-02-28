@@ -68,8 +68,8 @@ plot.dat <- group_by(dat,V1) %>%
 o <- c('Ill','BHI', 'AMP', 'CHLOR', 'KAN', 'STREP', 'TET')
 
 g <- ggplot(data=plot.dat, aes(x=factor(Antibiotics,level=o), y=log(value+1,2),color=Antibiotics)) +
-  geom_quasirandom(dodge.width = 1) +
-  scale_color_d3(guide=FALSE) + 
+  geom_quasirandom(dodge.width = 1, alpha=0.8) +
+  scale_color_npg(guide=FALSE) + 
   labs(x='Antibiotics', y='log2(% + 1)')+
   theme(axis.text.x = element_text(angle=40, hjust=1, size=8),
         strip.text = element_text(size=7, face='bold.italic'))
