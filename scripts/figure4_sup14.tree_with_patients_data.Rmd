@@ -54,14 +54,15 @@ get_tree_data <- function(species, filter.patient.only=TRUE, outlier='', get.dis
      mutate(lab=ifelse(str_detect(Row.names, 's'), 'Hospital', 'Patient')) -> merged
   
   mutate_at(merged, vars(Antibiotics), function(x) ifelse(merged$lab=='Patient', 'MET', as.character(x)) ) %>%
-    select(clusters, Antibiotics) %>% group_by(clusters, Antibiotics) %>%
-    count() %>% spread(Antibiotics,n,fill=0) %>%
+    select(clusters, Antibiotics) %>% group_by(clusters, Antibiotics) %>% 
+    count() %>% mutate(n=Antibiotics) %>% 
+    spread(Antibiotics,n,fill=NA) %>%
     merge(x=strains, y=., by.x=2, by.y=1) %>% 
     select(-n, -strain, -BHI) %>% data.frame(row.names = 'rep') -> antibiotics
   
-  select(antibiotics, AMP, CHLOR, KAN, STREP, TET) -> antibiotics
-  anno <- antibiotics %>% 
-    mutate_at(vars(AMP, CHLOR, KAN, STREP, TET), function(x) ifelse(x>0, 'Hospital', NA))
+  select(antibiotics, AMP, CHLOR, KAN, STREP, TET) -> anno
+  # anno <- antibiotics %>% 
+  #   mutate_at(vars(AMP, CHLOR, KAN, STREP, TET), function(x) ifelse(x!='0', x, NA))
   rownames(anno) <- rownames(antibiotics)
   
   # ## generate barplot
@@ -80,26 +81,27 @@ get_tree_data <- function(species, filter.patient.only=TRUE, outlier='', get.dis
 
 #### *Staphylococcus aureus*
 
-```{r fig.height=10, fig.width=10, message=FALSE}
+```{r fig.height=6, fig.width=6, message=FALSE}
 colors <- pal_npg('nrc')(9)
 
 dat <- get_tree_data('Staphylococcus_aureus', outlier = 's_3217')
 attach(dat)
 ## create a tree
-p <- ggtree(as.phylo(clustering)) %<+%
+p <- ggtree(as.phylo(clustering), color=colors[3], lwd=1) %<+%
   strains +
-  geom_tippoint(aes(size=n, color=lab), shape=19) +
-  geom_tiplab(aes(label=paste0('s', strain), color=lab),size=4, fontface='bold', offset=2e-4) +
+  geom_tippoint(aes(size=n, color=lab)) +
+  geom_tiplab(aes(label=paste0('s', strain)), color=colors[3],size=4, hjust=1, fontface='bold', offset=1.3e-3) +
   scale_size_continuous(trans='log2') + 
-  scale_color_lancet() + 
-  geom_treescale(x=0, y=15, width=0.001) +
-  theme(legend.position="left")
-
+  scale_shape_manual(values=c(21,19)) + 
+  scale_color_manual(values=c('grey','black')) + 
+  geom_treescale(x=0, y=15, width=0.001, color = colors[3], linesize=2) 
 ## Add heatmap
-tree1 <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, offset=0.0008, font.size=3.5,
-         colnames_angle = 60, hjust =1) +
-  scale_fill_manual(values=colors[3], guide=F) +
-  ylim(-1, 17)
+dd <- rownames_to_column(anno) %>% melt(id.vars='rowname')
+p1 <- facet_plot(p , "Antibiotics resistance profile", 
+                 data=dd,
+                 geom_tile, aes(x = as.numeric(variable),  fill = value), color='white', lwd=2) +
+  scale_fill_manual(values=colors[c(1,5,2,6,4)],na.value='white') + theme(legend.position = 'right')
+tree1 <- facet_widths(p1, c(2,1))
 
 # ## Add bar plot
 # tree <- inset(tree, bars, width=0.0006, height=1.4, hjust=-0.0003)
@@ -110,89 +112,95 @@ tree1 <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, of
 # tree <- cowplot::plot_grid(l, tree + theme(legend.position="none"),
 #           rel_widths=c(0.1,1) , nrow=1)
 tree1
-ggsave('../plots/fig4a.s_aureus_tree_w_patient_data.pdf', tree1, width=10, height=10)
 ```
 
 #### *Elizabethkingia anophelis*
 
-```{r fig.height=5, fig.width=10, message=FALSE}
+```{r fig.height=2.5, fig.width=6, message=FALSE}
 dat <- get_tree_data('Elizabethkingia_anophelis',  outlier = 's_2815')
 attach(dat)
 ## create a tree
-p <- ggtree(as.phylo(clustering)) %<+%
+p <- ggtree(as.phylo(clustering), color=colors[1], lwd=1) %<+%
   strains +
-  geom_tippoint(aes(size=n, color=lab), shape=19) +
-  geom_tiplab(aes(label=paste0('s', strain), color=lab),size=4, fontface='bold', offset=1.5e-3, hjust=0.5) +
-  scale_size_continuous(trans='log2') + 
-  scale_color_lancet() + 
-  geom_treescale(x=0.05, y=5, width=0.001) +
-  theme(legend.position="left")
-
+  geom_tippoint(aes(size=n, color=lab)) +
+  geom_tiplab(aes(label=paste0('s', strain)), color=colors[1],size=4, hjust=1, fontface='bold', offset=3.4e-3) +
+  scale_size_continuous(trans='log2', limits=c(1,64)) + 
+  scale_shape_manual(values=c(21,19)) + 
+  scale_color_manual(values=c('grey','black')) + 
+  geom_treescale(x=0.002, y=5, width=0.001,color = colors[1], linesize=2) 
 ## Add heatmap
-tree2 <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, offset=0.002, font.size=3.5, 
-                  colnames_angle = 60, hjust=1) + 
-  scale_fill_manual(values=colors[1], guide=F) + 
-  ylim(-1, 6.5)
-  
+dd <- rownames_to_column(anno) %>% melt(id.vars='rowname')
+p1 <- facet_plot(p , "Antibiotics resistance profile", 
+                 data=dd,
+                 geom_tile, aes(x = as.numeric(variable),  fill = value), color='white', lwd=2) +
+  scale_fill_manual(values=colors[c(1,5,2,6,4)],na.value='white') + theme(legend.position = 'right')
+
+tree2 <- facet_widths(p1, c(2,1))
+
 tree2
-ggsave('../plots/sup14.e_anophelis_tree_w_patient_data.pdf', tree2, width=10, height=10)
 ```
 
 #### *Acinetobacter baumannii*
 
-```{r fig.height=5, fig.width=10, message=FALSE}
+```{r fig.height=9, fig.width=8, message=FALSE}
 dat <- get_tree_data('Acinetobacter_baumannii',  outlier = '')
 attach(dat)
 ## create a tree
-p <- ggtree(as.phylo(clustering)) %<+%
+p <- ggtree(as.phylo(clustering), color=colors[4], lwd=1) %<+%
   strains +
-  geom_tippoint(aes(size=n, color=lab), shape=19) +
-  geom_tiplab(aes(label=paste0('s', strain), color=lab),size=4, fontface='bold', offset=-5e-4, hjust=0.5) +
-  scale_size_continuous(trans='log2') + 
-  scale_color_lancet() + 
-  geom_treescale(x=0, y=25, width=0.001, offset=1) +
-  theme(legend.position="left")
-
+  geom_tippoint(aes(size=n, color=lab)) +
+  geom_tiplab(aes(label=paste0('s', strain)), color=colors[4],size=4, hjust=1, fontface='bold', offset=1.3e-3) +
+  scale_size_continuous(trans='log2', limits=c(1,64)) + 
+  scale_shape_manual(values=c(21,19)) + 
+  scale_color_manual(values=c('grey','black')) + 
+  geom_treescale(x=0, y=15, width=0.001, color = colors[4], linesize=2) 
 ## Add heatmap
-tree3 <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.3, offset=0.001, font.size=3.5,
-         hjust =1) +
-  scale_x_reverse() + 
-  coord_flip() +
-  ylim(-0.5,27) +
-  scale_fill_manual(values=colors[4], guide=F)
+dd <- rownames_to_column(anno) %>% melt(id.vars='rowname')
+p1 <- facet_plot(p , "Antibiotics resistance profile", 
+                 data=dd,
+                 geom_tile, aes(x = as.numeric(variable),  fill = value), color='white', lwd=2) +
+  scale_fill_manual(values=colors[c(1,5,2,6,4)],na.value='white') + theme(legend.position = 'right')
+
+tree3 <- facet_widths(p1, c(2,1))
 
 tree3
-ggsave('../plots/sup14.a_baumannii_tree_w_patient_data.pdf', tree3, width=10, height=10)
 ```
 
 ### *Staphylococcus epidermidis*
 
-```{r fig.height=10, fig.width=15, message=FALSE}
+```{r fig.height=10, fig.width=7, message=FALSE}
 dat <- get_tree_data('Staphylococcus_epidermidis', outlier = '')
 attach(dat)
 ## create a tree
-p <- ggtree(as.phylo(clustering)) %<+%
+p <- ggtree(as.phylo(clustering), color=colors[2], lwd=1) %<+%
   strains +
-  geom_tippoint(aes(size=n, color=lab), shape=19) +
-  geom_tiplab(aes(label=paste0('s', strain), color=lab),size=4, fontface='bold', offset=-2.5e-4, hjust = 0.5) +
+  geom_tippoint(aes(size=n, color=lab)) +
+  geom_tiplab(aes(label=paste0('s', strain)), color=colors[2],size=4, hjust=1, fontface='bold', offset=1.3e-3) +
   scale_size_continuous(trans='log2') + 
-  scale_color_lancet() + 
-  geom_treescale(x=0, y=40, width=0.001, offset = 1) +
-  theme(legend.position="left")
-
+  scale_shape_manual(values=c(21,19)) + 
+  scale_color_manual(values=c('grey','black')) + 
+  geom_treescale(x=0, y=30, width=0.001, color = colors[2], linesize=2) 
 ## Add heatmap
-tree4 <- gheatmap(p, anno, color='black', colnames_offset_y = 0.3, width=0.5, offset=0.0004, font.size=3.5,
-         hjust =1) +
-  scale_x_reverse() + 
-  coord_flip() +
-  scale_fill_manual(values=colors[2], guide=F)
+dd <- rownames_to_column(anno) %>% melt(id.vars='rowname')
+p1 <- facet_plot(p , "Antibiotics resistance profile", 
+                 data=dd,
+                 geom_tile, aes(x = as.numeric(variable),  fill = value), color='white', lwd=2) +
+  scale_fill_manual(values=colors[c(1,5,2,6,4)],na.value='white') + theme(legend.position = 'right')
+
+tree4 <- facet_widths(p1, c(2,1))
 
 tree4
-ggsave('../plots/fig4b.s_epidermidis_tree_w_patient_data.pdf', tree4, width=10, height=15)
+```
+### Put four trees at the same scale
+```{r fig.height=10, fig.width=14}
+p1 <- cowplot::plot_grid(tree1, tree3, ncol=1, rel_heights = c(0.75,1))
+p2 <- cowplot::plot_grid(tree4, tree2, ncol=1, rel_heights = c(1,0.2))
+cowplot::plot_grid(p1, p2, nrow=1)
 ```
 
+
 ### Overview tree
-```{r fig.height=10, fig.width=10}
+```{r fig.height=15, fig.width=10}
 full_mat <- read.table('../tables/genome_mash_dist.dat')/4
 idx <- 
   str_detect(row.names(full_mat), 'Staphylococcus_aureus') |
@@ -224,15 +232,17 @@ clustering <- hclust(as.dist(full_mat), method='single')
 #anno <- meta[match(rownames(full_mat), meta$genomeID), ]
 tree <- groupOTU(as.phylo(clustering), list(ea=ea, se=se, sa=sa, ab=ab))
 
-p <- ggtree(tree, aes(color=group) , layout = 'circular', lwd=1.5) + 
+p <- ggtree(tree, aes(color=group) , lwd=1.5) + 
   ##geom_text2(aes(subset=!isTip, label=node), hjust=-0.8) + 
-  scale_color_manual(values=c("black", colors), guide=F) +
-  geom_hilight(node=540, alpha=0.2, fill = colors[4]) +
-  geom_hilight(node=535, alpha=0.2, fill = colors[1]) +
-  geom_hilight(node=533, alpha=0.2, fill = colors[2]) +
-  geom_hilight(node=539, alpha=0.2, fill = colors[3]) 
-ggtree::rotate(p, 536)
-  
+  scale_color_manual(values=c("black", colors[c(4,1,3,2)])) +
+  geom_treescale(x=0, y=550, width=0.01, linesize=3, offset=3, fontsize = 10) + 
+  geom_hilight(node=540, alpha=0.2, fill = colors[2]) +
+  geom_hilight(node=535, alpha=0.2, fill = colors[4]) +
+  geom_hilight(node=533, alpha=0.2, fill = colors[1]) +
+  geom_hilight(node=539, alpha=0.2, fill = colors[3]) +
+  theme(legend.position = 'left')
+  ##flip(p, 533, 534) %>% flip(535,536) %>% flip(539, 540)
+p
 ```
 
 
