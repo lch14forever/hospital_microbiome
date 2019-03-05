@@ -117,7 +117,7 @@ tree1
 #### *Elizabethkingia anophelis*
 
 ```{r fig.height=2.5, fig.width=6, message=FALSE}
-dat <- get_tree_data('Elizabethkingia_anophelis',  outlier = 's_2815')
+dat <- get_tree_data('Elizabethkingia_anophelis',  outlier = '')
 attach(dat)
 ## create a tree
 p <- ggtree(as.phylo(clustering), color=colors[1], lwd=1) %<+%

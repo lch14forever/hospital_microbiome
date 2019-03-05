@@ -185,8 +185,8 @@ Plot
 ```{r fig.height=25, fig.width=25}
 p <- ggplot(subset(sankey.dat, Species!='plasmid'),aes(y=log10(n), axis1=Species, axis2=Antibiotics_cluster)) +
   geom_alluvium(aes(fill=Antibiotics_cluster), width=1/5)  +
-  geom_stratum(width=1/5, fill=NA) +
-  geom_text(stat = "stratum", label.strata = TRUE, size=6, fontface = "italic", nudge_x=-0.12, hjust=1) +
+  geom_stratum(width=1/5, fill=NA, lwd=1) +
+  geom_text(stat = "stratum", label.strata = TRUE, size=10, fontface = "bold", nudge_x=-0.12, hjust=1) +
   scale_fill_manual(values=g_cols[match(levels(sankey.dat$Antibiotics_cluster) , LETTERS[1:14])]) +
   scale_x_discrete(limits = c("Species", "Antibiotics Cluster"), expand = c(.5, .05)) +
   theme_void() +
