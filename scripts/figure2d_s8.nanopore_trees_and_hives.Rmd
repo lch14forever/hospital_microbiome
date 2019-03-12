@@ -52,7 +52,7 @@ plot.tree <- function(x, color, offset=0.01, title=NULL){
   clusters <- clusters[str_detect(names(clusters), 's_')]
   
   strains <- sapply(unique(clusters), function(x) clusters[clusters==x][1])
-  cluster.strains <- hclust(as.dist(dist.dat[names(strains), names(strains)]), method='single')
+  cluster.strains <- hclust(as.dist(dist.dat[names(strains), names(strains)]), method='average')
   
   merged <- merge(data.frame(clusters), meta.merged, by.x=0, by.y=1) %>%  
     mutate(strain=paste0('s', clusters))

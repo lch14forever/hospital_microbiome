@@ -47,7 +47,7 @@ get_tree_data <- function(species, filter.patient.only=TRUE, outlier='', get.dis
   strains$lab <- ifelse(strains$Hospital==1, 'Hospital', 'Hospital/Patient')
   idx <- strains$rep
   
-  clustering <- hclust(as.dist(dist.dat[idx, idx]), method='single')
+  clustering <- hclust(as.dist(dist.dat[idx, idx]), method='average')
   
   merge(data.frame(clusters=clusters.all), meta, by.x=0, by.y=1, all.x=TRUE) %>%
      mutate(strain=paste0('s', clusters)) %>%
@@ -84,7 +84,7 @@ get_tree_data <- function(species, filter.patient.only=TRUE, outlier='', get.dis
 ```{r fig.height=6, fig.width=6, message=FALSE}
 colors <- pal_npg('nrc')(9)
 
-dat <- get_tree_data('Staphylococcus_aureus', outlier = 's_3217')
+dat <- get_tree_data('Staphylococcus_aureus', outlier = '')
 attach(dat)
 ## create a tree
 p <- ggtree(as.phylo(clustering), color=colors[3], lwd=1) %<+%
