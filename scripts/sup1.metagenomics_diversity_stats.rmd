@@ -22,6 +22,7 @@ library(reshape2)
 
 ```{r fig.height=8, fig.width=10}
 meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2)
+
 dat <- read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
 dat[dat < 0.1] <- 0
 dat <- dat[rowSums(dat)>0, ]
@@ -38,10 +39,11 @@ diversity=group_by(dat.fil,Sample_type,Library) %>% summarise() %>% merge(Shan, 
 melt(diversity) %>% 
   mutate(Sample_type=str_replace(Sample_type, '_', ' ')) %>%
   mutate(Sample_type=str_replace(Sample_type, '-interior', '')) %>%
+  mutate(Sample_type=relevel(factor(.$Sample_type), 'Sink Trap')) %>% 
   ggplot(aes(x=Sample_type,y=value,fill=Sample_type)) +
   geom_violin() +
   theme(axis.text.x = element_text(angle=40, vjust=1, hjust=1)) + 
-  scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-c(2,8)]) + 
+  scale_fill_manual(values=pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)]) + 
   facet_wrap(~variable, nrow=2, scale='free_y')
 ggsave('../plots/sup1a.metagenomics_diversity.pdf', height = 8, width=10)
 ```
@@ -63,9 +65,10 @@ subset(df.m, !is.na(Cubicle_room)) %>%
   mutate(variable=str_replace(variable, 'HUMAN_READS', 'Percentage human reads')) %>%
   mutate(Sample_type=str_replace(Sample_type, '_', ' ')) %>%
   mutate(Sample_type=str_replace(Sample_type, '-interior', '')) %>%
+  mutate(Sample_type=relevel(factor(.$Sample_type), 'Sink Trap')) %>% 
   ggplot(aes(x=Sample_type, y=value, fill=Sample_type)) +
   geom_boxplot() +
-  scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-c(2,8)]) +
+  scale_fill_manual(values=pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)]) + 
   facet_wrap(~variable, ncol=1, scale='free_y') +
   theme(axis.text.x = element_text(angle=40, vjust=1, hjust=1))
 

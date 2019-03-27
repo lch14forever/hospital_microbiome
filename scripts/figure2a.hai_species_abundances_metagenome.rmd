@@ -61,8 +61,8 @@ df_plot$"Burkholderia spp." <- tmp
 df_plot$"Burkholderia spp."[7] <- 2
 mat <- t(df_plot)
 p <- pheatmap(mat, #color=pal_rickandmorty('schwifty')(12)[c(10,4,12,1,9,8,5,7,6,3,2)], 
-              legend_breaks=c(10^(-1:ceiling(log10(max(mat)))), 
-                                        round(max(mat), 10)),
+              legend_breaks=c(0,0.1, 0.2, 0.5, 1, 1.5,2),
+              legend_labels=c("0", "0.1", "0.2", "0.5", "1.0", "1.5", ">2.0"),
               border_color="black",cluster_rows = F, cluster_cols = F, silent = TRUE)
 
 grid.arrange(p$gtable)

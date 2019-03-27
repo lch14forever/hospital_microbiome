@@ -34,7 +34,7 @@ eigen <- cmds$eig / sum(cmds$eig) * 100
 dat.merged <- (merge(cmds$points, meta.filled, by.x=0, by.y=0, all.x=TRUE))
 
 dat.merged <- filter(dat.merged, Room_type != 'GIS') 
-levels(dat.merged$Sample_type) <- stringr::str_replace_all(levels(dat.merged$Sample_type), c('_'=' ', 'None'='Negative controls','-'=' '))
+levels(dat.merged$Sample_type) <- stringr::str_replace_all(levels(dat.merged$Sample_type), c('_'=' ', 'None'='Negative controls','-'=' ', 'interior'=''))
 levels(dat.merged$Room_type) <- stringr::str_replace_all(levels(dat.merged$Room_type), c('_'=' ', 'None'='Negative controls','Non-cohort'='Non-controlled'))
 
 

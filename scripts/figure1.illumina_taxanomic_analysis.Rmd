@@ -69,6 +69,7 @@ data1 <- dat.fil.ordered[which(medianDry > 0.5 | medianWet > 0.5),]
 data1 <- data1[-grep("unclassified",rownames(data1)),]
 rownames(data1) <- gsub("g__","",rownames(data1))
 rownames(data1) <- gsub("_noname","",rownames(data1))
+rownames(data1) <- gsub("Propionibacterium","Cutibacterium",rownames(data1)) ## change to Cutibacterium
 
 ## wilcoxon test
 p.values <- sapply(seq(dim(data1)[1]), function(x) wilcox.test(as.numeric(data1[x,(g=="D")]),as.numeric(data1[x,g=="W"]))$p.value)
