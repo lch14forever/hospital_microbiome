@@ -126,10 +126,59 @@ ggraph(g, layout='fr') +
   theme_void() + 
   scale_shape_manual(values=c(18,19))
 
-ggsave("../plots/fig3_ar_gene_graph_genome.pdf", height = 25, width = 25)
-
 ```
 
+```{r}
+links.s <- read.table('../tables/antibiotics_gene_linkage.species.tsv', stringsAsFactors = FALSE, head=T) %>% 
+  unite(gid, c(species, sample, contig, start,AR_gene), sep=':', remove=FALSE) %>%  ## AR gene id  
+  unite(id, c(species, sample, contig), sep=':')       ## contig id
+
+edges.full <- foreach(id=unique(links.s$id), .combine=rbind) %do% {
+  tmp <- links.s[links.s$id==id, ]
+  if(nrow(tmp) < 2) {
+    NULL
+  }else{
+    edge <- data.frame(t(combn(sort(tmp$gid), 2)), id=id)
+    edge$dist <- foreach(r=1:nrow(edge), .combine = c) %do% {
+      g1 <- sort(tmp[tmp$gid == edge[r, ]$X1, 3:4])
+      g2 <- sort(tmp[tmp$gid == edge[r, ]$X2, 3:4])
+      min(abs(g1[2]-g2[1]), abs(g1[1]-g2[2]))
+    }
+    edge
+  }
+}
+
+spAr.spAr.links <- filter(edges.full, dist<5000) %>% 
+  mutate(X1=str_split_fixed(X1, ":", 5)[,5], X2=str_split_fixed(X2, ":", 5)[,5], species=str_split_fixed(id, ":", 3)[,1]) %>% 
+  
+  count(X1, X2, id, dist, species) %>%  ### remove duplicates if any
+  filter(X1!=X2)  %>%    ### remove self loop
+  count(X1, X2, species) %>% ### links within species
+  mutate(X1=paste0(X1, ":", species), X2=paste0(X2, ":", species))
+```
+
+Graph
+```{r fig.height=15, fig.width=25}
+g <- graph_from_data_frame(spAr.spAr.links, directed=FALSE)
+V(g)$lab <- str_split_fixed(V(g)$name, ":", 2)[,1]
+V(g)$type <- str_split_fixed(V(g)$name, ":", 2)[,2]
+# V(g)$size <- 10
+# V(g)$size[V(g)$type] <- (select(pcluster.ar.links, clusters, cluster.size) %>% unique())[,2]
+# V(g)$name[V(g)$type] <- paste0(V(g)$name[V(g)$type], "(",V(g)$size[V(g)$type], ")")
+E(g)$weight <- spAr.spAr.links$n
+  
+ggraph(g, layout='fr') + 
+  geom_edge_arc(aes(width=weight,col=weight>=1), alpha=0.4,
+                curvature = 0.05,
+                end_cap=circle(4, 'mm'), start_cap=circle(4, 'mm')) +
+  geom_node_point( aes(color=type), size=5) + 
+  geom_node_text(aes(label = lab), size=5, repel = TRUE, fontface='bold') + 
+  scale_edge_width_continuous(range=c(1, 2)) + 
+#  scale_color_manual(values=pal_npg("nrc")(10)[2:3]) + 
+  theme_void() 
+
+#ggsave("../plots/fig3_ar_gene_graph_plasmid.pdf", height = 15, width = 25)
+```
 
 ```{r}
 sessionInfo()
