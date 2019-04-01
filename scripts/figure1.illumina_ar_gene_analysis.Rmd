@@ -8,12 +8,12 @@ output:
 ### Antibiotics resistance gene prevalence in illumina shotgun metagenomic data
 
 Load generic libraries
-```{r}
+```{r message=FALSE, warning=FALSE}
 source('configuration.r')
 ```
 
 Load plot specific libraries
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(pheatmap)
 library(RColorBrewer)
 ```
@@ -48,12 +48,14 @@ plot.heatmap <- function(anti_type, col='PuBu', cluster_rows=TRUE, cluster_cols=
     spread(Sample_type, prev, fill=0) %>% 
     column_to_rownames("Anti") 
   if(!log_mat){
-    pheatmap(plot.dat.w*100,color=(colorRampPalette(brewer.pal(9, col))(1000)), main=anti_type,
+    pheatmap(plot.dat.w*100,color=(colorRampPalette(brewer.pal(9, col))(1000)), main=anti_type, 
+             fontsize = 12, fontsize_row = 10, fontsize_col = 10,
            border_color="black",cluster_rows = cluster_rows, cluster_cols = cluster_cols, silent=TRUE)
   }else{
     pheatmap(log10(plot.dat.w*100+1),color=(colorRampPalette(brewer.pal(9, col))(1000)), main=anti_type,
            legend_breaks = log10(c(0,1, 2, 5, 10, 20, 50, 100, 120)+1),
            legend_labels = as.character(c(0, 1, 2, 5, 10, 20, 50, 100, 120)),
+            fontsize = 12, fontsize_row = 10, fontsize_col = 10,
            border_color="black",cluster_rows = cluster_rows, cluster_cols = cluster_cols, silent=TRUE)
   }
 }
@@ -83,7 +85,7 @@ ggsave('../plots/fig1e_antibiotics_profile.pdf', height = 7, width = 4)
 
 Supplementary figures
 
-```{r fig.height=12, fig.width=15}
+```{r fig.height=10, fig.width=13}
 cowplot::plot_grid(
   cowplot::plot_grid(s1$gtable, s2$gtable, s3$gtable, s4$gtable, nrow=1),
   NULL,
@@ -92,7 +94,7 @@ cowplot::plot_grid(
   ncol=1,
   rel_heights = c(4,0.5,2,0.5)
 )
-ggsave('../plots/sup3_antibiotics_profile.pdf', height = 12, width = 15)
+ggsave('../plots/sup5_antibiotics_profile.pdf', height = 10, width = 13)
 ```
 
 ### Session informaton

@@ -21,11 +21,35 @@ library(foreach)
 
 #### Plasmids
 
+<!-- Find ideal cut-off -->
+<!-- ```{r fig.height=5, fig.width=15} -->
+<!-- p.dist <- read.table('../tables/plasmid_mash_dist.dat') -->
+<!-- clustering <- hclust(as.dist(p.dist), method='single') -->
+<!-- mapping.p <- -->
+<!--   read.table('../tables/plasmid_info.dat', stringsAsFactors = FALSE, sep='\t', head=TRUE)  -->
+
+<!-- res <- foreach(hcut=seq(0.01, 0.2, 0.01), .combine=rbind) %do%{ -->
+<!--   clusters <- data.frame(clusters=cutree(clustering, h=hcut)) %>% rownames_to_column('plasmid_ID') -->
+<!--   plasmid.dat <- merge(clusters, mapping.p, by='plasmid_ID') -->
+<!--   tmp <- mutate(plasmid.dat, species=str_extract(Best_blast_hit, "[a-zA-Z]+ [a-zA-Z]+")) %>%  -->
+<!--     group_by(clusters) %>%  -->
+<!--     summarise(majorN=max(table(species)), size=length(species), major=names(which.max(table(species)))) %>%  -->
+<!--     mutate(purity=majorN/size) -->
+<!--   tmp$hcut=hcut -->
+<!--   tmp -->
+<!-- } -->
+
+<!-- filter(res, purity!=1) %>%  -->
+<!--   ggplot(aes(x=as.factor(hcut), y=purity)) + geom_boxplot() + -->
+<!--   geom_jitter() -->
+
+<!-- ``` -->
+
 Cluster mash distance matrix for plasmids
 ```{r}
 p.dist <- read.table('../tables/plasmid_mash_dist.dat')
 clustering <- hclust(as.dist(p.dist), method='single')
-clusters <- data.frame(clusters=cutree(clustering, h=0.02)) %>% rownames_to_column('plasmid_ID')
+clusters <- data.frame(clusters=cutree(clustering, h=0.05)) %>% rownames_to_column('plasmid_ID')
 
 mapping.p <-
   read.table('../tables/plasmid_info.dat', stringsAsFactors = FALSE, sep='\t', head=TRUE) 
@@ -33,7 +57,7 @@ mapping.p <-
 plasmid.dat <- merge(clusters, mapping.p, by='plasmid_ID')  ## this merge removes duplicated libraries in the matrix
 
 ## write merged file for verification of the cluster using annotation  
-write.table(plasmid.dat, '../output_tables/plasmid_info.hclust0.05.dat', sep='\t', quote=F, row.names=F, col.names = T)
+write.table(plasmid.dat, '../output_tables/plasmid_info.hclust.dat', sep='\t', quote=F, row.names=F, col.names = T)
 ```
 
 Graph
@@ -128,8 +152,13 @@ ggraph(g, layout='fr') +
 
 ```
 
+
+Generate links
 ```{r}
+genome.dat <- read.table("../tables/genome_info.dat", head=TRUE, sep='\t') %>% select(clusters=Species_name, Nanopore_ID)
+
 links.s <- read.table('../tables/antibiotics_gene_linkage.species.tsv', stringsAsFactors = FALSE, head=T) %>% 
+  merge(genome.dat, by=c(1,2)) %>% 
   unite(gid, c(species, sample, contig, start,AR_gene), sep=':', remove=FALSE) %>%  ## AR gene id  
   unite(id, c(species, sample, contig), sep=':')       ## contig id
 
@@ -138,7 +167,7 @@ edges.full <- foreach(id=unique(links.s$id), .combine=rbind) %do% {
   if(nrow(tmp) < 2) {
     NULL
   }else{
-    edge <- data.frame(t(combn(sort(tmp$gid), 2)), id=id)
+    edge <- data.frame(t(combn(tmp$gid[order(tmp$AR_gene)], 2)), id=id)
     edge$dist <- foreach(r=1:nrow(edge), .combine = c) %do% {
       g1 <- sort(tmp[tmp$gid == edge[r, ]$X1, 3:4])
       g2 <- sort(tmp[tmp$gid == edge[r, ]$X2, 3:4])
@@ -147,33 +176,50 @@ edges.full <- foreach(id=unique(links.s$id), .combine=rbind) %do% {
     edge
   }
 }
-
-spAr.spAr.links <- filter(edges.full, dist<5000) %>% 
-  mutate(X1=str_split_fixed(X1, ":", 5)[,5], X2=str_split_fixed(X2, ":", 5)[,5], species=str_split_fixed(id, ":", 3)[,1]) %>% 
-  
-  count(X1, X2, id, dist, species) %>%  ### remove duplicates if any
-  filter(X1!=X2)  %>%    ### remove self loop
-  count(X1, X2, species) %>% ### links within species
-  mutate(X1=paste0(X1, ":", species), X2=paste0(X2, ":", species))
 ```
 
+
+
+
 Graph
-```{r fig.height=15, fig.width=25}
-g <- graph_from_data_frame(spAr.spAr.links, directed=FALSE)
+```{r fig.height=10, fig.width=15}
+
+ar.count <- separate(links.s, id, into=c("species", "sample", "contig"), sep=':') %>% 
+  count(species, sample, AR_gene) %>% ## count a gene only once on each species each sample
+  count(species, AR_gene, name='c') %>% 
+  unite(ar, AR_gene, species, sep=':')
+
+spAr.spAr.links <- 
+  filter(edges.full, dist<20000) %>% 
+  mutate(X1=str_split_fixed(X1, ":", 5)[,5], X2=str_split_fixed(X2, ":", 5)[,5], 
+         species=str_split_fixed(id, ":", 3)[,1], sample=str_split_fixed(id, ":", 3)[,2]) %>% 
+  filter(X1!=X2)  %>%    ### remove self loop
+  count(X1, X2, sample, species) %>%  ### remove duplicates
+  count(X1, X2, species) %>% ### links within species
+  mutate(X1=paste0(X1, ":", species), X2=paste0(X2, ":", species)) 
+
+g.dat <- merge(spAr.spAr.links, ar.count, by.x="X2", by.y="ar") %>% 
+  merge(ar.count, by.x="X1", by.y="ar") %>% 
+  mutate(score=n/apply(., 1, function(x) max(as.numeric(x[5]), as.numeric(x[6])))) %>% 
+  filter(str_detect(species,'Staphylococcus_aureus')) %>% 
+  select(-c.x, -c.y)
+
+g <- graph_from_data_frame(g.dat, directed=FALSE)
 V(g)$lab <- str_split_fixed(V(g)$name, ":", 2)[,1]
 V(g)$type <- str_split_fixed(V(g)$name, ":", 2)[,2]
 # V(g)$size <- 10
 # V(g)$size[V(g)$type] <- (select(pcluster.ar.links, clusters, cluster.size) %>% unique())[,2]
 # V(g)$name[V(g)$type] <- paste0(V(g)$name[V(g)$type], "(",V(g)$size[V(g)$type], ")")
-E(g)$weight <- spAr.spAr.links$n
+E(g)$weight <- g.dat$score
   
 ggraph(g, layout='fr') + 
-  geom_edge_arc(aes(width=weight,col=weight>=1), alpha=0.4,
+  geom_edge_arc(aes(width=weight,col=weight>=0.6, lty=weight>=0.6), alpha=0.4,
                 curvature = 0.05,
                 end_cap=circle(4, 'mm'), start_cap=circle(4, 'mm')) +
   geom_node_point( aes(color=type), size=5) + 
   geom_node_text(aes(label = lab), size=5, repel = TRUE, fontface='bold') + 
   scale_edge_width_continuous(range=c(1, 2)) + 
+  scale_edge_linetype_manual(values=c(2,1)) + 
 #  scale_color_manual(values=pal_npg("nrc")(10)[2:3]) + 
   theme_void() 
 
