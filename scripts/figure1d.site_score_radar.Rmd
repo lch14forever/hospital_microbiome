@@ -1,0 +1,40 @@
+---
+title: "Radar plot of differernt site scores"
+output:
+  html_document:
+    df_print: paged
+---
+
+### Radar plot of different site scores
+
+Load generic libraries
+```{r message=FALSE, warning=FALSE}
+source('configuration.r')
+```
+
+Load specific libraries
+```{r message=FALSE, warning=FALSE}
+library(ggradar)
+```
+
+```{r fig.height=8, fig.width=15}
+dat <- read.table('../tables/site_scores.dat', check.names = F, sep=',', head=TRUE, row.names = 1)
+
+plot.dat <- apply(dat, 2, function(x) (x-min(x))/(max(x)-min(x))) %>% 
+  data.frame(check.names = F) %>% 
+  rownames_to_column(var="group")
+colnames(plot.dat) <- str_replace(colnames(plot.dat), ' Score', '')
+plot.dat <- plot.dat[c(nrow(plot.dat), 1:(nrow(plot.dat)-1)), ]
+
+ggradar(plot.dat[,], values.radar = c(0,0.5,1), grid.min=0, grid.max=1,  group.line.width = 1, group.point.size=6,
+        grid.label.size=10, gridline.min.colour='black', gridline.max.colour='black',
+        group.colours = pal_npg(c("nrc"))(10)[c(5,7,2,3,10,4,1)],
+        background.circle.colour='white')
+
+ggsave("../plots/figX_site_score_radar.png",  height=8, width=15) ## cannot save pdf due to font
+```
+
+### Session informaton
+```{r}
+sessionInfo()
+```
