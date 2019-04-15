@@ -18,7 +18,7 @@ library(vegan)
 library(reshape2)
 ```
 
-Sup. Fig. 6A
+Sup. Fig. 6
 ```{r}
 df.mapping <- read.table('../metadata/nanopore.metadata.txt',head=T,sep='\t')
 df.nanopore <- read.table('../tables/nanopore.kraken.table.g',head=T,sep='\t',row.names=1)
@@ -39,49 +39,49 @@ diversity1 <- mutate(diversity1, Antibiotics=factor(Antibiotics,level=level_orde
 
 g.a <- ggplot(data = diversity1, aes(x=Antibiotics,y=value,fill=Antibiotics)) +
   geom_violin() +
-  theme(axis.text.x = element_text(angle=40, hjust=1, size=10)) +
+  theme(axis.text.x = element_text(angle=40, hjust=1, size=18)) +
   scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-c(2,8)])+
   labs(x='Antibiotics', y='Diversity') + 
   facet_wrap(~variable,nrow=2,scale="free_y")
 g.a
 ```
 
-Sup. Fig. 6B
-```{r}
-df.nanopore <- read.table('../tables/nanopore.kraken.table.s',head=T,sep='\t',row.names=1, quote='&', comment.char='&')
-nanopore <- merge(t(df.nanopore), df.mapping,by.x=0,by.y="Nanopore_ID")%>%
-  select(-contains("virus"))
-Anticount <- group_by(nanopore,Antibiotics) %>% count()
 
-nanopore <- select(nanopore,-Row.names,-Sample_ID,-Illumina_Library_ID)%>%
-  melt(id=c("Antibiotics","Culturing_Sample_ID"))%>%
-  filter(grepl("Burkholderia", variable) | variable %in% c("Acinetobacter_baumannii","Candida_albicans","Clostridium_difficile", 
-		"Clostridium_sordellii", "Klebsiella_pneumoniae", "Klebsiella_oxytoca",
-		"Escherichia_coli", "Staphylococcus_aureus","Pseudomonas_aeruginosa","Mycobacterium_abscessus",
-    "Mycobacterium_tuberculosis","Enterococcus_faecalis","Enterococcus_faecium", "Staphylococcus_epidermidis"))%>%
-  filter(value>10)%>%
-  select(-Culturing_Sample_ID)%>%
-  group_by(Antibiotics,variable)%>%
-  count()
+<!-- ```{r} -->
+<!-- df.nanopore <- read.table('../tables/nanopore.kraken.table.s',head=T,sep='\t',row.names=1, quote='&', comment.char='&') -->
+<!-- nanopore <- merge(t(df.nanopore), df.mapping,by.x=0,by.y="Nanopore_ID")%>% -->
+<!--   select(-contains("virus")) -->
+<!-- Anticount <- group_by(nanopore,Antibiotics) %>% count() -->
 
-nanopore_final=merge(Anticount,nanopore,by=("Antibiotics"))%>%
-  mutate(freq=n.y/n.x)%>%
-  select(-n.x,-n.y) %>% 
-  mutate(variable=str_replace(variable, '_', ' '))
+<!-- nanopore <- select(nanopore,-Row.names,-Sample_ID,-Illumina_Library_ID)%>% -->
+<!--   melt(id=c("Antibiotics","Culturing_Sample_ID"))%>% -->
+<!--   filter(grepl("Burkholderia", variable) | variable %in% c("Acinetobacter_baumannii","Candida_albicans","Clostridium_difficile",  -->
+<!-- 		"Clostridium_sordellii", "Klebsiella_pneumoniae", "Klebsiella_oxytoca", -->
+<!-- 		"Escherichia_coli", "Staphylococcus_aureus","Pseudomonas_aeruginosa","Mycobacterium_abscessus", -->
+<!--     "Mycobacterium_tuberculosis","Enterococcus_faecalis","Enterococcus_faecium", "Staphylococcus_epidermidis"))%>% -->
+<!--   filter(value>10)%>% -->
+<!--   select(-Culturing_Sample_ID)%>% -->
+<!--   group_by(Antibiotics,variable)%>% -->
+<!--   count() -->
 
-o <- c('BHI', 'AMP', 'CHLOR', 'KAN', 'STREP', 'TET')
-nanopore_final <- mutate(nanopore_final, Antibiotics=factor(Antibiotics,level=o, ordered = T))
+<!-- nanopore_final=merge(Anticount,nanopore,by=("Antibiotics"))%>% -->
+<!--   mutate(freq=n.y/n.x)%>% -->
+<!--   select(-n.x,-n.y) %>%  -->
+<!--   mutate(variable=str_replace(variable, '_', ' ')) -->
 
-g.b <- ggplot(data=nanopore_final, aes(x=variable,y=freq,fill=Antibiotics)) +
-  geom_bar(width=0.8,color="black",position="dodge",stat="identity") +
-  theme(axis.text.x = element_text(angle=40, hjust=1, size=10, face='bold.italic') ) +
-  scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-c(2,8)])
-g.b
-```
+<!-- o <- c('BHI', 'AMP', 'CHLOR', 'KAN', 'STREP', 'TET') -->
+<!-- nanopore_final <- mutate(nanopore_final, Antibiotics=factor(Antibiotics,level=o, ordered = T)) -->
+
+<!-- g.b <- ggplot(data=nanopore_final, aes(x=variable,y=freq,fill=Antibiotics)) + -->
+<!--   geom_bar(width=0.8,color="black",position="dodge",stat="identity") + -->
+<!--   theme(axis.text.x = element_text(angle=40, hjust=1, size=10, face='bold.italic') ) + -->
+<!--   scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-c(2,8)]) -->
+<!-- g.b -->
+<!-- ``` -->
 
 Save plot
 ```{r fig.height=10, fig.width=10}
-ggsave('../plots/sup6_a_b.pdf', cowplot::plot_grid(g.a, g.b, nrow=2), width = 10, height = 10)
+ggsave('../plots/sup6.pdf', g.a, width = 10, height = 5)
 ```
 
 

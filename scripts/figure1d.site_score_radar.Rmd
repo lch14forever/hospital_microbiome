@@ -1,11 +1,9 @@
 ---
-title: "Radar plot of differernt site scores"
+title: "(Fig1d) Investigating differernt site scores"
 output:
   html_document:
     df_print: paged
 ---
-
-### Radar plot of different site scores
 
 Load generic libraries
 ```{r message=FALSE, warning=FALSE}
@@ -15,23 +13,293 @@ source('configuration.r')
 Load specific libraries
 ```{r message=FALSE, warning=FALSE}
 library(ggradar)
+library(vegan)
+library(magrittr)
 ```
 
-```{r fig.height=8, fig.width=15}
-dat <- read.table('../tables/site_scores.dat', check.names = F, sep=',', head=TRUE, row.names = 1)
+Site specificity score calculation
+```{r}
+#read
+meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2)
+dat <- read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
 
-plot.dat <- apply(dat, 2, function(x) (x-min(x))/(max(x)-min(x))) %>% 
+#set threshold for absence/presence
+dat[dat < 0.5] <- 0
+dat[dat >= 0.5] <- 1
+dat <- dat[rowSums(dat)>0, ]
+
+meta.filled <- meta %>% 
+  select(Library, Room_type, Sample_type, timept, Cubicle_room, bed_number)
+#select timepoint 1 only
+dat.fil=filter(meta.filled,Room_type != 'GIS' & Room_type != 'Negative controls' & timept==1)
+dat.fil = mutate(dat.fil, MDRO=ifelse(Room_type == "MDRO_cubicles", "MDRO_","")) %>%
+  unite(MDRO,Cubicle_room,col="Cubicle_room",sep="")
+#isolation room bed number initialise to 1
+dat.fil[which(is.na(dat.fil$bed_number)),]$bed_number=1
+dat.fil.sel=select(dat,matrix(unlist(dat.fil["Library"]))[,1])
+#calculate jaccard distance
+braymatrix=as.matrix(vegdist(t(dat.fil.sel),method="jaccard"))
+
+
+#find all samples IDs belonging to each room
+grouped_ids_room <- sapply((group_by(dat.fil,Cubicle_room) %>%
+                              summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+#find all samples IDs belonging to each sample type
+grouped_ids_site <- sapply((group_by(dat.fil,Sample_type) %>%
+                              summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+#filter distance matrix between 2 set of sample IDs
+auxspecial <- function(x,y){
+  tmp = braymatrix[x, y]
+}
+
+
+same_room_aerator=NULL
+same_room_sinktrap=NULL
+same_room_pulse=NULL
+same_room_doorhand=NULL
+same_room_cardtable=NULL
+same_room_bedrail=NULL
+same_room_bedlock=NULL
+
+#For each room, find min distance for each site and its different neighbour in the same room and collate into a vector
+for(i in 1:length(grouped_ids_room)){
+  x=grouped_ids_room[[i]][grouped_ids_room[[i]]%in%grouped_ids_site[[1]]]
+  y=grouped_ids_room[[i]][!(grouped_ids_room[[i]]%in%grouped_ids_site[[1]])]
+  if(length(x)!=0){
+    same_room_aerator=c(same_room_aerator,min(auxspecial(x,y)))
+  }
+  x=grouped_ids_room[[i]][grouped_ids_room[[i]]%in%grouped_ids_site[[2]]]
+  y=grouped_ids_room[[i]][!(grouped_ids_room[[i]]%in%grouped_ids_site[[2]])]
+  j=NULL
+  for(j in x){
+    same_room_bedrail=c(same_room_bedrail,min(auxspecial(j,y)))
+  }
+  x=grouped_ids_room[[i]][grouped_ids_room[[i]]%in%grouped_ids_site[[3]]]
+  y=grouped_ids_room[[i]][!(grouped_ids_room[[i]]%in%grouped_ids_site[[3]])]
+  k=NULL
+  for(k in x){
+    same_room_bedlock=c(same_room_bedlock,min(auxspecial(k,y)))
+  }
+  
+  x=grouped_ids_room[[i]][grouped_ids_room[[i]]%in%grouped_ids_site[[4]]]
+  y=grouped_ids_room[[i]][!(grouped_ids_room[[i]]%in%grouped_ids_site[[4]])]
+  m=NULL
+  for(m in x){
+    same_room_cardtable=c(same_room_cardtable,min(auxspecial(m,y)))
+  }
+  x=grouped_ids_room[[i]][grouped_ids_room[[i]]%in%grouped_ids_site[[5]]]
+  y=grouped_ids_room[[i]][!(grouped_ids_room[[i]]%in%grouped_ids_site[[5]])]
+  if(length(x)!=0){
+    same_room_doorhand=c(same_room_doorhand,min(auxspecial(x,y)))
+  }
+  
+  x=grouped_ids_room[[i]][grouped_ids_room[[i]]%in%grouped_ids_site[[6]]]
+  y=grouped_ids_room[[i]][!(grouped_ids_room[[i]]%in%grouped_ids_site[[6]])]
+  if(length(x)!=0){
+    same_room_pulse=c(same_room_pulse,min(auxspecial(x,y)))
+  }
+  x=grouped_ids_room[[i]][grouped_ids_room[[i]]%in%grouped_ids_site[[7]]]
+  y=grouped_ids_room[[i]][!(grouped_ids_room[[i]]%in%grouped_ids_site[[7]])]
+  if(length(x)!=0){
+    same_room_sinktrap=c(same_room_sinktrap,min(auxspecial(x,y)))
+  }
+}
+
+#filter distance matrix between 2 set of same sample IDs
+aux <- function(x){
+  tmp = braymatrix[x, x]
+  tmp[upper.tri(tmp)]
+}
+
+#filter distance matrix of the same site against itself
+aerator=aux(grouped_ids_site[[1]])
+bedrail=aux(grouped_ids_site[[2]])
+bedlock=aux(grouped_ids_site[[3]])
+cardtable=aux(grouped_ids_site[[4]])
+doorhand=aux(grouped_ids_site[[5]])
+pulse=aux(grouped_ids_site[[6]])
+sinktrap=aux(grouped_ids_site[[7]])
+
+z_aerator=NULL
+z_pulse=NULL
+z_bedrail=NULL
+z_bedlock=NULL
+z_cardtable=NULL
+z_doorhand=NULL
+z_sinktrap=NULL
+
+#generate zscore for each site
+for (x in same_room_aerator){
+  z_aerator=c(z_aerator,(x-mean(aerator))/sd(aerator))
+}
+for (x in same_room_pulse){
+  z_pulse=c(z_pulse,(x-mean(pulse))/sd(pulse))
+}
+for (x in same_room_sinktrap){
+  z_sinktrap=c(z_sinktrap,(x-mean(sinktrap))/sd(sinktrap))
+}
+for (x in same_room_doorhand){
+  z_doorhand=c(z_doorhand,(x-mean(doorhand))/sd(doorhand))
+}
+for (x in same_room_bedrail){
+  z_bedrail=c(z_bedrail,(x-mean(bedrail))/sd(bedrail))
+}
+for (x in same_room_bedlock){
+  z_bedlock=c(z_bedlock,(x-mean(bedlock))/sd(bedlock))
+}
+for (x in same_room_cardtable){
+  z_cardtable=c(z_cardtable,(x-mean(cardtable))/sd(cardtable))
+}
+
+d1 <- data.frame("Site Specificity"=
+  c(median(z_aerator),
+  median(z_bedrail),
+  median(z_bedlock),
+  median(z_cardtable),
+  median(z_doorhand),
+  median(z_pulse),
+  median(z_sinktrap)), check.names = F
+)
+```
+
+
+Site turnover score calculation
+```{r}
+#read
+meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2)
+dat <- read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
+
+#set threshold for absence/presence
+dat[dat < 0.1] <- 0
+dat[dat >= 0.5] <- 1
+dat[(dat != 1 & dat !=0) ]=NA
+dat=dat[-grep('unclass',rownames(dat)),]
+
+meta.filled <- meta %>% select(Library, Room_type, Sample_type, timept, Cubicle_room, bed_number)
+dat.fil=filter(meta.filled,Room_type != 'GIS' & Room_type != 'Negative controls')
+dat.fil = mutate(dat.fil, MDRO=ifelse(Room_type == "MDRO_cubicles", "MDRO_","")) %>% unite(MDRO,Cubicle_room,col="Cubicle_room",sep="")
+
+#isolation room bed number initialise to 1
+dat.fil[which(is.na(dat.fil$bed_number)),]$bed_number=1
+dat.fil.sel=select(dat,matrix(unlist(dat.fil["Library"]))[,1])
+
+ST=filter(dat.fil,Sample_type=="Sink_Trap")
+A=filter(dat.fil,Sample_type=="Aerator")
+BR=filter(dat.fil,Sample_type=="Bed_Rail")
+CT=filter(dat.fil,Sample_type=="Cardiac_Table")
+PO=filter(dat.fil,Sample_type=="Pulse_Oxymeter")
+BL=filter(dat.fil,Sample_type=="Bedside_Locker")
+DH=filter(dat.fil,Sample_type=="Door_handle-interior")
+
+
+#find all samples IDs belonging to each site
+grouped_ids_ST <- sapply((group_by(ST,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                            summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_A <- sapply((group_by(A,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                           summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_BL <- sapply((group_by(BL,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                            summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_BR <- sapply((group_by(BR,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                            summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_PO <- sapply((group_by(PO,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                            summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_CT <- sapply((group_by(CT,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                            summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_DH <- sapply((group_by(DH,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                            summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+
+#remove sites without 2 timepoints
+group <- function(x){
+  grouped=c()
+  for (i in 1:length(x)){
+    if(length(x[[i]])==2){
+      grouped=c(grouped,x[i])
+    }
+  }
+  grouped
+}
+
+grouped_ids_ST=group(grouped_ids_ST)
+grouped_ids_A=group(grouped_ids_A)
+grouped_ids_PO=group(grouped_ids_PO)
+grouped_ids_BR=group(grouped_ids_BR)
+grouped_ids_BL=group(grouped_ids_BL)
+grouped_ids_CT=group(grouped_ids_CT)
+grouped_ids_DH=group(grouped_ids_DH)
+
+#Measuring turnover index for each specifc site
+TurnoverIndex<-function(x){
+  SpeciesT=NULL
+  SpeciesS=NULL
+  TIndex=NULL
+  for (j in 1:length(x)){
+    for (k in rownames(dat.fil.sel)){
+      SpeciesT[k]=0
+      SpeciesS[k]=0
+    }
+    
+    for (i in (rownames(dat.fil.sel))){
+      #measure number of genus detected (present-present or present-NA or NA-present) for a single site
+      if(!(is.na(dat.fil.sel[i,x[[j]][1]]) & is.na(dat.fil.sel[i,x[[j]][2]]))){ 
+        if(is.na(dat.fil.sel[i,x[[j]][1]]) | is.na(dat.fil.sel[i,x[[j]][2]]) | (dat.fil.sel[i,x[[j]][1]]+dat.fil.sel[i,x[[j]][2]])==2){
+           SpeciesS[i]=as.numeric(SpeciesS[i])+1
+        }
+      }
+      #measure number of genus that turn over for a single site
+      if(!is.na(dat.fil.sel[i,x[[j]][1]]) & !is.na(dat.fil.sel[i,x[[j]][2]]) & dat.fil.sel[i,x[[j]][1]]!=dat.fil.sel[i,x[[j]][2]])
+        SpeciesT[i]=as.numeric(SpeciesT[i])+1
+    }
+    #sum of number genus that turnover/ sum of number of genus detected for a single site
+    #loop to calculate index for all sites
+    TIndex=c(TIndex,(sum(SpeciesT)/(sum(sum(SpeciesS),sum(SpeciesT)))))
+  }
+  TIndex
+}
+
+d2 <- rbind(data.frame(TOI=TurnoverIndex(grouped_ids_A),group="A"),
+  data.frame(TOI=TurnoverIndex(grouped_ids_BR),group="BR"),
+  data.frame(TOI=TurnoverIndex(grouped_ids_BL),group="BL"),
+  data.frame(TOI=TurnoverIndex(grouped_ids_CT),group="CT"),
+  data.frame(TOI=TurnoverIndex(grouped_ids_DH),group="DH"),
+  data.frame(TOI=TurnoverIndex(grouped_ids_PO),group="PO"),
+  data.frame(TOI=TurnoverIndex(grouped_ids_ST),group="ST")) %>% 
+  group_by(group) %>% summarise("Turn Over"=median(TOI))
+```
+
+Human influence score (fraction of human reads)
+```{r}
+dat <- read.table('../tables/illumina.read_counts.tsv')
+colnames(dat) <- c('LIBID','READS_TRIM','READS_DECONT')
+dat$READS_DECONT <- dat$READS_DECONT/dat$READS_TRIM
+
+df.m <- merge(meta, dat, by.x='Library',by.y='LIBID', all=TRUE) 
+
+d3 <- subset(df.m, !is.na(Cubicle_room)) %>%
+  mutate(HUMAN_READS=(1-READS_DECONT)) %>%
+  select(Sample_type, HUMAN_READS) %>% 
+  group_by(Sample_type) %>% 
+  summarise("Human influence"=median(HUMAN_READS))
+```
+
+Radar plot
+```{r fig.height=8, fig.width=15}
+dat <- cbind(d1, d2[,2], d3) %>% data.frame(row.names = 3, check.names = F)
+rownames(dat) %<>% str_remove("-interior") %>% str_replace("_", " ")
+
+plot.dat <- apply(dat, 2, function(x) (x-min(x))/(max(x)-min(x))) %>% ## min-max scaling to [0,1]
   data.frame(check.names = F) %>% 
   rownames_to_column(var="group")
-colnames(plot.dat) <- str_replace(colnames(plot.dat), ' Score', '')
+
 plot.dat <- plot.dat[c(nrow(plot.dat), 1:(nrow(plot.dat)-1)), ]
 
-ggradar(plot.dat[,], values.radar = c(0,0.5,1), grid.min=0, grid.max=1,  group.line.width = 1, group.point.size=6,
-        grid.label.size=10, gridline.min.colour='black', gridline.max.colour='black',
+ggradar(plot.dat[,], values.radar = c(0,0.5,1), grid.min=0, grid.max=1,  grid.line.width = 2, 
+        group.line.width=2, group.point.size=8,
+        grid.label.size=15, gridline.min.colour='black', gridline.max.colour='black',
+        #axis.label.size =0,
         group.colours = pal_npg(c("nrc"))(10)[c(5,7,2,3,10,4,1)],
         background.circle.colour='white')
 
-ggsave("../plots/figX_site_score_radar.png",  height=8, width=15) ## cannot save pdf due to font
+ggsave("../plots/fig1d_site_score_radar.png",  height=8, width=15) ## cannot save pdf due to font
 ```
 
 ### Session informaton

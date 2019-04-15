@@ -8,7 +8,7 @@ output:
 ### HAI AR assembly N50
 
 Load generic libraries
-```{r}
+```{r message=FALSE, warning=FALSE}
 source('configuration.r')
 ```
 
@@ -19,8 +19,8 @@ library(ggridges)
 
 Read in and process data
 ```{r}
-dat <- read.table('../tables/species_in_assembly_qc_pass.dat', head=TRUE, comment.char = '!') %>% 
-  mutate(species=str_replace(X.species, '_',' '))
+dat <- read.table('../tables/genome_info.dat', head=TRUE, sep='\t') %>% 
+  mutate(species=str_replace(Species_name, '_',' '))
 ```
 
 Select HAI species
@@ -43,7 +43,7 @@ plot.dat <- group_by(dat, species) %>%
   filter(n>19) 
   
 
-g <- ggplot(data =plot.dat, aes(y=species,x=n50/1e6, fill=species)) +
+g <- ggplot(data =plot.dat, aes(y=species,x=N50/1e6, fill=species)) +
   stat_density_ridges(quantile_lines = TRUE, quantiles = 2, alpha = 0.7) +
   scale_fill_npg(guide=FALSE)+
   theme(axis.text.y = element_text(face='bold.italic'))  + 

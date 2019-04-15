@@ -35,8 +35,8 @@ dat.merged <- (merge(cmds$points, meta.filled, by.x=0, by.y=0, all.x=TRUE))
 
 dat.merged <- filter(dat.merged, Room_type != 'GIS') 
 levels(dat.merged$Sample_type) <- stringr::str_replace_all(levels(dat.merged$Sample_type), c('_'=' ', 'None'='Negative controls','-'=' ', 'interior'=''))
-levels(dat.merged$Room_type) <- stringr::str_replace_all(levels(dat.merged$Room_type), c('_'=' ', 'None'='Negative controls','Non-cohort'='Non-controlled'))
-levels(dat.merged$Cubicle_room) <- stringr::str_replace_all(levels(dat.merged$Cubicle_room), c('_'=' ', 'Room'='Ward'))
+levels(dat.merged$Room_type) <- stringr::str_replace_all(levels(dat.merged$Room_type), c('_'=' ', 'None'='Negative controls','Non-cohort'='Standard', 'cubicles'='wards'))
+levels(dat.merged$Cubicle_room) <- stringr::str_replace_all(levels(dat.merged$Cubicle_room), c('_'=' ', 'Cubicle'='Ward'))
 
 ## links:
 from <- dat.merged %>% filter(timept==1) %>% arrange(Sample_ID) %>%

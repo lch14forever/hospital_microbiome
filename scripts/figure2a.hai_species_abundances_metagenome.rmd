@@ -8,7 +8,7 @@ output:
 ### HAI species abundance in the environment
 
 Load generic libraries
-```{r}
+```{r message=FALSE, warning=FALSE}
 source('configuration.r')
 ```
 

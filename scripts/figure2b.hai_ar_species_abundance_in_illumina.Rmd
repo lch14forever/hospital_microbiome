@@ -20,9 +20,9 @@ library(ggbeeswarm)
 Read and process nanopore data
 ```{r}
 meta.nanopore <- read.table('../metadata/nanopore.metadata.txt',head=T,sep='\t')
-df.nanopore <- read.table('../tables/species_in_assembly_qc_pass.dat') %>% 
-  merge(meta.nanopore, by.x='V2', by.y='Nanopore_ID') %>%
-  unite('lab', V1, Illumina_Library_ID, sep='#', remove=FALSE)
+df.nanopore <- read.table('../tables/genome_info.dat', sep='\t', head=T) %>% 
+  merge(meta.nanopore, by='Nanopore_ID') %>%
+  unite('lab', Species_name, Illumina_Library_ID, sep='#', remove=FALSE)
 df.nanopore
 ```
 
@@ -41,8 +41,8 @@ Merge data
 ```{r}
 dat <-
   merge(df.metaphlan, df.nanopore, by='lab') %>% 
-  mutate(lab=paste0(V1,'@',V2, '@', Illumina_Library_ID)) %>% 
-  mutate(species=str_replace(V1, '_', ' '))
+  mutate(lab=paste0(Species_name,'@',Nanopore_ID, '@', Illumina_Library_ID)) %>% 
+  mutate(species=str_replace(Species_name, '_', ' '))
 dat
 ```
 
@@ -60,12 +60,18 @@ dat <-  filter(dat, grepl("Burkholderia", species) |
 
 Plot
 ```{r}
-plot.dat <- group_by(dat,V1) %>% 
+plot.dat <- group_by(dat,Species_name) %>% 
   tally() %>%
-  merge(dat, by='V1') %>%
+  merge(dat, by='Species_name') %>%
   filter(n>19)
 
 o <- c('Ill','BHI', 'AMP', 'CHLOR', 'KAN', 'STREP', 'TET')
+
+# mean((
+# distinct(plot.dat, Index, variable, value) %>% 
+#   group_by(Index) %>% 
+#   summarise(median=median(value))
+# )$median) ## summary statistics
 
 g <- ggplot(data=plot.dat, aes(x=factor(Antibiotics,level=o), y=log(value+1,2),color=Antibiotics)) +
   geom_quasirandom(dodge.width = 1, alpha=0.8) +

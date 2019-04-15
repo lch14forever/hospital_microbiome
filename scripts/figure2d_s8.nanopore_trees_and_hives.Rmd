@@ -13,7 +13,7 @@ source('configuration.r')
 ```
 
 Load plot specific libraries
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(ape)
 library(ggtree)
 library(HiveR)
@@ -21,17 +21,21 @@ library(HiveR)
 
 Merge data
 ```{r}
-df <- read.table('../tables/species_in_assembly_qc_pass.dat', head=TRUE, stringsAsFactors = FALSE, comment.char = '!')
+df <- read.table('../tables/genome_info.dat', head=TRUE, stringsAsFactors = FALSE, comment.char = '!', sep='\t')
 meta.illumina <- read.table('../metadata/illumina_metadata.txt', head=TRUE)[,-2]
 meta.nanopore <- read.table('../metadata/nanopore.metadata.txt', head=TRUE, sep='\t', strip.white = TRUE)
 meta.merged <- merge(meta.nanopore, meta.illumina,
                      by.x='Illumina_Library_ID',
                      by.y='Library')
 meta.merged <- merge(df, meta.merged,
-                     by.x='lib',
-                     by.y='Nanopore_ID')[,c(4,1:3,5:18)]
+                     by='Nanopore_ID') %>% 
+  select(Genome_ID, everything()) 
+
 colnames(meta.merged)[3] <- 'Species'
-levels(meta.merged$Sample_type) <- stringr::str_replace_all(levels(meta.merged$Sample_type), c('handle-interior'='Handle'))
+## fix names in metadata to be consistent with the manuscript
+levels(meta.merged$Sample_type) <- str_replace_all(levels(meta.merged$Sample_type), c('handle-interior'='Handle'))
+levels(meta.merged$Room_type) <- str_replace_all(levels(meta.merged$Room_type), c('cubicles'='wards', 'Non-cohort'='Standard'))
+levels(meta.merged$Cubicle_room) <- str_replace_all(levels(meta.merged$Cubicle_room), c('Cubicle'='Ward'))
 write.table(meta.merged, '../output_tables/merged_assembly_metadata.tsv', quote=F, row.names = F, col.names = T, sep='\t')
 ```
 
@@ -42,7 +46,7 @@ Function to plot the tree with heatmap
 plot.tree <- function(x, color, offset=0.01, title=NULL){
   dist.dat <- read.table(x)
   #idx <- str_detect(rownames(dist.dat), 's_') & rownames(dist.dat) %in% meta.merged[,1]
-  idx <- rownames(dist.dat) %in% (filter(meta.merged, genome_quality=='HIGH_QUAL'))$genomeID | ##High quality genomes
+  idx <- rownames(dist.dat) %in% (filter(meta.merged, Genome_quality=='HIGH_QUAL'))$Genome_ID | ##High quality genomes
     str_detect(rownames(dist.dat), 'G') # use ['G|F'] to include the new data 
   dist.dat <- dist.dat[idx, idx]
   
@@ -70,7 +74,7 @@ plot.tree <- function(x, color, offset=0.01, title=NULL){
   
   p <- gheatmap(p, offset=offset, antibiotics, color='black', colnames_offset_y = 0.3,##colnames_offset_x=10,
                 colnames_angle = 60, hjust =1, font.size=6.5) + scale_fill_manual(values=c('white', color)) + 
-    theme(legend.position ='none', plot.title = element_text(size = 20, face = "bold.italic")) + 
+    theme(legend.position ='none', plot.title = element_text(size = 40, face = "bold.italic")) + 
     ggtitle(title)
   return(list(p=p, dat=merged))
 }
@@ -128,6 +132,49 @@ edge_data <- filter(edge_data, n1%in%
          (edge_data %>% group_by(n1) %>% count %>% filter(n>1))$n1)
 ```
 
+Fisher's exact test for enrichment (multi-resitance vs. persistance)
+```{r}
+test.dat <- rbind(g2$dat, g3$dat, g4$dat, g5$dat, g6$dat, g7$dat, g8$dat) %>% 
+  group_by(Species, clusters, Sample_type, Room_type, bed_number,
+           timept, Sample_ID.y, Cubicle_room) %>% 
+  summarise(n=sum(Antibiotics!='BHI')) %>%
+  group_by(Species, clusters) %>% mutate(resistance= max(n)) %>% ungroup %>% 
+  count(Species, clusters, resistance, name='found')
+
+test <- function(x){
+  c1 <- nrow(filter(x, resistance>2, found>1))
+  c2 <- nrow(filter(x, resistance>2, found<=1))
+  c3 <- nrow(filter(x, resistance<=2, found>1))
+  c4 <- nrow(x)
+  fisher.test(matrix(c(c1,c2,c3,c4), 2,2))$p.value
+}
+
+sp <- unique(test.dat$Species)
+c(sapply(sp, function(x) test(filter(test.dat, Species==x))), All=test(test.dat))
+```
+
+Fisher's exact test for enrichment (time vs. space)
+```{r}
+test.dat <- 
+  rbind(g2$dat, g3$dat, g4$dat, g5$dat, g6$dat, g7$dat, g8$dat) %>% 
+  count(Species, clusters, Sample_type, Room_type, bed_number,
+           timept, Sample_ID.y, Cubicle_room) %>% 
+  count(Species, clusters, timept) %>% 
+  group_by(Species, clusters) %>% 
+  summarise(time=length(timept), space=max(n))
+
+test <- function(x){
+  c1 <- nrow(filter(x, time>1, space>1))
+  c2 <- nrow(filter(x, time>1, space<=1))
+  c3 <- nrow(filter(x, time<=1, space>1))
+  c4 <- nrow(x)
+  fisher.test(matrix(c(c1,c2,c3,c4), 2,2))$p.value
+}
+
+sp <- unique(test.dat$Species)
+c(sapply(sp, function(x) test(filter(test.dat, Species==x))), All=test(test.dat))
+```
+
 Hive plot function
 ```{r}
 hiveplot <- function(species, col, silent=FALSE){ 
@@ -144,6 +191,7 @@ hiveplot <- function(species, col, silent=FALSE){
   hive <- edge2HPD(data.frame(e[,1:3]))
   hive$nodes$axis <- as.integer(as.factor(str_split_fixed(hive$nodes$lab, '=', 2)[,1]))
   hive$nodes$tag <- str_split_fixed(hive$nodes$lab, '=', 3)[,1] 
+  hive$nodes[hive$nodes$axis==1, ] <- arrange(hive$nodes[hive$nodes$axis==1, ], lab) ## sort the names on the room axis
   ## species color
   hive$nodes$color[ hive$nodes$tag == 'Strain'] <- strain_col
   ## site color
@@ -177,13 +225,6 @@ hiveplot <- function(species, col, silent=FALSE){
 Main figure part (*S. aureus*)
 ```{r fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
 hiveplot('Staphylococcus_aureus', colors[3])
-
-g3 <- plot.tree('../tables/Staphylococcus_aureus_mummer_heatmap.dat', colors[3], 0.005, 'Staphylococcus aureus')
-g4 <- plot.tree('../tables/Acinetobacter_baumannii_mummer_heatmap.dat', colors[4], 0.007, 'Acinetobacter baumannii')
-g5 <- plot.tree('../tables/Pseudomonas_aeruginosa_mummer_heatmap.dat', colors[5], 0.004, 'Pseudomonas aeruginosa')
-g6 <- plot.tree('../tables/Enterococcus_faecium_mummer_heatmap.dat', colors[6], 0.0055, 'Enterococcus faecium')
-g7 <- plot.tree('../tables/Enterococcus_faecalis_mummer_heatmap.dat', colors[7], 0.005, 'Enterococcus faecalis')
-g8 <- plot.tree('../tables/Klebsiella_pneumoniae_mummer_heatmap.dat', colors[8], 0.006, 'Klebsiella pneumoniae')
 ```
 
 

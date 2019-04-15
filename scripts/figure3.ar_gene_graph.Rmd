@@ -1,0 +1,290 @@
+---
+title: "(Fig3) Antibiotics gene linkage graph"
+output:
+  html_document:
+    df_print: paged
+---
+
+### Antibiotics gene graph
+
+Load generic libraries
+```{r message=FALSE, warning=FALSE}
+source('configuration.r')
+```
+
+Load plot specific libraries
+```{r message=FALSE, warning=FALSE}
+suppressMessages(library(igraph))
+library(ggraph)
+library(foreach)
+```
+
+#### Plasmids
+
+Constant thresholds
+```{r}
+fraction_aligned_thre <- 0.6
+cluster_size_thre <- 5
+percent_identity_thre <- 95
+edge_weight_thre <- 0.8
+```
+
+Grouping plasmid
+```{r}
+p.meta <-
+  read.table('../tables/plasmid_info.dat', stringsAsFactors = FALSE, sep='\t', head=TRUE, quote = "#") 
+##kraken <- t(read.table('../tables/nanopore.kraken.table.s', sep='\t') ) 
+##kraken <- merge(p.meta[,1:2], kraken, by.x=1, by.y=0) 
+
+p.meta <- filter(p.meta, Fraction_aligned>=fraction_aligned_thre, Percent_identity>=percent_identity_thre) %>% 
+  group_by(Best_blast_hit) %>%   ## group by annotation
+  mutate(cluster.size=length(Best_blast_hit)) %>% ungroup() %>%  ## calculate cluster size
+  select(plasmid_ID=Plasmid_ID, Best_blast_hit, cluster.size) %>% 
+  filter(cluster.size>=cluster_size_thre ) %>%    ## filter based on cluster size
+  mutate(clusters=as.numeric(as.factor(Best_blast_hit))) %>%  ## define cluster ID
+  arrange(clusters) 
+
+```
+
+Network construction
+
+```{r }
+links.p <- read.table('../tables/antibiotics_gene_linkage.plasmid.tsv', stringsAsFactors = FALSE, head=T) %>% 
+  distinct(plasmid_ID, AR_gene)
+
+pcluster.ar.links <- merge(links.p, p.meta, by="plasmid_ID") %>% 
+  select(plasmid_ID, clusters, ar=AR_gene, cluster.size, Best_blast_hit) %>% 
+  mutate(ar=str_replace(ar, 'PheCmlA5', 'Phe')) %>% ## ad hoc correction 
+  mutate(ar=str_replace(ar, 'Far1_Fcd', 'Far1_Bla')) %>% 
+  count(clusters, ar, cluster.size, Best_blast_hit ) %>% 
+  mutate(score=n/cluster.size) %>% 
+  select(clusters, ar, score, cluster.size, Best_blast_hit) %>% 
+  mutate(clusters=str_c('#', clusters)) %>% 
+  mutate(host=str_extract(Best_blast_hit, '[A-Za-z]+ [A-Za-z]+')) %>% 
+  mutate(host=str_replace(host, ' ', '\n'))
+
+g <- graph_from_data_frame(pcluster.ar.links, directed=FALSE)
+V(g)$type <- str_detect(V(g)$name, '^#')
+V(g)$color <- ifelse(V(g)$type, 'plasmid', 'gene')
+tmp <- pcluster.ar.links %>% select(clusters, host, cluster.size) %>% distinct() %>% data.frame(row.names = 1)
+V(g)$color[V(g)$type] <- tmp[V(g)$name[V(g)$type] , 1]
+V(g)$lab <- V(g)$name
+V(g)$size <- 10
+V(g)$size[V(g)$type] <- 20
+V(g)$lab[V(g)$type] <- paste0(tmp[V(g)$type, 1], "\n", "(",tmp[V(g)$type,2], ")")
+E(g)$weight <- pcluster.ar.links$score
+```
+
+Export for cytoscape
+```{r}
+mutate(pcluster.ar.links, host=str_replace(host, '\n', ' ')) %>% 
+  select(clusters, ar, score, cluster.size, Best_blast_hit) %>% 
+  mutate(score_lab=score>=edge_weight_thre) %>% 
+  write.table('../output_tables/edge_list_for_cytoscape_plasmids.tsv', quote=F, sep='\t', row.names = F, col.names = T)
+
+### node attribute table
+distinct(pcluster.ar.links, clusters, cluster.size, host) %>% 
+  mutate(node_lab=str_replace_all(host, c('[a-z]+\n'='', 'faecalis'='fs') )) %>% 
+  mutate(node_lab=str_extract(node_lab, '[A-Z][a-z][a-z]')) %>% 
+  group_by(host) %>% 
+  mutate(node_lab=paste0(node_lab, seq(length(node_lab)), ':', cluster.size), class=str_replace(host, '\n',' ')) %>% 
+  ungroup %>% select(node=clusters, node_lab, class) -> node.a1
+distinct(pcluster.ar.links, ar) %>% 
+  mutate(node_lab=str_remove(ar, '_[a-zA-Z]+$'), 
+         class=str_extract(ar, '[a-zA-Z]+$')) %>% 
+  select(node=ar, node_lab, class) -> node.a2
+write.table(rbind(node.a1, node.a2), '../output_tables/node_atrributes_for_cytoscape_plasmids.tsv', quote=F, sep='\t', row.names = F, col.names = T)
+```
+
+Visualize in ggraph (refer to the [Cytoscape session file](../output_tables/) file for the figure used in the manuscript)
+
+```{r fig.height=30, fig.width=70}
+ggraph(g, 'nicely') + 
+  geom_edge_arc(aes(width=weight,col=weight>=edge_weight_thre, lty=weight>=edge_weight_thre), alpha=0.4,
+                curvature = 0.00,
+                end_cap=circle(4, 'mm'), start_cap=circle(18, 'mm')) +
+  geom_node_point(aes(shape=type, size=size, color=color)) + 
+  geom_node_text(aes(label = lab), size=5, fontface='bold') + 
+  scale_edge_color_manual(values=c('black','red')) + 
+  scale_edge_width_continuous(range=c(1, 4)) + 
+  scale_edge_linetype_manual(values=c('dotdash','solid')) + 
+  scale_radius(range=c(8,60)) +
+  #scale_color_manual(values=pal_simpsons("springfield")(16)[-5]) + 
+  theme_void() + 
+  scale_shape_manual(values=c(18,21))
+
+##ggsave("../plots/fig3_ar_gene_graph_plasmid.pdf", height = 15, width = 25)
+```
+
+**AR-AR multigraph,**
+
+Constant thresholds
+```{r}
+gene_distance_thre <- 10000 
+gene_count_background_thre <- 5
+edge_weight_thre <- 0.8
+```
+
+Generate links
+```{r}
+genome.dat <- read.table("../tables/genome_info.dat", head=TRUE, sep='\t') %>% select(clusters=Species_name, Nanopore_ID)
+
+links.s <- read.table('../tables/antibiotics_gene_linkage.species.tsv', stringsAsFactors = FALSE, head=T, sep='\t') %>% 
+  merge(genome.dat, by=c(1,2)) %>% 
+  unite(gid, c(species, sample, contig, start,AR_gene), sep=':', remove=FALSE) %>%  ## AR gene id  
+  unite(id, c(species, sample, contig), sep=':')       ## contig id
+
+## this step is slow
+edges.full <- foreach(id=unique(links.s$id), .combine=rbind) %do% {
+  tmp <- links.s[links.s$id==id, ]
+  if(nrow(tmp) < 2) {
+    NULL
+  }else{
+    edge <- data.frame(t(combn(tmp$gid[order(tmp$AR_gene)], 2)), id=id)
+    edge$dist <- foreach(r=1:nrow(edge), .combine = c) %do% {
+      g1 <- sort(tmp[tmp$gid == edge[r, ]$X1, 3:4])
+      g2 <- sort(tmp[tmp$gid == edge[r, ]$X2, 3:4])
+      min(abs(g1[2]-g2[1]), abs(g1[1]-g2[2]))
+    }
+    edge
+  }
+}
+```
+
+
+Constructing graph
+```{r }
+ar.count <- separate(links.s, id, into=c("species", "sample", "contig"), sep=':') %>% 
+  count(species, sample, AR_gene) %>% ## count a gene only once on each species each sample
+  count(species, AR_gene, name='c') %>% 
+  unite(ar, AR_gene, species, sep=':')
+
+spAr.spAr.links <- 
+  filter(edges.full, dist<=gene_distance_thre) %>% 
+  mutate(X1=str_split_fixed(X1, ":", 5)[,5], X2=str_split_fixed(X2, ":", 5)[,5], 
+         species=str_split_fixed(id, ":", 3)[,1], sample=str_split_fixed(id, ":", 3)[,2]) %>% 
+  filter(X1!=X2)  %>%    ### remove self loop
+  count(X1, X2, sample, species) %>%  ### remove duplicates
+  count(X1, X2, species) %>% ### links within species
+  mutate(X1.sp=paste0(X1, ":", species), X2.sp=paste0(X2, ":", species)) 
+
+g.dat <- merge(spAr.spAr.links, ar.count, by.x="X2.sp", by.y="ar") %>% 
+  merge(ar.count, by.x="X1.sp", by.y="ar") %>% 
+  select(-X1.sp, -X2.sp) %>% 
+  mutate(size=apply(., 1, function(x) min(as.numeric(x[5]), as.numeric(x[6])))) %>% 
+  mutate(score=n/size) %>% 
+  filter(size>=gene_count_background_thre) %>% 
+  ##filter(str_detect(species,'Staphylococcus_aureus')) %>% 
+  select(-c.x, -c.y)
+```
+
+Exprort for cytoscape 
+```{r}
+mutate(g.dat, edge_lab=str_replace_all(species, c('[a-z]+_'='', 'faecalis'='fs'))) %>% ## distinguish faecalis and faecium
+  mutate(edge_lab=str_extract(edge_lab, '[A-Z][a-z][a-z]')) %>% 
+  mutate(species=str_replace(species, '_', ' ')) %>% 
+  write.table('../output_tables/edge_list_for_cytoscape_species.tsv', quote=F, sep='\t', row.names = F, col.names = T)
+
+distinct(data.frame(nodes=c(g.dat$X1, g.dat$X2))) %>% 
+  mutate(class=str_extract(nodes, "[a-zA-Z]+$")) %>% 
+  mutate(node_lab=str_split_fixed(nodes, '_[a-zA-Z]+$',2)[,1]) %>% 
+  write.table('../output_tables/node_atrributes_for_cytoscape_species.tsv', quote=F, sep='\t', row.names = F, col.names = T)
+```
+
+Visualize in ggraph (refer to the [Cytoscape session file](../output_tables/) file for the figure used in the manuscript)
+```{r fig.height=10, fig.width=15}
+
+## this is not ideal for visualizing multigraph
+g <- graph_from_data_frame(g.dat, directed=FALSE)
+E(g)$weight <- g.dat$score
+E(g)$type <- g.dat$species
+  
+ggraph(g) + 
+  geom_edge_arc(aes(width=weight,col=species, lty=weight>=edge_weight_thre), alpha=0.4,
+                curvature = 0.05,
+                end_cap=circle(4, 'mm'), start_cap=circle(4, 'mm')) +
+  geom_node_point(size=5) + 
+  geom_node_text(aes(label = name), size=5, repel = TRUE, fontface='bold') + 
+  scale_edge_width_continuous(range=c(1, 2)) + 
+  scale_edge_linetype_manual(values=c(2,1)) + 
+#  scale_color_manual(values=pal_npg("nrc")(10)[2:3]) + 
+  theme_void() 
+
+#ggsave("../plots/fig3_ar_gene_graph_plasmid.pdf", height = 15, width = 25)
+```
+
+```{r}
+sessionInfo()
+```
+
+
+
+<!-- #### Genome -->
+
+<!-- **Species-AR bipartite** -->
+
+
+<!-- Network construction -->
+<!-- ```{r} -->
+<!-- genome.dat <- read.table("../tables/genome_info.dat", head=TRUE, sep='\t') %>% select(clusters=Species_name, Nanopore_ID) -->
+
+<!-- links.s <- read.table('../tables/antibiotics_gene_linkage.species.tsv', stringsAsFactors = FALSE, head=T)  -->
+
+<!-- ## focus only on high/medium quality genomes -->
+<!-- links.s <- merge(links.s, genome.dat, by=c(1,2))  -->
+
+<!-- pcluster.ar.links <- count(links.s, species, sample, AR_gene) %>% ## de-duplicate multiple copies -->
+<!--   select(clusters=species, ar=AR_gene) %>%  -->
+<!--   count(clusters, ar) %>% -->
+<!--   mutate(ar=str_replace(ar, 'PheCmlA5', 'Phe')) %>% ## ad hoc correction  -->
+<!--   mutate(ar=str_replace(ar, 'Far1_Fcd', 'Far1_Bla')) -->
+
+<!-- pcluster.ar.links <- count(genome.dat, clusters, name="cluster.size")  %>%  -->
+<!--   merge(pcluster.ar.links, by="clusters") %>%  -->
+<!--   mutate(score=n/cluster.size) %>%  -->
+<!--   select(clusters, ar, score, cluster.size) %>%  -->
+<!--   filter(cluster.size>cluster_size_thre) %>%    -->
+<!--   mutate(clusters=str_replace(clusters, '_', ' ')) -->
+
+<!-- g <- graph_from_data_frame(pcluster.ar.links, directed=FALSE) -->
+<!-- V(g)$type <- V(g)$name %in% unique(pcluster.ar.links$clusters) -->
+<!-- V(g)$name <- V(g)$name -->
+<!-- V(g)$size <- 10 -->
+<!-- V(g)$size[V(g)$type] <- (select(pcluster.ar.links, clusters, cluster.size) %>% unique())[,2] -->
+<!-- V(g)$name[V(g)$type] <- paste0(V(g)$name[V(g)$type], "(",V(g)$size[V(g)$type], ")") -->
+<!-- E(g)$weight <- pcluster.ar.links$score -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- select(pcluster.ar.links,clusters, ar, score, cluster.size) %>%  -->
+<!--   mutate(score_lab=score>=edge_weight_thre) %>%  -->
+<!--   write.table('../output_tables/edge_list_for_cytoscape_species.tsv', quote=F, sep='\t', row.names = F, col.names = T) -->
+
+<!-- ### node attribute table -->
+<!-- distinct(pcluster.ar.links, clusters, cluster.size) %>%  -->
+<!--   mutate(node_lab=str_replace(clusters, '[a-z]+ ', '')) %>%  -->
+<!--   mutate(node_lab=str_extract(node_lab, '[A-Z][a-z][a-z]')) %>%  -->
+<!--   mutate(node_lab=paste0(node_lab, ':', cluster.size), class=1:length(clusters)) %>%  -->
+<!--   select(node=clusters, node_lab, class) -> node.a1 -->
+<!-- distinct(pcluster.ar.links, ar) %>%  -->
+<!--   mutate(node_lab=str_remove(ar, '_[a-zA-Z]+$'),  -->
+<!--          class=str_extract(ar, '[a-zA-Z]+$')) %>%  -->
+<!--   select(node=ar, node_lab, class) -> node.a2 -->
+<!-- write.table(rbind(node.a1, node.a2), '../output_tables/node_atrributes_for_cytoscape_species.tsv', quote=F, sep='\t', row.names = F, col.names = T) -->
+<!-- ``` -->
+
+<!-- Visualize in ggraph (refer to the [Cytoscape session file](../output_tables/) file for the figure used in the manuscript) -->
+<!-- ```{r fig.height=30, fig.width=70} -->
+<!-- ggraph(g, layout='nicely') +  -->
+<!--   geom_edge_arc(aes(width=weight,col=weight>=edge_weight_thre), alpha=0.4, -->
+<!--                 curvature = 0.05, -->
+<!--                 end_cap=circle(4, 'mm'), start_cap=circle(4, 'mm')) + -->
+<!--   geom_node_point(aes(shape=type, size=size, color=type)) +  -->
+<!--   geom_node_text(aes(label = name), size=5, repel = TRUE, fontface='bold') +  -->
+<!--   scale_edge_color_manual(values=c('black','red')) +  -->
+<!--   scale_edge_width_continuous(range=c(0.1, 2)) +  -->
+<!--   scale_radius(range=c(8,20)) + -->
+<!--   scale_color_manual(values=pal_npg("nrc")(10)[2:3]) +  -->
+<!--   theme_void() +  -->
+<!--   scale_shape_manual(values=c(18,19)) -->
+<!-- ``` -->

@@ -15,7 +15,6 @@ source('configuration.r')
 Load specific libraries
 ```{r message=FALSE, warning=FALSE}
 library(vegan)
-library(pheatmap)
 library(ComplexHeatmap)
 library(RColorBrewer)
 ```

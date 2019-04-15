@@ -1,0 +1,96 @@
+node	node_lab	class
+#5	Aba1:5	Acinetobacter baumannii
+#8	Asp1:14	Acinetobacter sp
+#10	Asp2:29	Acinetobacter sp
+#22	Bth1:24	Bacillus thuringiensis
+#25	Cfr1:5	Citrobacter freundii
+#28	Ecl1:20	Enterobacter cloacae
+#32	Efs1:21	Enterococcus faecalis
+#36	Efa1:10	Enterococcus faecium
+#43	Efa2:8	Enterococcus faecium
+#45	Efa3:10	Enterococcus faecium
+#49	Efa4:6	Enterococcus faecium
+#56	Kpn1:20	Klebsiella pneumoniae
+#59	Kpn2:12	Klebsiella pneumoniae
+#62	Kpn3:8	Klebsiella pneumoniae
+#65	Sen1:6	Salmonella enterica
+#67	Sau1:6	Staphylococcus aureus
+#69	Sau2:17	Staphylococcus aureus
+#70	Sau3:13	Staphylococcus aureus
+#71	Sau4:10	Staphylococcus aureus
+#74	Sau5:9	Staphylococcus aureus
+#77	Sau6:7	Staphylococcus aureus
+#78	Sau7:9	Staphylococcus aureus
+#79	Sau8:13	Staphylococcus aureus
+#81	Sau9:16	Staphylococcus aureus
+#83	Sau10:5	Staphylococcus aureus
+#84	Sau11:158	Staphylococcus aureus
+#85	Sau12:10	Staphylococcus aureus
+#86	Sau13:10	Staphylococcus aureus
+#89	Sau14:11	Staphylococcus aureus
+#90	Sau15:14	Staphylococcus aureus
+#92	Sca1:12	Staphylococcus capitis
+#94	Sch1:13	Staphylococcus chromogenes
+#96	Sep1:17	Staphylococcus epidermidis
+#97	Sep2:10	Staphylococcus epidermidis
+#98	Sep3:7	Staphylococcus epidermidis
+#99	Sep4:21	Staphylococcus epidermidis
+#100	Sep5:11	Staphylococcus epidermidis
+#102	Sep6:17	Staphylococcus epidermidis
+#105	Sep7:27	Staphylococcus epidermidis
+#106	Sep8:7	Staphylococcus epidermidis
+#107	Sep9:36	Staphylococcus epidermidis
+#108	Sep10:7	Staphylococcus epidermidis
+#110	Sep11:6	Staphylococcus epidermidis
+#111	Sha1:68	Staphylococcus haemolyticus
+#113	Sha2:88	Staphylococcus haemolyticus
+#114	Sho1:13	Staphylococcus hominis
+#115	Slu1:9	Staphylococcus lugdunensis
+#116	Slu2:10	Staphylococcus lugdunensis
+#117	Slu3:38	Staphylococcus lugdunensis
+#118	Spa1:24	Staphylococcus pasteuri
+#119	Ssa1:11	Staphylococcus saprophyticus
+#120	Ssi1:12	Staphylococcus simulans
+SulII_Sul	SulII	Sul
+StrA_AGly	StrA	AGly
+StrB_AGly	StrB	AGly
+AadB_AGly	AadB	AGly
+Aac6-Aph2_AGly	Aac6-Aph2	AGly
+Aac3-IIa_AGly	Aac3-IIa	AGly
+CTX-M-1_Bla	CTX-M-1	Bla
+MphA_MLS	MphA	MLS
+SHV-OKP-LEN_Bla	SHV-OKP-LEN	Bla
+Ant6-Ia_AGly	Ant6-Ia	AGly
+Aph3-III_AGly	Aph3-III	AGly
+ErmB_MLS	ErmB	MLS
+Sat4A_AGly	Sat4A	AGly
+VanA_Gly	VanA	Gly
+VanH-Pt_Gly	VanH-Pt	Gly
+VanR-A_Gly	VanR-A	Gly
+VanS-A_Gly	VanS-A	Gly
+VanX-M_Gly	VanX-M	Gly
+VanY-A_Gly	VanY-A	Gly
+CatA_Phe	CatA	Phe
+TetL_Tet	TetL	Tet
+AacAad_AGly	AacAad	AGly
+CatBx_Phe	CatBx	Phe
+OXA-1_Bla	OXA-1	Bla
+OXA-48_Bla	OXA-48	Bla
+TEM-1D_Bla	TEM-1D	Bla
+DfrA5_Tmt	DfrA5	Tmt
+QnrB_Flq	QnrB	Flq
+TetA_Tet	TetA	Tet
+MphE_MLS	MphE	MLS
+MsrE_MLS	MsrE	MLS
+TetC_Tet	TetC	Tet
+ErmC_MLS	ErmC	MLS
+TetK_Tet	TetK	Tet
+BlaZ_Bla	BlaZ	Bla
+VgaA_MLS	VgaA	MLS
+AadD_AGly	AadD	AGly
+MsrA_MLS	MsrA	MLS
+DfrC_Tmt	DfrC	Tmt
+Far1_Bla	Far1	Bla
+LnuA_MLS	LnuA	MLS
+MphC_MLS	MphC	MLS
+MECA_Bla	MECA	Bla

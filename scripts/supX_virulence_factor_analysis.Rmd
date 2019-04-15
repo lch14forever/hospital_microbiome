@@ -1,0 +1,114 @@
+---
+title: "Virulence factor analysis"
+output:
+  html_document:
+    df_print: paged
+---
+
+### Virulence factor analysis
+
+Load generic libraries
+```{r message=FALSE}
+source('configuration.r')
+```
+
+Load plot specific libraries
+```{r message=FALSE}
+library(pheatmap)
+library(ggpubr)
+library(RColorBrewer)
+```
+
+Data processing
+
+```{r}
+species <- 'Staphylococcus_aureus'
+strains <- read.table('../output_tables/strain_cluster_summary.tsv', head=TRUE) %>% 
+    filter(Species==species)
+  ## virulence factor
+vf <- read.table('../tables/nanopore.virulence_gene_annot.dat', head=TRUE, stringsAsFactors = FALSE) %>% 
+  filter(Species==species) %>% 
+  mutate(Classification=
+         str_replace_all(Classification, c("ClyA family PFT"="Pore-forming",
+                                           "Channel-forming involving alpha-helix-containing toxin"="Toxin",
+                                           "Channel-forming involving beta-sheet-containing toxin (beta-barrel)"="Toxin",
+                                           "Cysteine protease"="Protease",
+                                           "Pore-forming toxin"="Toxin"))) 
+
+disinfectant <- read.table('../tables/nanopore.qac_gene_annot.dat', head=TRUE, stringsAsFactors = FALSE) %>% 
+  filter(Species==species) %>% 
+  mutate(Classification = "Biocide resistance", copy=1)
+
+dat <- rbind(vf, disinfectant) %>% 
+  group_by(ID, Species, Library, Classification) %>% 
+  summarise(n=sum(copy)) %>% 
+  ungroup()
+  #count(ID, Species, Library, Classification) #%>% 
+  #select(-n)
+  
+dat.merged <- merge(
+  unite(strains, id, Species, Nanopore_ID)  %>% select(Row.names, clusters, id),
+  unite(dat, id, Species, Library), 
+  by='id') 
+
+tmp <- group_by(dat.merged, clusters, ID, Classification) %>% 
+  summarise(n = max(n)) %>% ungroup() 
+mutate(tmp, clusters=paste0("s", clusters)) %>% 
+  spread(clusters, n, fill=0) %>% 
+  filter(!is.na(Classification)) -> anno.vf
+
+group_by(strains, clusters, Antibiotics) %>% 
+  count %>% mutate(n=(n>0)*1) %>% ungroup() %>% 
+  spread(Antibiotics,n, fill=0) %>% select(-BHI) %>% 
+  mutate(multi=rowSums(.[,-1])) %>% 
+  mutate(patient=(clusters %in% c(1,2,3,4,6,14,21))*1) %>% 
+  arrange(patient, multi, AMP, CHLOR, KAN, STREP, TET) %>% 
+  mutate(multi=(multi>2)*1) %>% 
+  mutate(clusters=paste0('s', clusters)) -> anno.antibiotics
+anno.antibiotics.factor <- mutate_all(anno.antibiotics, as.character) %>% 
+  select(everything(), "Multi_resistant"=multi, "Patient_overlapping"=patient) %>% 
+  data.frame(row.names = 1) 
+
+mat <- unite(anno.vf, ID, c(Classification, ID), sep=':') %>% 
+  arrange(ID) %>% 
+  column_to_rownames("ID") %>% 
+  as.matrix()
+
+ann_colors = list(
+  TET = c('0'="grey", '1'="darkgreen"),
+  STREP =c('0'="grey", '1'="darkgreen"),
+  KAN = c('0'="grey", '1'="darkgreen"),
+  CHLOR = c('0'="grey", '1'="darkgreen"),
+  BHI = c('0'="grey", '1'="darkgreen"),
+  AMP = c('0'="grey", '1'="darkgreen"),
+  "Multi_resistant"  = c('0'="grey", '1'="orange"),
+  "Patient_overlapping" = c('0'="grey", '1'="orange")
+)
+```
+
+
+
+Number of virulence genes
+```{r fig.height=6, fig.width=5}
+sel <- which(rownames(mat)=="Biocide resistance:qacA")
+
+## virulence factor test
+dat.summary <- merge(data.frame(virulence=colSums(mat[-sel, ])), 
+      data.frame(anno.antibiotics[,c(1,7,8)], row.names=1),
+      by =0) 
+
+ggplot(dat.summary, aes(x=patient=='1', y=virulence)) + 
+  geom_boxplot() + geom_jitter() + 
+  stat_compare_means(method.args = list(alternative = "less") , label.y=150, size=5) + 
+  labs(x='Is in patient?', y='Total virulence gene copy')
+
+ggplot(dat.summary, aes(x=multi=='1', y=virulence)) + 
+  geom_boxplot() + geom_jitter() + 
+  stat_compare_means(method.args = list(alternative = "less") , label.y=150, size=5) + 
+  labs(x='Resistant to >2 Abx?', y='Total virulence gene copy')
+
+```
+
+```{r}
+sessionInfo()
+```

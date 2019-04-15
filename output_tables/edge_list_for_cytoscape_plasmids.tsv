@@ -1,0 +1,144 @@
+clusters	ar	score	cluster.size	Best_blast_hit	score_lab
+#5	SulII_Sul	0.4	5	Acinetobacter baumannii ZW85-1 plasmid ZW85p2, complete sequence	FALSE
+#8	StrA_AGly	0.142857142857143	14	Acinetobacter sp. ACNIH1 plasmid pACI-df08, complete sequence	FALSE
+#8	StrB_AGly	0.142857142857143	14	Acinetobacter sp. ACNIH1 plasmid pACI-df08, complete sequence	FALSE
+#8	SulII_Sul	0.0714285714285714	14	Acinetobacter sp. ACNIH1 plasmid pACI-df08, complete sequence	FALSE
+#10	AadB_AGly	0.862068965517241	29	Acinetobacter sp. SUN resistance plasmid pRAY, complete genome	TRUE
+#22	Aac6-Aph2_AGly	0.0416666666666667	24	Bacillus thuringiensis serovar chinensis CT-43 plasmid pCT72, complete sequence	FALSE
+#25	Aac3-IIa_AGly	0.6	5	Citrobacter freundii plasmid pCTX-M3, complete sequence	FALSE
+#25	AadB_AGly	0.6	5	Citrobacter freundii plasmid pCTX-M3, complete sequence	FALSE
+#25	CTX-M-1_Bla	0.4	5	Citrobacter freundii plasmid pCTX-M3, complete sequence	FALSE
+#28	MphA_MLS	1	20	Enterobacter cloacae strain N1863 plasmid pN1863-HI2, complete sequence	TRUE
+#28	SHV-OKP-LEN_Bla	1	20	Enterobacter cloacae strain N1863 plasmid pN1863-HI2, complete sequence	TRUE
+#32	Ant6-Ia_AGly	1	21	Enterococcus faecalis strain CLB21560 plasmid pB, complete sequence	TRUE
+#32	Aph3-III_AGly	1	21	Enterococcus faecalis strain CLB21560 plasmid pB, complete sequence	TRUE
+#32	ErmB_MLS	1	21	Enterococcus faecalis strain CLB21560 plasmid pB, complete sequence	TRUE
+#32	Sat4A_AGly	0.952380952380952	21	Enterococcus faecalis strain CLB21560 plasmid pB, complete sequence	TRUE
+#36	Aac6-Aph2_AGly	0.7	10	Enterococcus faecium DO plasmid 3, complete sequence	FALSE
+#36	VanA_Gly	0.7	10	Enterococcus faecium DO plasmid 3, complete sequence	FALSE
+#36	VanH-Pt_Gly	0.7	10	Enterococcus faecium DO plasmid 3, complete sequence	FALSE
+#36	VanR-A_Gly	0.7	10	Enterococcus faecium DO plasmid 3, complete sequence	FALSE
+#36	VanS-A_Gly	0.7	10	Enterococcus faecium DO plasmid 3, complete sequence	FALSE
+#36	VanX-M_Gly	0.7	10	Enterococcus faecium DO plasmid 3, complete sequence	FALSE
+#36	VanY-A_Gly	0.7	10	Enterococcus faecium DO plasmid 3, complete sequence	FALSE
+#43	Aac6-Aph2_AGly	0.5	8	Enterococcus faecium strain 6E6 plasmid unnamed1, complete sequence	FALSE
+#43	Ant6-Ia_AGly	0.375	8	Enterococcus faecium strain 6E6 plasmid unnamed1, complete sequence	FALSE
+#43	Aph3-III_AGly	0.375	8	Enterococcus faecium strain 6E6 plasmid unnamed1, complete sequence	FALSE
+#43	ErmB_MLS	0.375	8	Enterococcus faecium strain 6E6 plasmid unnamed1, complete sequence	FALSE
+#45	Aac6-Aph2_AGly	0.7	10	Enterococcus faecium strain E1 plasmid pE1 230, complete sequence	FALSE
+#45	Ant6-Ia_AGly	0.1	10	Enterococcus faecium strain E1 plasmid pE1 230, complete sequence	FALSE
+#45	Aph3-III_AGly	0.1	10	Enterococcus faecium strain E1 plasmid pE1 230, complete sequence	FALSE
+#45	CatA_Phe	0.7	10	Enterococcus faecium strain E1 plasmid pE1 230, complete sequence	FALSE
+#45	ErmB_MLS	0.2	10	Enterococcus faecium strain E1 plasmid pE1 230, complete sequence	FALSE
+#45	Sat4A_AGly	0.1	10	Enterococcus faecium strain E1 plasmid pE1 230, complete sequence	FALSE
+#49	Ant6-Ia_AGly	1	6	Enterococcus faecium strain ISMMS VRE 8 plasmid ISMMS VRE8 p2, complete sequence	TRUE
+#49	Aph3-III_AGly	1	6	Enterococcus faecium strain ISMMS VRE 8 plasmid ISMMS VRE8 p2, complete sequence	TRUE
+#49	ErmB_MLS	0.833333333333333	6	Enterococcus faecium strain ISMMS VRE 8 plasmid ISMMS VRE8 p2, complete sequence	TRUE
+#49	TetL_Tet	1	6	Enterococcus faecium strain ISMMS VRE 8 plasmid ISMMS VRE8 p2, complete sequence	TRUE
+#56	AacAad_AGly	1	20	Klebsiella pneumoniae plasmid pOXAAPSS2, complete sequence	TRUE
+#56	CatBx_Phe	0.95	20	Klebsiella pneumoniae plasmid pOXAAPSS2, complete sequence	TRUE
+#56	OXA-1_Bla	1	20	Klebsiella pneumoniae plasmid pOXAAPSS2, complete sequence	TRUE
+#56	OXA-48_Bla	0.95	20	Klebsiella pneumoniae plasmid pOXAAPSS2, complete sequence	TRUE
+#59	StrA_AGly	1	12	Klebsiella pneumoniae strain Klebsiella pneumoniae KLPN57 genome assembly, plasmid: I	TRUE
+#59	StrB_AGly	1	12	Klebsiella pneumoniae strain Klebsiella pneumoniae KLPN57 genome assembly, plasmid: I	TRUE
+#59	SulII_Sul	1	12	Klebsiella pneumoniae strain Klebsiella pneumoniae KLPN57 genome assembly, plasmid: I	TRUE
+#59	TEM-1D_Bla	1	12	Klebsiella pneumoniae strain Klebsiella pneumoniae KLPN57 genome assembly, plasmid: I	TRUE
+#62	Aac3-IIa_AGly	1	8	Klebsiella pneumoniae strain RJ119 plasmid pRJ119-NDM1, complete sequence	TRUE
+#62	AacAad_AGly	1	8	Klebsiella pneumoniae strain RJ119 plasmid pRJ119-NDM1, complete sequence	TRUE
+#62	CatBx_Phe	1	8	Klebsiella pneumoniae strain RJ119 plasmid pRJ119-NDM1, complete sequence	TRUE
+#62	DfrA5_Tmt	0.125	8	Klebsiella pneumoniae strain RJ119 plasmid pRJ119-NDM1, complete sequence	FALSE
+#62	OXA-1_Bla	1	8	Klebsiella pneumoniae strain RJ119 plasmid pRJ119-NDM1, complete sequence	TRUE
+#62	QnrB_Flq	1	8	Klebsiella pneumoniae strain RJ119 plasmid pRJ119-NDM1, complete sequence	TRUE
+#62	SHV-OKP-LEN_Bla	1	8	Klebsiella pneumoniae strain RJ119 plasmid pRJ119-NDM1, complete sequence	TRUE
+#62	TetA_Tet	0.875	8	Klebsiella pneumoniae strain RJ119 plasmid pRJ119-NDM1, complete sequence	TRUE
+#65	MphE_MLS	1	6	Salmonella enterica subsp. enterica serovar Typhi strain 80-2002 genome assembly, plasmid: 2	TRUE
+#65	MsrE_MLS	1	6	Salmonella enterica subsp. enterica serovar Typhi strain 80-2002 genome assembly, plasmid: 2	TRUE
+#65	StrA_AGly	1	6	Salmonella enterica subsp. enterica serovar Typhi strain 80-2002 genome assembly, plasmid: 2	TRUE
+#65	StrB_AGly	1	6	Salmonella enterica subsp. enterica serovar Typhi strain 80-2002 genome assembly, plasmid: 2	TRUE
+#65	SulII_Sul	1	6	Salmonella enterica subsp. enterica serovar Typhi strain 80-2002 genome assembly, plasmid: 2	TRUE
+#65	TetC_Tet	0.833333333333333	6	Salmonella enterica subsp. enterica serovar Typhi strain 80-2002 genome assembly, plasmid: 2	TRUE
+#67	CatA_Phe	0.666666666666667	6	Staphylococcus aureus plasmid pOC160-2 DNA, complete sequence, strain: OC160	FALSE
+#69	ErmC_MLS	0.764705882352941	17	Staphylococcus aureus plasmid pSWS371, isolate MRSA37, complete sequence	FALSE
+#70	TetK_Tet	0.692307692307692	13	Staphylococcus aureus plasmid pT181, complete sequence	FALSE
+#71	Aac6-Aph2_AGly	0.5	10	Staphylococcus aureus plasmid pTZ2162 DNA, complete sequence	FALSE
+#71	BlaZ_Bla	0.8	10	Staphylococcus aureus plasmid pTZ2162 DNA, complete sequence	TRUE
+#74	ErmC_MLS	0.777777777777778	9	Staphylococcus aureus plasmid SAP078B, complete sequence	FALSE
+#77	VgaA_MLS	0.857142857142857	7	Staphylococcus aureus strain C2355 plasmid pUR2355, complete sequence	TRUE
+#78	ErmC_MLS	0.888888888888889	9	Staphylococcus aureus strain CMRSA plasmid pWBG738, complete sequence	TRUE
+#79	ErmC_MLS	0.923076923076923	13	Staphylococcus aureus strain E14 plasmid pDLK1, complete sequence	TRUE
+#81	TetK_Tet	0.875	16	Staphylococcus aureus strain JY10 plasmid pKH16, complete sequence	TRUE
+#83	BlaZ_Bla	1	5	Staphylococcus aureus strain SR434 plasmid pSR01, complete genome	TRUE
+#84	ErmC_MLS	0.715189873417722	158	Staphylococcus aureus strain SVH7513 plasmid pSVH7513b, complete sequence	FALSE
+#85	ErmC_MLS	0.9	10	Staphylococcus aureus strain T48 plasmid pT48, complete sequence	TRUE
+#86	ErmC_MLS	0.6	10	Staphylococcus aureus strain USA300-SUR15 plasmid pUSA05-1-SUR15, complete sequence	FALSE
+#89	AadD_AGly	0.0909090909090909	11	Staphylococcus aureus subsp. aureus strain 5118.N plasmid p5118.Nb, complete sequence	FALSE
+#89	MsrA_MLS	0.818181818181818	11	Staphylococcus aureus subsp. aureus strain 5118.N plasmid p5118.Nb, complete sequence	TRUE
+#89	TetL_Tet	0.0909090909090909	11	Staphylococcus aureus subsp. aureus strain 5118.N plasmid p5118.Nb, complete sequence	FALSE
+#90	TetK_Tet	0.714285714285714	14	Staphylococcus aureus subsp. aureus strain ST20071176 plasmid pT45, complete sequence	FALSE
+#92	BlaZ_Bla	0.166666666666667	12	Staphylococcus capitis strain FDAARGOS 378 plasmid unnamed1, complete sequence	FALSE
+#92	TetK_Tet	0.333333333333333	12	Staphylococcus capitis strain FDAARGOS 378 plasmid unnamed1, complete sequence	FALSE
+#94	ErmC_MLS	0.769230769230769	13	Staphylococcus chromogenes plasmid pPV141 erythromycin resistance plasmid, rRNA N-6-methyltransferase (ermM) and plasmid replication protein genes, complete cds	FALSE
+#96	Aac6-Aph2_AGly	0.117647058823529	17	Staphylococcus epidermidis isolate BPH0662 genome assembly, plasmid: 2	FALSE
+#96	MsrA_MLS	0.235294117647059	17	Staphylococcus epidermidis isolate BPH0662 genome assembly, plasmid: 2	FALSE
+#96	TetK_Tet	0.0588235294117647	17	Staphylococcus epidermidis isolate BPH0662 genome assembly, plasmid: 2	FALSE
+#97	ErmC_MLS	1	10	Staphylococcus epidermidis plasmid pNE131, complete sequence	TRUE
+#98	CatA_Phe	1	7	Staphylococcus epidermidis plasmid pSK103, complete sequence	TRUE
+#99	Aac6-Aph2_AGly	1	21	Staphylococcus epidermidis plasmid pSK105, complete sequence	TRUE
+#100	Aac6-Aph2_AGly	0.363636363636364	11	Staphylococcus epidermidis plasmid SAP016A, complete sequence	FALSE
+#100	AadD_AGly	0.363636363636364	11	Staphylococcus epidermidis plasmid SAP016A, complete sequence	FALSE
+#100	BlaZ_Bla	0.454545454545455	11	Staphylococcus epidermidis plasmid SAP016A, complete sequence	FALSE
+#100	CatA_Phe	0.181818181818182	11	Staphylococcus epidermidis plasmid SAP016A, complete sequence	FALSE
+#100	DfrC_Tmt	0.0909090909090909	11	Staphylococcus epidermidis plasmid SAP016A, complete sequence	FALSE
+#100	Far1_Bla	0.0909090909090909	11	Staphylococcus epidermidis plasmid SAP016A, complete sequence	FALSE
+#100	LnuA_MLS	0.0909090909090909	11	Staphylococcus epidermidis plasmid SAP016A, complete sequence	FALSE
+#100	MsrA_MLS	0.181818181818182	11	Staphylococcus epidermidis plasmid SAP016A, complete sequence	FALSE
+#102	MphC_MLS	0.588235294117647	17	Staphylococcus epidermidis plasmid SAP108A, complete sequence	FALSE
+#102	MsrA_MLS	0.588235294117647	17	Staphylococcus epidermidis plasmid SAP108A, complete sequence	FALSE
+#105	AadD_AGly	0.037037037037037	27	Staphylococcus epidermidis strain ATCC 12228 plasmid pAMT2, complete sequence	FALSE
+#105	BlaZ_Bla	0.925925925925926	27	Staphylococcus epidermidis strain ATCC 12228 plasmid pAMT2, complete sequence	TRUE
+#105	TetK_Tet	0.037037037037037	27	Staphylococcus epidermidis strain ATCC 12228 plasmid pAMT2, complete sequence	FALSE
+#106	VgaA_MLS	0.142857142857143	7	Staphylococcus epidermidis strain ATCC 12228 plasmid pAMT3, complete sequence	FALSE
+#107	AadD_AGly	0.777777777777778	36	Staphylococcus epidermidis strain DAR1907 plasmid unnamed2, complete sequence	FALSE
+#107	BlaZ_Bla	0.194444444444444	36	Staphylococcus epidermidis strain DAR1907 plasmid unnamed2, complete sequence	FALSE
+#108	LnuA_MLS	0.142857142857143	7	Staphylococcus epidermidis strain FDAARGOS 153 plasmid unnamed3, complete sequence	FALSE
+#110	BlaZ_Bla	0.666666666666667	6	Staphylococcus epidermidis strain SP1 plasmid pSP01, complete sequence	FALSE
+#110	MECA_Bla	0.166666666666667	6	Staphylococcus epidermidis strain SP1 plasmid pSP01, complete sequence	FALSE
+#110	MsrA_MLS	0.833333333333333	6	Staphylococcus epidermidis strain SP1 plasmid pSP01, complete sequence	TRUE
+#111	Aac6-Aph2_AGly	0.0294117647058824	68	Staphylococcus haemolyticus isolate 131A plasmid p131A, complete sequence	FALSE
+#111	CatA_Phe	0.0294117647058824	68	Staphylococcus haemolyticus isolate 131A plasmid p131A, complete sequence	FALSE
+#111	VgaA_MLS	0.75	68	Staphylococcus haemolyticus isolate 131A plasmid p131A, complete sequence	FALSE
+#113	Aac6-Aph2_AGly	0.0227272727272727	88	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	FALSE
+#113	AadD_AGly	0.193181818181818	88	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	FALSE
+#113	BlaZ_Bla	0.0454545454545455	88	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	FALSE
+#113	ErmC_MLS	0.0454545454545455	88	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	FALSE
+#113	Far1_Bla	0.0454545454545455	88	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	FALSE
+#113	MphC_MLS	0.75	88	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	FALSE
+#113	MsrA_MLS	0.738636363636364	88	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	FALSE
+#113	TetK_Tet	0.0113636363636364	88	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	FALSE
+#113	TetL_Tet	0.0454545454545455	88	Staphylococcus haemolyticus strain SGAir0252 plasmid pSGAir0252, complete sequence	FALSE
+#114	MsrA_MLS	0.0769230769230769	13	Staphylococcus hominis strain FDAARGOS 136 plasmid unnamed1, complete sequence	FALSE
+#114	TetK_Tet	0.0769230769230769	13	Staphylococcus hominis strain FDAARGOS 136 plasmid unnamed1, complete sequence	FALSE
+#114	TetL_Tet	0.0769230769230769	13	Staphylococcus hominis strain FDAARGOS 136 plasmid unnamed1, complete sequence	FALSE
+#115	LnuA_MLS	0.444444444444444	9	Staphylococcus lugdunensis strain Tlug20G-4 plasmid pT20G, complete sequence	FALSE
+#115	TetK_Tet	0.111111111111111	9	Staphylococcus lugdunensis strain Tlug20G-4 plasmid pT20G, complete sequence	FALSE
+#116	MphC_MLS	0.7	10	Staphylococcus lugdunensis strain Tlug63N-4 plasmid pT63N, complete sequence	FALSE
+#116	MsrA_MLS	0.6	10	Staphylococcus lugdunensis strain Tlug63N-4 plasmid pT63N, complete sequence	FALSE
+#117	Aac6-Aph2_AGly	0.394736842105263	38	Staphylococcus lugdunensis strain Tlug8G-4 plasmid pT8G, complete sequence	FALSE
+#117	AadD_AGly	0.842105263157895	38	Staphylococcus lugdunensis strain Tlug8G-4 plasmid pT8G, complete sequence	TRUE
+#117	BlaZ_Bla	0.105263157894737	38	Staphylococcus lugdunensis strain Tlug8G-4 plasmid pT8G, complete sequence	FALSE
+#117	ErmC_MLS	0.131578947368421	38	Staphylococcus lugdunensis strain Tlug8G-4 plasmid pT8G, complete sequence	FALSE
+#117	Far1_Bla	0.0526315789473684	38	Staphylococcus lugdunensis strain Tlug8G-4 plasmid pT8G, complete sequence	FALSE
+#117	LnuA_MLS	0.789473684210526	38	Staphylococcus lugdunensis strain Tlug8G-4 plasmid pT8G, complete sequence	FALSE
+#117	TetK_Tet	0.868421052631579	38	Staphylococcus lugdunensis strain Tlug8G-4 plasmid pT8G, complete sequence	TRUE
+#117	VgaA_MLS	0.0263157894736842	38	Staphylococcus lugdunensis strain Tlug8G-4 plasmid pT8G, complete sequence	FALSE
+#118	Aac6-Aph2_AGly	0.125	24	Staphylococcus pasteuri strain JS7 plasmid pSNJS702, complete sequence	FALSE
+#118	AadD_AGly	0.0833333333333333	24	Staphylococcus pasteuri strain JS7 plasmid pSNJS702, complete sequence	FALSE
+#118	BlaZ_Bla	0.833333333333333	24	Staphylococcus pasteuri strain JS7 plasmid pSNJS702, complete sequence	TRUE
+#118	DfrC_Tmt	0.75	24	Staphylococcus pasteuri strain JS7 plasmid pSNJS702, complete sequence	FALSE
+#118	Far1_Bla	0.0416666666666667	24	Staphylococcus pasteuri strain JS7 plasmid pSNJS702, complete sequence	FALSE
+#118	LnuA_MLS	0.125	24	Staphylococcus pasteuri strain JS7 plasmid pSNJS702, complete sequence	FALSE
+#118	MECA_Bla	0.125	24	Staphylococcus pasteuri strain JS7 plasmid pSNJS702, complete sequence	FALSE
+#118	MsrA_MLS	0.0416666666666667	24	Staphylococcus pasteuri strain JS7 plasmid pSNJS702, complete sequence	FALSE
+#119	MphC_MLS	1	11	Staphylococcus saprophyticus strain FDAARGOS 168 plasmid unnamed2, complete sequence	TRUE
+#119	MsrA_MLS	0.818181818181818	11	Staphylococcus saprophyticus strain FDAARGOS 168 plasmid unnamed2, complete sequence	TRUE
+#120	ErmC_MLS	0.583333333333333	12	Staphylococcus simulans erythromycin resistance plasmid pPV142 rRNA N-6-methyltransferase (ermM) and replication protein (rep) genes, complete cds	FALSE
