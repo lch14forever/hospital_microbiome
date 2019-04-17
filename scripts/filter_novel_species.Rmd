@@ -1,0 +1,89 @@
+---
+title:  "Filter novel species"
+output:
+  html_document:
+    df_print: paged
+---
+
+Load specific libraries
+```{r message=FALSE, warning=FALSE}
+library(stringr)
+```
+
+Load functions
+```{r message=FALSE, warning=FALSE}
+
+merge_name <- function(x){
+  str <- unlist(strsplit(x, " "))
+  str_out <- paste(str[1], str[2],  sep = "_")
+  return(str_out)
+}
+
+pathogenslice <- function(x){
+  str1 <- unlist(strsplit(x, "_"))[1]
+  str2 <- unlist(strsplit(x, "_"))[2]
+  if (str1 == "Burkholderia"){
+    str_out <- str1
+  }
+  else{
+    str_out <- paste(str1, str2, sep = " ")
+  }
+  return(str_out)
+}
+
+```
+
+cleaning input data
+```{r message=FALSE, warning=FALSE}
+all_genome_cluster <-read.table("../output_tables/all_genome_cluster.tsv", row.names = NULL, sep="\t")
+novel_genome_cluster <-read.table("../output_tables/novel_genome_cluster.tsv", row.names = NULL, sep="\t")
+novel_genome_cluster$novel <- "yes"
+colnames(novel_genome_cluster)[colnames(novel_genome_cluster)=="row.names"] <- "species"
+all_genome <-read.table("../tables/genome_info.dat", row.names = NULL, sep="\t", header = TRUE)
+
+```
+
+Find the number of genome that is pathogenic, non pathogenic and high med quality
+```{r message=FALSE, warning=FALSE}
+all_genome <-read.table(
+  "../tables/genome_info.dat",
+  row.names = NULL, sep="\t", header=TRUE)
+
+pathogen_list <-read.csv(
+  "../metadata/pathogene_list.dat", row.names = NULL, header = TRUE)
+
+pathogen_list <- pathogen_list[3:nrow(pathogen_list), ]
+pathogen_list$pathogen <- 1
+colnames(pathogen_list)[colnames(pathogen_list)=="row.names"] <- "Species_name"
+keep <- c("Species_name", "pathogen")
+pathogen_list <- pathogen_list[keep]
+all_genome$Species_name <- apply(all_genome, 1, FUN = pathogenslice)
+
+all_genome_merge <-  merge(all_genome, pathogen_list, by = "Species_name", all = TRUE, sort = FALSE)
+all_genome_merge <- all_genome_merge[!is.na(all_genome_merge$Nanopore_ID),]
+
+high_qual_pathogen <- subset(all_genome_merge , pathogen == 1 & Genome_quality == "HIGH_QUAL")
+med_qual_pathogen <- subset(all_genome_merge , pathogen == 1 & Genome_quality == "MEDIUM_QUAL")
+high_qual_nonpatho <- subset(all_genome_merge , is.na(pathogen) & Genome_quality == "HIGH_QUAL")
+med_qual_nonpatho <- subset(all_genome_merge , is.na(pathogen) & Genome_quality == "MEDIUM_QUAL")
+```
+
+
+indicate novelty and cluster
+```{r message=FALSE, warning=FALSE}
+keep <- colnames(all_genome)
+keep <- c(keep, "novel", "clusters")
+all_genome$species <- apply(all_genome, 1, FUN = merge_name)
+output <- merge(all_genome, novel_genome_cluster, by = "row.names", all.x = TRUE,  sort = FALSE)
+output <- output[keep]
+output$novel[is.na(output$novel)] <- "no"
+write.table(output,"../output_tables/genome_info_novel.dat", sep='\t', quote = FALSE)
+```
+
+
+### Session informaton
+```{r}
+sessionInfo()
+```
+
+

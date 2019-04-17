@@ -1,0 +1,108 @@
+---
+title: "Strain Rarefaction"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+### generate strain rarefaction plots
+Load generic libraries
+```{r message=FALSE, warning=FALSE}
+source('configuration.r')
+```
+
+Load specific libraries
+```{r message=FALSE, warning=FALSE}
+library(matrixStats)
+library(iNEXT)
+```
+
+Load functions
+```{r message=FALSE, warning=FALSE}
+# merge species and cluster
+species_cluster <- function(x){
+  str1 <- unlist(strsplit(x, "_"))[6]
+  str2 <- unlist(strsplit(x, "_"))[7]
+  str3 <- unlist(strsplit(x, "_"))[3]
+  str3 <- str_trim(str3, side = c("both", "left", "right"))
+  str_out <- paste(str1, str2, str3, sep = "_")
+  return(str_out)
+}
+
+```
+
+common pathogen strain
+```{r message=FALSE, warning=FALSE}
+
+pathogen_list <-read.csv(
+  "../metadata/pathogene_list.dat", row.names = NULL, header = TRUE)
+pathogen_list <- pathogen_list[3:nrow(pathogen_list), ]
+pathogen_list$pathogen <- 1
+pathogen_list <- pathogen_list$row.names
+pathogen_list <- gsub(" ", "_", pathogen_list)
+
+nanopore_meta <- read.table("../metadata/nanopore.metadata.txt", header=TRUE)
+
+keep <- c("Sample_ID")
+nanopore_meta <- nanopore_meta[keep]
+nanopore_meta <- data.frame(unique(nanopore_meta$Sample_ID))
+colnames(nanopore_meta)[colnames(nanopore_meta)=="unique.nanopore_meta.Sample_ID."] <- "Sample_ID"
+
+strain_cluster <-read.table(
+  "../output_tables/strain_cluster_summary.tsv", # 0.001 cutoff mismatch rate for cluster base on 
+  row.names = NULL, sep="\t", header=T)
+
+strain_cluster$species_cluster <-  apply(strain_cluster, 1, FUN = species_cluster)
+keep <- c("Row.names", "clusters", "Species", "Sample_ID.x","species_cluster", "Antibiotics","strain")
+strain_cluster <- strain_cluster[keep]
+colnames(strain_cluster)[colnames(strain_cluster)=="Sample_ID.x"] <- "Sample_ID"
+# for x, is all unique strain, get the number of unique antibiotics resistance, assign the number to x
+strain_antibiotic <- filter(strain_cluster,Antibiotics!='BHI')
+#strain_antibiotic$n <-  apply(strain_antibiotic, 1, FUN = get_antibiotics)
+
+strain_cluster_merge <-  merge(strain_cluster, nanopore_meta, by = "Sample_ID", all = TRUE, sort = FALSE)
+strain_cluster_merge <-  strain_cluster_merge[order(strain_cluster_merge$Sample_ID),, drop=TRUE]
+row.names(strain_cluster_merge) <- NULL
+
+strain_cluster_merge$patho <- ifelse(strain_cluster_merge$Species %in% pathogen_list, 1, 0)
+strain_cluster_merge$species_cluster <- ifelse(strain_cluster_merge$patho == 0 , NA, strain_cluster_merge$species_cluster)
+
+```
+
+rarefaction figures
+```{r fig.height=16, fig.width=8, message=FALSE, warning=FALSE}
+
+all_sampling_matrix <- acast(strain_cluster_merge, species_cluster~Sample_ID, value.var="species_cluster")
+all_sampling_matrix <- all_sampling_matrix[rownames(all_sampling_matrix) !="NA", ]
+all_sampling_matrix <- all_sampling_matrix[,colnames(all_sampling_matrix) !="NA"]
+all_sampling_matrix <- all_sampling_matrix[,] > 0
+
+all_out <- iNEXT(all_sampling_matrix, datatype="incidence_raw", endpoint = 9000)
+g1 <- ggiNEXT(all_out, color.var="order") + 
+    geom_line(aes(y=all_out$AsyEst["Species Richness", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") + 
+    scale_y_continuous(breaks = c(seq(0 , 1500, by=250), round(all_out$AsyEst["Species Richness", "Estimator"]))) +
+    labs(title = "Rarefaction of common pathogen strain", x = "number of samples")
+g1 <- g1 + guides(fill=FALSE)
+g1 <- g1 + scale_color_discrete(labels = c("richness")) + 
+  scale_shape_discrete(labels = c("richness"))
+
+index_out <- iNEXT(all_sampling_matrix, q=c(1,2), datatype="incidence_raw", endpoint = 5000)
+g2 <- ggiNEXT(index_out, color.var="order") + 
+  geom_line(aes(y=index_out$AsyEst["Shannon diversity", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") + 
+  geom_line(aes(y=index_out$AsyEst["Simpson diversity", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") +
+  scale_y_continuous(breaks = c(seq(0 , 300, by=50), round(index_out$AsyEst["Shannon diversity", "Estimator"]), round(index_out$AsyEst["Simpson diversity", "Estimator"])))+
+  labs(title = "Rarefaction of common pathogen strain", y = "diversity index", x = "number of samples")
+g2 <- g2 + guides(fill=FALSE)
+g2 <- g2 + scale_color_discrete(labels = c("shannon", "simpson")) + 
+  scale_shape_discrete(labels = c("shannon", "simpson")) 
+
+cowplot::plot_grid(g1, g2, nrow=2)
+ggsave('../plots/strain_rarefaction.pdf', height = 16, width = 8)
+
+```
+
+### Session informaton
+```{r}
+sessionInfo()
+```

@@ -1,0 +1,86 @@
+---
+title:  "Filter novel plasmid cluster"
+output:
+  html_document:
+    df_print: paged
+---
+
+Load specific libraries
+```{r message=FALSE, warning=FALSE}
+library(stringr)
+```
+
+Load functions
+```{r message=FALSE, warning=FALSE}
+
+stringslice <- function(x){
+  str <- unlist(strsplit(x, "/"))[12]
+  str <- unlist(strsplit(str, ".fa"))
+  return(str)
+}
+
+```
+
+cleaning input data
+```{r message=FALSE, warning=FALSE}
+
+all_plasmid <-read.csv("../../hospital_microbiome/tables/plasmid_info.dat", row.names = NULL, sep="\t", header = TRUE) 
+# all plasmid with cluster
+cluster <-read.table("../output_tables/plasmid_cluster.tsv", row.names = NULL, sep="\t") 
+colnames(cluster)[colnames(cluster)=="row.names"] <- "Plasmid_ID"
+
+cluster_plasmid <- merge(all_plasmid, cluster, by = "Plasmid_ID", all = TRUE, sort = FALSE)
+cluster_plasmid$our_plasmid[grepl("p_", cluster_plasmid$Plasmid_ID)] <- "yes"
+cluster_plasmid$our_plasmid[is.na(cluster_plasmid$our_plasmid)] <- "no"
+keep <- c("Plasmid_ID", "clusters", "our_plasmid")
+cluster_plasmid <- cluster_plasmid[keep]
+
+plasmid_list <- cluster_plasmid[cluster_plasmid$our_plasmid == "yes",]$Plasmid_ID
+
+number_cluster <- length(!is.na(unique(cluster_plasmid$clusters)))
+sum = 0
+check <- cluster_plasmid
+```
+
+
+filter novel plasmids by taking out those cluster together with non novel plasmids
+```{r message=FALSE, warning=FALSE}
+
+# for all i, number of plasmid in cluster i is different from number of novel plasmid in cluster i
+# then known plasmid is cluster together with novel plasmid
+c = 0
+for (i in 1:length(unique(cluster$clusters))){
+  flag = all(cluster_plasmid[cluster_plasmid$clusters == i,]$Plasmid_ID %in% plasmid_list)
+  if (!flag){
+    cluster_plasmid <- cluster_plasmid[!(cluster_plasmid$clusters == i), ]
+    c = c + 1
+    next
+  }
+  cluster_plasmid[cluster_plasmid$clusters == i,]$clusters <- (i - c)
+}
+cluster_plasmid <-  cluster_plasmid[order(cluster_plasmid$clusters),, drop=TRUE]
+
+row.names(cluster_plasmid) <- NULL
+keep <- colnames(all_plasmid)
+keep <- c(keep, "clusters", "novel")
+cluster_plasmid$novel <- "yes"
+output <- merge(all_plasmid, cluster_plasmid, by = "Plasmid_ID", all.x = TRUE, sort = FALSE)
+output <- output[keep]
+output$novel[is.na(output$novel)] <- "no"
+
+
+print(length(unique(cluster_plasmid$clusters)))
+print(length(unique(check[check$our_plasmid=="yes",]$clusters)))
+print(length(unique(check$clusters)))
+
+output <- output[,c(1,2,3,4,5,6,7,8,9,11,10)]
+write.table(output,"../output_tables/plasmid_info_novel.dat", sep='\t', quote = FALSE)
+```
+
+
+### Session informaton
+```{r}
+sessionInfo()
+```
+
+

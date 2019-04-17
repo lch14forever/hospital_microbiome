@@ -1,0 +1,137 @@
+---
+title: "Species Rarefaction"
+output:
+  html_document:
+    df_print: paged
+---
+
+### generate species rarefaction plots
+
+Load generic libraries
+```{r message=FALSE, warning=FALSE}
+source('configuration.r')
+```
+
+Load specific libraries
+```{r message=FALSE, warning=FALSE}
+library(matrixStats)
+library(iNEXT)
+```
+
+Load functions
+```{r message=FALSE, warning=FALSE}
+stringslice <- function(x){
+  str1 <- unlist(strsplit(x, "_"))[3]
+  str2 <- unlist(strsplit(x, "_"))[4]
+  str_out <- paste(str1, str2, sep = "_")
+  
+  return(str_out)
+}
+
+pathogenslice <- function(x){
+  str1 <- unlist(strsplit(x, "_"))[1]
+  str2 <- unlist(strsplit(x, "_"))[2]
+  if (str1 == "Burkholderia"){
+    str_out <- str1
+  }
+  else{
+    str_out <- paste(str1, str2, sep = " ")
+  }
+  return(str_out)
+}
+```
+
+species level and common pathogen
+```{r message=FALSE, warning=FALSE}
+pathogen_list <-read.csv(
+  "../metadata/pathogene_list.dat", row.names = NULL, header = TRUE)
+pathogen_list <- pathogen_list[3:nrow(pathogen_list), ]
+pathogen_list$pathogen <- 1
+
+genome_cluster <-read.table(
+  "../output_tables/high_qual_genome_cluster.tsv",
+  row.names = NULL, sep="\t")
+nanopore_meta <- read.table("../metadata/nanopore.metadata.txt", header=TRUE)
+
+# added Nanopore_ID and species to dataframe
+genome_cluster$Nanopore_ID <-  apply(genome_cluster, 1, FUN = stringslice)
+genome_cluster$species <-  apply(genome_cluster, 1, FUN = pathogenslice)
+
+genome_cluster_merge <-  merge(genome_cluster, nanopore_meta, by = "Nanopore_ID", all = TRUE, sort = FALSE)
+genome_cluster_merge <-  genome_cluster_merge[!is.na(genome_cluster_merge$Sample_ID),]
+
+#rename pathogen_list dataframe columns for merging later
+colnames(pathogen_list)[colnames(pathogen_list)=="row.names"] <- "species"
+genome_cluster_merge <-  merge(genome_cluster_merge, pathogen_list, by = "species", all = TRUE, sort = FALSE)
+genome_cluster_merge <-  genome_cluster_merge[order(genome_cluster_merge$Sample_ID),, drop=TRUE]
+genome_cluster_merge$pathogen <- genome_cluster_merge$clusters
+
+genome_cluster_merge$pathogen <- ifelse(genome_cluster_merge$species %in% pathogen_list$species, genome_cluster_merge$pathogen, NA)
+#genome_cluster_merge$pathogen <- ifelse(genome_cluster_merge$)
+
+```
+
+rarefaction figures
+```{r fig.height=32, fig.width=8, message=FALSE, warning=FALSE}
+
+all_sampling_matrix <- acast(genome_cluster_merge, clusters~Sample_ID, value.var="clusters")
+all_sampling_matrix <- all_sampling_matrix[rownames(all_sampling_matrix) !="NA", ]
+all_sampling_matrix <- all_sampling_matrix[,colnames(all_sampling_matrix) !="NA"]
+all_sampling_matrix <- all_sampling_matrix[,] > 0
+all_out <- iNEXT(all_sampling_matrix, datatype="incidence_raw", endpoint =  5000)
+g1 <- ggiNEXT(all_out, color.var="order") +
+  geom_line(aes(y=all_out$AsyEst["Species Richness", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") + 
+  scale_y_continuous(breaks = c(seq(0 , 200, by=50), round(all_out$AsyEst["Species Richness", "Estimator"]))) + 
+    labs(title = "Rarefaction of all species", x = "number of samples")
+g1 <- g1 + guides(fill=FALSE)
+g1 <- g1 + scale_color_discrete(labels = c("richness")) + 
+  scale_shape_discrete(labels = c("richness"))
+
+
+all_index <- iNEXT(all_sampling_matrix, q=c(1,2), datatype="incidence_raw", endpoint =  2000)
+g2 <- ggiNEXT(all_index, color.var="order") +
+  geom_line(aes(y=all_out$AsyEst["Shannon diversity", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") + 
+  geom_line(aes(y=all_out$AsyEst["Simpson diversity", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") +
+  scale_y_continuous(breaks = c(seq(0 , 30, by=10), round(all_out$AsyEst["Shannon diversity", "Estimator"]), round(all_out$AsyEst["Simpson diversity", "Estimator"]))) +
+    labs(title = "Rarefaction of all species", y = "diversity index", x = "number of samples")
+g2 <- g2 + guides(fill=FALSE)
+g2 <- g2 + scale_color_discrete(labels = c("shannon", "simpson")) + 
+  scale_shape_discrete(labels = c("shannon", "simpson"))
+
+
+pathogen_sampling_matrix <- acast(genome_cluster_merge, pathogen~Sample_ID, value.var="pathogen")
+pathogen_sampling_matrix <- pathogen_sampling_matrix[rownames(pathogen_sampling_matrix) !="NA", ]
+pathogen_sampling_matrix <- pathogen_sampling_matrix[,colnames(pathogen_sampling_matrix) !="NA"]
+pathogen_sampling_matrix <- pathogen_sampling_matrix[,] > 0
+patho_out <- iNEXT(pathogen_sampling_matrix, datatype="incidence_raw", endpoint =  2000)
+g3 <- ggiNEXT(patho_out, color.var="order") +
+  geom_line(aes(y=patho_out$AsyEst["Species Richness", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") + 
+  labs(title = "Rarefaction of species of common pathogen", x = "number of samples")
+g3 <- g3 + guides(fill=FALSE)
+g3 <- g3 + scale_color_discrete(labels = c("richness")) + 
+  scale_shape_discrete(labels = c("richness"))
+
+
+patho_index <- iNEXT(pathogen_sampling_matrix, q=c(1,2), datatype="incidence_raw", endpoint =  2000)
+g4 <- ggiNEXT(patho_index, color.var="order") +
+  geom_line(aes(y=patho_index$AsyEst["Shannon diversity", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") + 
+  geom_line(aes(y=patho_index$AsyEst["Simpson diversity", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") +
+  scale_y_continuous(breaks = c(seq(0 , 30, by=2), round(patho_index$AsyEst["Shannon diversity", "Estimator"]), round(patho_index$AsyEst["Simpson diversity", "Estimator"]))) +
+    labs(title = "Rarefaction of species of common pathogen", y = "diversity index", x = "number of samples")
+g4 <- g4 + guides(fill=FALSE)
+g4 <- g4 + scale_color_discrete(labels = c("shannon", "simpson")) + 
+  scale_shape_discrete(labels = c("shannon", "simpson"))
+
+cowplot::plot_grid(g1, g2, g3, g4, nrow=4)
+ggsave('../plots/species_rarefaction.pdf', height = 32, width = 8)
+
+```
+
+
+
+
+
+### Session informaton
+```{r}
+sessionInfo()
+```

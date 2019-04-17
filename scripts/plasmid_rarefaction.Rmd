@@ -6,7 +6,7 @@ output:
 ---
 
 
-### (Fig1a) MDS plot for illumina metagenomics data
+### generate plasmid rarefaction plots
 
 Load generic libraries
 ```{r message=FALSE, warning=FALSE}
@@ -16,134 +16,116 @@ source('configuration.r')
 Load specific libraries
 ```{r message=FALSE, warning=FALSE}
 library(matrixStats)
-library(pspline)
+library(iNEXT)
 ```
 
-Consolidate, clean input files for sampling
+plasmid with antibiotic resistant genes
 ```{r message=FALSE, warning=FALSE}
-cluster <-read.table("HOSPITAL_MICROBIOME/ANALYSIS/RAREFACTION_ANALYSIS/plasmid_cluster.tsv",
+cluster <-read.table("../output_tables/plasmid_cluster.tsv",
                      row.names = NULL, sep="\t")
-names(cluster) <- c("plasmid_ID", "cluster")
+names(cluster) <- c("Plasmid_ID", "cluster")
+cluster <- cluster[grepl("p_",cluster$Plasmid_ID), ]
 
-plasmid_info <- read.table("HOSPITAL_MICROBIOME/lich/envgenome/NANOPORE_ANALYSIS/tables/plasmid_info.dat", sep="\t", header=TRUE)
-nanopore_meta <- read.table("HOSPITAL_MICROBIOME/REFERENCE/nanopore.metadata.txt", header=TRUE)
+plasmid_info <- read.csv("../tables/plasmid_info.dat", sep="\t", header=TRUE)
+nanopore_meta <- read.table("../metadata/nanopore.metadata.txt", header=TRUE)
 
 meta_assembly_merge_filter <-  merge(nanopore_meta, plasmid_info, by = "Nanopore_ID", all = TRUE, sort = FALSE)
-meta_assembly_merge_filter <-  merge(meta_assembly_merge_filter, cluster, by = "plasmid_ID", all = TRUE, sort = FALSE)
+meta_assembly_merge_filter <-  merge(meta_assembly_merge_filter, cluster, by = "Plasmid_ID", all = TRUE, sort = FALSE)
 
 # sort dataframe
 meta_assembly_merge_filter <-  meta_assembly_merge_filter[order(meta_assembly_merge_filter$Sample_ID, 
                                                                 meta_assembly_merge_filter$Nanopore_ID),, drop=TRUE]
 row.names(meta_assembly_merge_filter) <- NULL
-#append a column call week, categorical 1,2
-meta_assembly_merge_filter$week <- ifelse(grepl('_', meta_assembly_merge_filter$Sample_ID), 2, 1)
 
-keep <- c("plasmid_ID", "Sample_ID","Nanopore_ID", "cluster", "week", "Number_of_AR_genes", "AR_gene_list")
+keep <- c("Plasmid_ID", "Sample_ID","Nanopore_ID", "cluster", "Number_of_AR_genes", "AR_gene_list")
 meta_assembly_merge_filter <- meta_assembly_merge_filter[keep]
 # drop na Sample_ID
 meta_assembly_merge_filter <-  meta_assembly_merge_filter[!is.na(meta_assembly_merge_filter$Sample_ID),]
 
-meta_assembly_merge_filter_week1 <- meta_assembly_merge_filter[meta_assembly_merge_filter$week == 1,]
-meta_assembly_merge_filter_week2 <- meta_assembly_merge_filter[meta_assembly_merge_filter$week == 2,]
-row.names(meta_assembly_merge_filter_week1) <- NULL
-row.names(meta_assembly_merge_filter_week2) <- NULL
-meta_assembly_merge_filter_week1$Sample_ID <- factor(meta_assembly_merge_filter_week1$Sample_ID)
-meta_assembly_merge_filter_week2$Sample_ID <- factor(meta_assembly_merge_filter_week2$Sample_ID)
-total_Sample_ID <- unique(meta_assembly_merge_filter$Sample_ID)
+meta_assembly_merge_filter$patho <- ifelse(meta_assembly_merge_filter$Number_of_AR_genes != 0 , meta_assembly_merge_filter$cluster, NA)
+meta_assembly_merge_filter$patho_1 <- ifelse(meta_assembly_merge_filter$Number_of_AR_genes > 1 , meta_assembly_merge_filter$cluster, NA)
 ```
 
-sampling and consolidate to dataframe
-```{r message=FALSE, warning=FALSE}
-iteration = 500
-richness_total <- sapply (1:length(total_Sample_ID), function(i){
-  x <- sapply(1:iteration, function(j){
-    sample <- meta_assembly_merge_filter$Sample_ID %in% sample(total_Sample_ID, i)
-    patho <- meta_assembly_merge_filter[sample,]
-    patho <- patho[!(is.na(patho$plasmid_ID)),]
-    patho <- filter(patho, Number_of_AR_genes != 0)
-    num_of_patho_cluster <- length(!is.na(unique(patho$cluster)))
-    num_of_cluster <- unique(meta_assembly_merge_filter[sample, "cluster"])
-    num_of_cluster <- length(num_of_cluster[!is.na(num_of_cluster)])
-    c(num_of_cluster,num_of_patho_cluster)
-  }
-  )
-  c(rowMeans(x), rowSds(x))
-}
-)
+rarefaction figure
+```{r fig.height=48, fig.width=8, message=FALSE, warning=FALSE}
 
-total_df <- do.call(rbind, 
-                    Map(data.frame,
-                        num_of_sample = c(1:length(total_Sample_ID)),
-                        richness_total=richness_total[1,],
-                        richness_patho=richness_total[2,],
-                        richness_total_std=richness_total[3,],
-                        richness_patho_std=richness_total[4,]
-                    ))
-total_df$gradient <- c(diff(total_df$richness_total), 0)
-total_df$gradient_patho <- c(diff(total_df$richness_patho), 0)
+all_sampling_matrix <- acast(meta_assembly_merge_filter, cluster~Sample_ID, value.var="cluster")
+all_sampling_matrix <- all_sampling_matrix[rownames(all_sampling_matrix) !="NA", ]
+all_sampling_matrix <- all_sampling_matrix[,colnames(all_sampling_matrix) !="NA"]
+all_sampling_matrix <- all_sampling_matrix[,] > 0
+
+patho_sampling_matrix <- acast(meta_assembly_merge_filter, patho~Sample_ID, value.var="patho")
+patho_sampling_matrix <- patho_sampling_matrix[rownames(patho_sampling_matrix) !="NA", ]
+patho_sampling_matrix <- patho_sampling_matrix[,colnames(patho_sampling_matrix) !="NA"]
+patho_sampling_matrix <- patho_sampling_matrix[,] > 0
+
+patho_1_sampling_matrix <- acast(meta_assembly_merge_filter, patho_1~Sample_ID, value.var="patho_1")
+patho_1_sampling_matrix <- patho_1_sampling_matrix[rownames(patho_1_sampling_matrix) !="NA", ]
+patho_1_sampling_matrix <- patho_1_sampling_matrix[,colnames(patho_1_sampling_matrix) !="NA"]
+patho_1_sampling_matrix <- patho_1_sampling_matrix[,] > 0
+
+
+all_out <- iNEXT(all_sampling_matrix, datatype="incidence_raw", endpoint = 8000)
+g1 <- ggiNEXT(all_out, color.var="order") +
+    geom_line(aes(y=all_out$AsyEst["Species Richness", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") +
+    scale_y_continuous(breaks = c(seq(0 , 10000, by=2000), round(all_out$AsyEst["Species Richness", "Estimator"]))) +
+    labs(title = "Rarefaction of circular plasmids", x = "number of samples")
+g1 <- g1 + guides(fill=FALSE)
+g1 <- g1 + scale_color_discrete(labels = c("richness")) + 
+  scale_shape_discrete(labels = c("richness"))
+
+index_out <- iNEXT(all_sampling_matrix, q=c(1,2), datatype="incidence_raw", endpoint = 5000)
+g2 <- ggiNEXT(index_out, color.var="order") +
+    geom_line(aes(y=index_out$AsyEst["Shannon diversity", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") + 
+    geom_line(aes(y=index_out$AsyEst["Simpson diversity", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") +
+    scale_y_continuous(breaks = c(seq(0 , 3000, by=500), round(index_out$AsyEst["Shannon diversity", "Estimator"]), round(index_out$AsyEst["Simpson diversity", "Estimator"])))+
+    labs(title = "Rarefaction of circular plasmids", y = "diversity index", x = "number of samples")
+g2 <- g2 + guides(fill=FALSE)
+g2 <- g2 + scale_color_discrete(labels = c("shannon", "simpson")) + 
+  scale_shape_discrete(labels = c("shannon", "simpson"))
+
+patho_out <- iNEXT(patho_sampling_matrix, datatype="incidence_raw", endpoint = 8000)
+g3 <- ggiNEXT(patho_out, color.var="order") +
+    geom_line(aes(y=patho_out$AsyEst["Species Richness", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") +
+    scale_y_continuous(breaks = c(seq(0 , 3000, by=500), round(patho_out$AsyEst["Species Richness", "Estimator"]))) +
+    labs(title = "Rarefaction of circular plasmids > 0 AR gene", x = "number of samples")
+g3 <- g3 + guides(fill=FALSE)
+g3 <- g3 + scale_color_discrete(labels = c("richness")) + 
+  scale_shape_discrete(labels = c("richness"))
+
+patho_index <- iNEXT(patho_sampling_matrix, q = c(1,2), datatype="incidence_raw", endpoint = 5000)
+g4 <- ggiNEXT(patho_index, color.var="order") +
+    geom_line(aes(y=patho_index$AsyEst["Shannon diversity", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") + 
+    geom_line(aes(y=patho_index$AsyEst["Simpson diversity", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") +
+    scale_y_continuous(breaks = c(seq(0 , 1000, by=100), round(patho_index$AsyEst["Shannon diversity", "Estimator"]), round(patho_index$AsyEst["Simpson diversity", "Estimator"])))+
+    labs(title = "Rarefaction of circular plasmids > 0 AR gene", y = "diversity index", x = "number of samples")
+g4 <- g4 + guides(fill=FALSE)
+g4 <- g4 + scale_color_discrete(labels = c("shannon", "simpson")) + 
+  scale_shape_discrete(labels = c("shannon", "simpson"))
+
+patho_1_out <- iNEXT(patho_1_sampling_matrix, datatype="incidence_raw", endpoint = 8000)
+g5 <- ggiNEXT(patho_1_out, color.var="order") +
+    geom_line(aes(y=patho_1_out$AsyEst["Species Richness", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") +
+    labs(title = "Rarefaction of circular plasmids > 1 AR gene", x = "number of samples")
+g5 <- g5 + guides(fill=FALSE)
+g5 <- g5 + scale_color_discrete(labels = c("richness")) + 
+  scale_shape_discrete(labels = c("richness"))
+
+patho_1_index <- iNEXT(patho_1_sampling_matrix, q=c(1,2), datatype="incidence_raw", endpoint = 5000)
+g6 <- ggiNEXT(patho_1_index, color.var="order") +
+    geom_line(aes(y=patho_1_index$AsyEst["Shannon diversity", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") + 
+    geom_line(aes(y=patho_1_index$AsyEst["Simpson diversity", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") +
+    scale_y_continuous(breaks = c(seq(0 , 1000, by=60), round(patho_1_index$AsyEst["Shannon diversity", "Estimator"])))+
+    labs(title = "Rarefaction of circular plasmids > 1 AR gene", y = "diversity index", x = "number of samples")
+g6 <- g6 + guides(fill=FALSE)
+g6 <- g6 + scale_color_discrete(labels = c("shannon", "simpson")) + 
+  scale_shape_discrete(labels = c("shannon", "simpson"))
+
+cowplot::plot_grid(g1, g2, g3, g4, g5, g6, nrow=6)
+
+ggsave('../plots/circular_plasmid_rarefaction.pdf', height = 48, width = 8)
+
 ```
-
-plot rarefaction 
-```{r message=FALSE, warning=FALSE}
-## all plasmid
-fit.total_upp <- smooth.Pspline(
-  total_df$num_of_sample, 
-  total_df$richness_total + 2 * total_df$richness_total_std, 
-  norder=3, method=3, spar=1e5)
-fit.total_lower <- smooth.Pspline(
-  total_df$num_of_sample, 
-  total_df$richness_total - 2 * total_df$richness_total_std, 
-  norder=3, method=3, spar=1e5)
-#plot  geom_line(aes(y = predict(fit.total_upp, num_of_sample, 0)), size = 1, linetype = "dashed") + 
-g <- ggplot(data = total_df, aes(num_of_sample)) +
-  geom_line(mapping = aes(y = richness_total), size = 1) + 
-  geom_line(mapping = aes(y = predict(fit.total_upp, num_of_sample, 0)), size = 1, linetype = "dashed")+
-  #geom_line(mapping = aes(y = richness_total + 2*richness_total_std), size = 1, linetype = "dashed")+
-  geom_line(mapping = aes(y = predict(fit.total_lower, num_of_sample, 0)), size = 1, linetype = "dashed")+
-  #geom_line(mapping = aes(y = richness_total - 2*richness_total_std), size = 1, linetype = "dashed")+
-  scale_y_continuous(limits = c(0,1000), breaks = seq(0, 1000, 100))+
-  scale_x_continuous(breaks = seq(0, 400, 40))+
-  labs(title = "Rarefaction of circular plasmid") +
-  ylab("Richness")
-g + theme_grey(base_size = 42)
-
-## common patho
-fit.patho_upp <- smooth.Pspline(
-  total_df$num_of_sample, 
-  total_df$richness_patho + 2 * total_df$richness_patho_std, 
-  norder=3, method=3, spar=1e5)
-fit.patho_lower <- smooth.Pspline(
-  total_df$num_of_sample, 
-  total_df$richness_patho - 2 * total_df$richness_patho_std, 
-  norder=3, method=3, spar=1e5)
-#plot  geom_line(aes(y = predict(fit.total_upp, num_of_sample, 0)), size = 1, linetype = "dashed") + 
-g <- ggplot(data = total_df, aes(num_of_sample)) +
-  geom_line(mapping = aes(y = richness_patho), size = 1) + 
-  geom_line(mapping = aes(y = predict(fit.patho_upp, num_of_sample, 0)), size = 1, linetype = "dashed")+
-  #geom_line(mapping = aes(y = richness_total + 2*richness_total_std), size = 1, linetype = "dashed")+
-  geom_line(mapping = aes(y = predict(fit.patho_lower, num_of_sample, 0)), size = 1, linetype = "dashed")+
-  #geom_line(mapping = aes(y = richness_total - 2*richness_total_std), size = 1, linetype = "dashed")+
-  scale_y_continuous(limits = c(0,250), breaks = seq(0, 1000, 50))+
-  scale_x_continuous(breaks = seq(0, 400, 40))+
-  labs(title = "Rarefaction of AR plasmid") +
-  ylab("Richness")
-g + theme_grey(base_size = 42)
-
-fit.total_grad <- smooth.Pspline(total_df$num_of_sample, total_df$richness_total, norder=3, method=1, spar=1e5)
-fit.patho_grad <- smooth.Pspline(total_df$num_of_sample, total_df$richness_patho, norder=3, method=1, spar=1e5)
-#grad
-g <- ggplot(data = total_df, aes(num_of_sample)) +
-  #geom_line(mapping = aes(y = gradient, colour = "All"), size = 1) +
-  geom_line(aes(y = predict(fit.total_grad, num_of_sample, 1), colour = "All circular plasmid")) +
-  geom_line(aes(y = predict(fit.patho_grad, num_of_sample, 1), colour = "Richness AR plasmid")) + 
-  #geom_line(mapping = aes(y = gradient_patho, colour = "Pathogen"), size = 1) + 
-  scale_y_continuous(limits = c(0,6), breaks = seq(-2, 600, 2))+
-  scale_x_continuous(limits = c(0,343), breaks = seq(0, 400, 40))+
-  labs(title = "Plasmid Gradient", color='Richness AR plasmid',) +
-  ylab("delta")
-g + theme_grey(base_size = 42)
-```
-
 
 ### Session informaton
 ```{r}

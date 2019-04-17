@@ -1,0 +1,47 @@
+---
+title: "Clustering"
+output:
+  html_document:
+    df_print: paged
+---
+
+clustering function
+```{r message=FALSE, warning=FALSE}
+hcluster <- function(dist_matrix, output_file, threshold){
+  
+  dist.dat <- read.table(dist_matrix)
+  cluster.full <- hclust(as.dist(dist.dat), method = 'single' )
+  clusters <- cutree(cluster.full, h = threshold)
+  write.table(data.frame(clusters), output_file, sep='\t')
+}
+```
+
+clustering novel species without filter the known species  # 0.05 42 clusters
+```{r message=FALSE, warning=FALSE}
+hcluster("../tables/genome_dist_matrix.txt", "../output_tables/novel_genome_cluster.tsv", 0.05)
+```
+
+clustering, all high quality genome, novel + not novel # 0.05
+```{r message=FALSE, warning=FALSE}
+hcluster("../tables/high_qual_matrix.txt", "../output_tables/high_qual_genome_cluster.tsv", 0.05)
+```
+
+plasmid all genome, novel + not novel #0.01
+```{r message=FALSE, warning=FALSE, cache=TRUE}
+dist.dat <- readRDS("../tables/compressed_plasmid_ref_matrix.rds")
+cluster.full <- hclust(as.dist(dist.dat), method = 'single' )
+clusters <- cutree(cluster.full, h = 0.01)
+write.table(data.frame(clusters), ../output_tables/plasmid_cluster.tsv, sep='\t')
+
+```
+
+all genome species novel + not novel #0.05
+```{r message=FALSE, warning=FALSE}
+hcluster("../tables/genome_genome_matrix.txt", "../output_tables/all_genome_cluster.tsv", 0.05)
+```
+
+
+### Session informaton
+```{r}
+sessionInfo()
+```

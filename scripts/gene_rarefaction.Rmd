@@ -1,0 +1,107 @@
+---
+title: "Gene Rarefaction"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+### generate gene rarefaction plots
+
+Load generic libraries
+```{r message=FALSE, warning=FALSE}
+source('configuration.r')
+```
+
+Load specific libraries
+```{r message=FALSE, warning=FALSE}
+library(matrixStats)
+library(iNEXT)
+```
+
+Load functions
+```{r message=FALSE, warning=FALSE}
+
+unique_gene <- function(x){
+  str_out <- unlist(unique(unlist(strsplit(x,  ";"))))
+  str_out <- paste(str_out, collapse = ';')
+  return(str_out)
+}
+
+```
+
+
+Antibiotic gene
+```{r message=FALSE, warning=FALSE}
+
+genome_info <- read.table("../tables/genome_info.dat", sep="\t", header = TRUE)
+keep <- c("Nanopore_ID", "AR_gene_list")
+genome_info <- genome_info[keep]
+colnames(genome_info)<- c("Nanopore_ID","gene")
+genome_info <- genome_info[genome_info$gene != "",]
+
+plasmid_info <- read.table("../tables/plasmid_info.dat", sep="\t", header=TRUE)
+keep <- c("Nanopore_ID", "AR_gene_list")
+plasmid_info <- plasmid_info[keep]
+plasmid_info <- plasmid_info[!is.na(plasmid_info$AR_gene_list),]
+plasmid_info$AR_gene_list <- as.character(plasmid_info$AR_gene_list)
+
+plasmid_info_unique <- aggregate(AR_gene_list~Nanopore_ID, data=plasmid_info,FUN = unique_gene)
+
+nanopore_meta <- read.table("../metadata/nanopore.metadata.txt", header=TRUE)
+keep <- c("Nanopore_ID", "Sample_ID")
+nanopore_meta <- nanopore_meta[keep]
+
+genome_plasmid_merge <-  merge(genome_info, plasmid_info_unique, by = "Nanopore_ID", all = TRUE, sort = FALSE)
+genome_plasmid_merge[is.na(genome_plasmid_merge)] = ''
+genome_plasmid_merge <- transform(genome_plasmid_merge, all_gene=paste(gene, AR_gene_list, sep=""))
+keep <- c("Nanopore_ID", "all_gene")
+genome_plasmid_merge <- genome_plasmid_merge[keep]
+genome_plasmid_merge$all_gene <- as.character(genome_plasmid_merge$all_gene)
+genome_plasmid_merge_unique <- aggregate(all_gene~Nanopore_ID, data=genome_plasmid_merge,FUN = unique_gene)
+genome_plasmid_merge <- merge(nanopore_meta, genome_plasmid_merge_unique, by = "Nanopore_ID", all = TRUE, sort = FALSE)
+
+genome_plasmid_merge <- genome_plasmid_merge %>% 
+    mutate(all_gene = strsplit(as.character(all_gene), ";")) %>% 
+    unnest(all_gene)
+
+```
+
+
+rarefaction figures
+```{r fig.height=16, fig.width=8, message=FALSE, warning=FALSE}
+
+all_sampling_matrix <- acast(genome_plasmid_merge, all_gene~Sample_ID, value.var="all_gene")
+all_sampling_matrix <- all_sampling_matrix[rownames(all_sampling_matrix) !="NA", ]
+all_sampling_matrix <- all_sampling_matrix[,colnames(all_sampling_matrix) !="NA"]
+all_sampling_matrix <- all_sampling_matrix[,] > 0
+all_out <- iNEXT(all_sampling_matrix, datatype="incidence_raw", endpoint = 2000)
+g1 <- ggiNEXT(all_out, color.var="order") +
+    geom_line(aes(y=all_out$AsyEst["Species Richness", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") + 
+    scale_y_continuous(breaks = c(seq(0 , 200, by=50), round(all_out$AsyEst["Species Richness", "Estimator"]))) +
+    labs(title = "Rarefaction of all AR gene", x = "number of samples")
+g1 <- g1 + guides(fill=FALSE)
+g1 <- g1 + scale_color_discrete(labels = c("richness")) + 
+  scale_shape_discrete(labels = c("richness"))
+
+index_out <- iNEXT(all_sampling_matrix, q=c(1,2), datatype="incidence_raw", endpoint = 2000)
+g2 <- ggiNEXT(index_out, color.var="order") +
+  geom_line(aes(y=index_out$AsyEst["Shannon diversity", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") + 
+  geom_line(aes(y=index_out$AsyEst["Simpson diversity", "Estimator"]), size = 0.5, linetype = "dashed", color = "black") +
+  scale_y_continuous(breaks = c(seq(0 , 100, by=10), round(index_out$AsyEst["Shannon diversity", "Estimator"]), round(index_out$AsyEst["Simpson diversity", "Estimator"]))) +
+  labs(title = "Rarefaction of all AR gene", y = "diversity index", x = "number of samples")
+g2 <- g2 + guides(fill=FALSE)
+g2 <- g2 + scale_color_discrete(labels = c("shannon", "simpson")) + 
+  scale_shape_discrete(labels = c("shannon", "simpson"))
+
+cowplot::plot_grid(g1, g2, nrow=2)
+ggsave('../plots/gene_rarefaction.pdf', height = 16, width = 8)
+
+```
+
+### Session informaton
+```{r}
+sessionInfo()
+```
+
+
