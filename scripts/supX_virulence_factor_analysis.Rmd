@@ -97,15 +97,11 @@ dat.summary <- merge(data.frame(virulence=colSums(mat[-sel, ])),
       data.frame(anno.antibiotics[,c(1,7,8)], row.names=1),
       by =0) 
 
-ggplot(dat.summary, aes(x=patient=='1', y=virulence)) + 
+ggplot(dat.summary, aes(x=patient=='1' & multi=='1', y=virulence)) + 
   geom_boxplot() + geom_jitter() + 
   stat_compare_means(method.args = list(alternative = "less") , label.y=150, size=5) + 
-  labs(x='Is in patient?', y='Total virulence gene copy')
+  labs(x='Is in patient and multi-resistant?', y='Total virulence gene copy')
 
-ggplot(dat.summary, aes(x=multi=='1', y=virulence)) + 
-  geom_boxplot() + geom_jitter() + 
-  stat_compare_means(method.args = list(alternative = "less") , label.y=150, size=5) + 
-  labs(x='Resistant to >2 Abx?', y='Total virulence gene copy')
 
 ```
 

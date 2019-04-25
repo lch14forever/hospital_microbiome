@@ -5,7 +5,7 @@ output:
     df_print: paged
 ---
 
-### (Fig1a) MDS plot for illumina metagenomics data
+### MDS plot for illumina metagenomics data
 
 Load generic libraries
 ```{r message=FALSE, warning=FALSE}
@@ -51,7 +51,7 @@ ggplot(dat.merged, aes(x=V1, y=V2, col=Sample_type), lwd=2) +
 ggsave('../plots/f1a_mds_genus.pdf', width =9, height = 5)
 ```
 
-### (Fig1b) Differential abundance taxa between wet and dry
+### Differential abundance taxa between wet and dry
 
 Genus level
 
@@ -157,7 +157,7 @@ cowplot::plot_grid(p1, p2, p3, nrow=1, rel_widths=c(12,4.5,8),align ='h')
 ggsave('../plots/fig1bii_dry_wet_species_comparison.pdf', height = 7, width = 10)
 ```
 
-### (Fig1c) Spatial-temporal analysis
+### Spatial-temporal analysis
 
 ```{r fig.height=8, fig.width=16}
 meta.fil <- meta %>% select(Sample_ID, Room_type, Sample_type, timept, bed_number, Cubicle_room, Library)
@@ -208,7 +208,7 @@ ggplot(plot.dat, aes(x=V1, y=V2, col=Sample_type, shape=Time_point), lwd=2) +
 ggsave('../plots/fig1c_pcoa_spatial_temporal.pdf', height = 8, width = 20)
 ```
 
-### (Fig1d) Distance between samples
+### Distance between samples
 
 ```{r fig.height=8, fig.width=4}
 meta.fil <- meta %>% select(Library, Room_type, Sample_type, timept, Cubicle_room, bed_number)
@@ -310,7 +310,7 @@ ggsave('../plots/sup3a_distance_spatial_temporal.pdf', height = 8, width = 4)
 #wilcox.test(same_room,diff_rooms)
 ```
 
-### (Fig1e) Species differentially abundant in dry environments
+### Species differentially abundant in dry environments
 
 ```{r fig.height=6, fig.width=4}
 mat.sel <- rownames_to_column(dat.species, "species") %>% 
@@ -352,7 +352,7 @@ all.dat.dry.fil <- melt(all.dat.dry.fil,id="Room_type") %>%
   filter(variable%in%names(pvalueD[which(pvalueD<0.01)])) %>% 
   mutate(variable=str_replace_all(variable,"s__","")) %>% 
   mutate(variable=str_replace_all(variable,"_"," ")) %>%
-  mutate(Room_type=str_replace_all(Room_type,"_"," ")) %>% 
+  mutate(Room_type=str_replace_all(Room_type,c('cubicles'='wards', 'Non-cohort'='Standard',"_"=" "))) %>% 
   mutate(variable=str_replace(variable, '[a-z]+ ', '. '))
 
 
