@@ -334,8 +334,7 @@ colnames(df)=gsub("s__","",colnames(df))
 df[,"Sample_type"]=gsub("_"," ",df[,"Sample_type"])
 df[(which(df[,"Sample_type"]=="Door handle-interior")),"Sample_type"] = "Door Handle"
 
-filter(df,Sample_type!="Door handle") %>% 
-  mutate(Env=ifelse((Sample_type=="Aerator" | Sample_type=="Sink Trap"),"Wet","Dry")) %>%
+mutate(df, Env=ifelse((Sample_type=="Aerator" | Sample_type=="Sink Trap"),"Wet","Dry")) %>%
   select(-Sample_type, -Library) %>% 
   filter(Env=="Dry") %>% 
   select(-Env) -> all.dat.dry.fil

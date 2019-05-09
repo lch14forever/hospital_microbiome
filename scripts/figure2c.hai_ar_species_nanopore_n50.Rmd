@@ -36,27 +36,29 @@ dat <-  filter(dat, grepl("Burkholderia", species) |
 ```
 
 Plot
-```{r}
+```{r fig.height=6, fig.width=8}
 plot.dat <- group_by(dat, species) %>% 
   tally() %>% 
   merge(dat, by='species') %>%
   filter(n>19) 
   
 
-g <- ggplot(data =plot.dat, aes(y=species,x=N50/1e6, fill=species)) +
-  stat_density_ridges(quantile_lines = TRUE, quantiles = 2, alpha = 0.7) +
+g <- ggplot(data =plot.dat, aes(y=species,x=N50/1e6, fill=species, height = ..density..)) + 
+  #geom_density_ridges(trim = TRUE, alpha=0.7) +
+  stat_density_ridges(alpha = 0.3,  scale=0.98) +
+  geom_density_ridges(stat = "binline", bins = 20, scale = 0.95, draw_baseline = FALSE) +
   scale_fill_npg(guide=FALSE)+
   theme(axis.text.y = element_text(face='bold.italic'))  + 
   scale_x_log10() + 
   labs(y=NULL, x='N50 (MB)') +
-  coord_cartesian(ylim =c(1,8))
+  coord_cartesian(ylim =c(1,7.5))
 g
 ```
 
 Save plot
 ```{r, echo=FALSE}
 ggsave('../plots/fig2c.hai_ar_species_nanopore_n50.pdf', g,
-       width=8, height=5)
+       width=8, height=6)
 ```
 
 ### Session informaton
