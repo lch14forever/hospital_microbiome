@@ -285,6 +285,7 @@ Radar plot
 ```{r fig.height=8, fig.width=15}
 dat <- cbind(d1, d2[,2], d3) %>% data.frame(row.names = 3, check.names = F)
 rownames(dat) %<>% str_remove("-interior") %>% str_replace("_", " ")
+write.table(dat, '../output_tables/site_scores.tsv', sep='\t', row.names = TRUE, col.names = TRUE, quote=FALSE)
 
 plot.dat <- apply(dat, 2, function(x) (x-min(x))/(max(x)-min(x))) %>% ## min-max scaling to [0,1]
   data.frame(check.names = F) %>% 
