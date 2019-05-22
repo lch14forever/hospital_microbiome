@@ -293,11 +293,10 @@ plot.dat <- apply(dat, 2, function(x) (x-min(x))/(max(x)-min(x))) %>% ## min-max
 
 plot.dat <- plot.dat[c(nrow(plot.dat), 1:(nrow(plot.dat)-1)), ]
 
-ggradar(plot.dat[,], values.radar = c(0,0.5,1), grid.min=0, grid.max=1,  grid.line.width = 2, 
-        group.line.width=2, group.point.size=8,
+ggradar(plot.dat[,], values.radar = c(0,0.5,1), grid.min=0, grid.max=1,  grid.line.width = 1, 
+        group.line.width=1, group.point.size=8,
         grid.label.size=15, gridline.min.colour='black', gridline.max.colour='black',
         #axis.label.size =0,
-        group.colours = pal_npg(c("nrc"))(10)[c(5,7,2,3,10,4,1)],
         background.circle.colour='white')
 
 ggsave("../plots/fig1d_site_score_radar.png",  height=8, width=15) ## cannot save pdf due to font

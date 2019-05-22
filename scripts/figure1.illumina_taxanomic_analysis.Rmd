@@ -17,6 +17,7 @@ Load specific libraries
 library(vegan)
 library(ComplexHeatmap)
 library(RColorBrewer)
+library(foreach)
 ```
 
 Preprocess data
@@ -206,6 +207,19 @@ ggplot(plot.dat, aes(x=V1, y=V2, col=Sample_type, shape=Time_point), lwd=2) +
   guides(color=guide_legend(title='Sample type'), shape=guide_legend('Time point'))
 
 ggsave('../plots/fig1c_pcoa_spatial_temporal.pdf', height = 8, width = 20)
+```
+
+Test if the two CTs have different stability
+```{r}
+idx <- arrange(plot.dat, Sample_ID, timept) %>% 
+  select(Row.names, Sample_type, timept)
+
+mat <- as.matrix(dist.mat)
+d.pair <- foreach(r=seq(1,nrow(idx),2), .combine=rbind) %do%{
+  data.frame(d=mat[idx[r, 1], idx[r+1, 1]], type=idx[r, 2])
+}
+
+wilcox.test(d.pair$d[d.pair$type %in% c("Aerator", "Sink Trap")], d.pair$d[!d.pair$type %in% c("Aerator", "Sink Trap")])
 ```
 
 ### Distance between samples

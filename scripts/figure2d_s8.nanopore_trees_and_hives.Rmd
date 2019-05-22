@@ -43,7 +43,7 @@ write.table(meta.merged, '../output_tables/merged_assembly_metadata.tsv', quote=
 Function to plot the tree with heatmap
 ```{r}
 ## function to plot tree
-plot.tree <- function(x, color, offset=0.01, title=NULL){
+plot.tree <- function(x, color, offset=0.01, title=NULL, scale_offset_x=0.005, scale_offset_y=0){
   dist.dat <- read.table(x)
   #idx <- str_detect(rownames(dist.dat), 's_') & rownames(dist.dat) %in% meta.merged[,1]
   idx <- rownames(dist.dat) %in% (filter(meta.merged, Genome_quality=='HIGH_QUAL'))$Genome_ID | ##High quality genomes
@@ -70,7 +70,8 @@ plot.tree <- function(x, color, offset=0.01, title=NULL){
   p <- ggtree(as.phylo(cluster.strains), layout="fan", open.angle=45, lwd=1.5) %<+%
     merged + 
     geom_tippoint(size=3, shape=19, col=color) +
-    geom_tiplab2(aes(label=strain), size=5, offset=0.0015)
+    geom_tiplab2(aes(label=strain), size=5, offset=0.0015) +
+    geom_treescale(x=scale_offset_x, y=scale_offset_y, width=0.001, linesize=1, offset=0.1) 
   
   p <- gheatmap(p, offset=offset, antibiotics, color='black', colnames_offset_y = 0.3,##colnames_offset_x=10,
                 colnames_angle = 60, hjust =1, font.size=6.5) + scale_fill_manual(values=c('white', color)) + 
@@ -86,11 +87,11 @@ colors <- pal_npg('nrc')(8)
 g1 <- plot.tree('../tables/Elizabethkingia_anophelis_mummer_heatmap.dat', colors[1], 0.004, 'Elizabethkingia anophelis')
 g2 <- plot.tree('../tables/Staphylococcus_epidermidis_mummer_heatmap.dat', colors[2], 0.004, 'Staphylococcus epidermidis')
 g3 <- plot.tree('../tables/Staphylococcus_aureus_mummer_heatmap.dat', colors[3], 0.005, 'Staphylococcus aureus')
-g4 <- plot.tree('../tables/Acinetobacter_baumannii_mummer_heatmap.dat', colors[4], 0.007, 'Acinetobacter baumannii')
-g5 <- plot.tree('../tables/Pseudomonas_aeruginosa_mummer_heatmap.dat', colors[5], 0.004, 'Pseudomonas aeruginosa')
-g6 <- plot.tree('../tables/Enterococcus_faecium_mummer_heatmap.dat', colors[6], 0.0055, 'Enterococcus faecium')
-g7 <- plot.tree('../tables/Enterococcus_faecalis_mummer_heatmap.dat', colors[7], 0.007, 'Enterococcus faecalis')
-g8 <- plot.tree('../tables/Klebsiella_pneumoniae_mummer_heatmap.dat', colors[8], 0.006, 'Klebsiella pneumoniae')
+g4 <- plot.tree('../tables/Acinetobacter_baumannii_mummer_heatmap.dat', colors[4], 0.007, 'Acinetobacter baumannii', scale_offset_x = 0.006)
+g5 <- plot.tree('../tables/Pseudomonas_aeruginosa_mummer_heatmap.dat', colors[5], 0.004, 'Pseudomonas aeruginosa', scale_offset_x = 0.004)
+g6 <- plot.tree('../tables/Enterococcus_faecium_mummer_heatmap.dat', colors[6], 0.0055, 'Enterococcus faecium', scale_offset_x = 0.018)
+g7 <- plot.tree('../tables/Enterococcus_faecalis_mummer_heatmap.dat', colors[7], 0.007, 'Enterococcus faecalis', scale_offset_x = 0.018)
+g8 <- plot.tree('../tables/Klebsiella_pneumoniae_mummer_heatmap.dat', colors[8], 0.006, 'Klebsiella pneumoniae', scale_offset_x = 0.018)
 
 
 write.table(rbind(g1$dat, g2$dat, g3$dat, g4$dat, g5$dat, g6$dat, g7$dat, g8$dat), 
