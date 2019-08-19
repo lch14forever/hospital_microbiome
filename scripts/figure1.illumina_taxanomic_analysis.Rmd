@@ -21,8 +21,10 @@ library(foreach)
 ```
 
 Preprocess data
-```{r fig.height=5, fig.width=9}
+```{r}
 meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2)
+meta <- meta[which(meta$timept !=3), ]
+
 dat <- read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
 dat[dat < 0.1] <- 0
 dat <- dat[rowSums(dat)>0, ]
@@ -39,18 +41,22 @@ eigen <- cmds$eig / sum(cmds$eig) * 100
 dat.merged <- (merge(cmds$points, meta.fil, by.x=0, by.y=0, all.x=TRUE)) %>% 
   mutate(Sample_type=str_replace(Sample_type, '_', ' ')) %>% 
   mutate(Sample_type=str_replace(Sample_type, 'Door handle-interior', 'Door Handle'))
-dat.merged$Sample_type <- relevel(factor(dat.merged$Sample_type), 'Sink Trap')
+dat.merged$Sample_type <- fct_relevel(factor(dat.merged$Sample_type), 'Sink Trap')
+```
 
+PCoA1 and PCoA2
+```{r fig.height=5, fig.width=9}
 ## PCoA
 ggplot(dat.merged, aes(x=V1, y=V2, col=Sample_type), lwd=2) +
   geom_density_2d(aes(x=V1, y=V2), inherit.aes = FALSE, col='grey', lwd=1) + 
 	geom_point(size=4.5) +
-	labs(x=paste0('MDS2 (',round(eigen[1], 1),'%)'),
-       y=paste0('MDS1 (',round(eigen[2], 1),'%)')) +
-	scale_color_manual(values=pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)]) + 
-  theme(legend.title = element_blank())
+	labs(x=paste0('MDS1 (',round(eigen[1], 1),'%)'),
+       y=paste0('MDS2 (',round(eigen[2], 1),'%)')) +
+	scale_color_manual(values=c(pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)], 'grey')) + 
+  theme(legend.title = element_blank()) 
 ggsave('../plots/f1a_mds_genus.pdf', width =9, height = 5)
 ```
+
 
 ### Differential abundance taxa between wet and dry
 
@@ -102,7 +108,7 @@ Species
 ```{r fig.height=5, fig.width=10, message=FALSE, warning=FALSE}
 dat.species <- read.table('../tables/metagenomics.metaphlan2.table.s', head=TRUE, row.names=1)
 dat.species[dat.species < 0.1] <- 0
-dat.species <- dat.species[rowSums(dat.species)>0, ]
+dat.species <- dat.species[rowSums(dat.species)>0, ] 
 
 dat.fil.ordered.species <- dat.species[, as.character(fil$Library)][,c(which(!wet.sel), which(wet.sel))]
 g <- factor(rep(1:2, c(151, 25)), labels = c("D","W"))
@@ -198,7 +204,7 @@ ggplot(plot.dat, aes(x=V1, y=V2, col=Sample_type, shape=Time_point), lwd=2) +
   geom_curve(data=plot.dat, aes(x=V1.x,y=V2.x,xend=V1.y, yend=V2.y),
              arrow = arrow(length = unit(0.02, "npc")), lwd=1, alpha=0.5,
              inherit.aes = FALSE) +
-  geom_point(size=3, alpha=0.9) + coord_cartesian(ylim = c(-0.5, 0.5), xlim = c(-0.75,0.5)) +
+  geom_point(size=3, alpha=0.9) + coord_cartesian(ylim = c(-0.5, 0.5), xlim = c(-0.75,0.75)) +
   labs(x=paste0('MDS1 (',round(eigen[1], 1),'%)'),
        y=paste0('MDS2 (',round(eigen[2], 1),'%)')) +
   scale_shape_manual(values=c(17, 19)) + 
@@ -275,7 +281,7 @@ aux_room <- function(x){
 same_room <- unlist(sapply(grouped_ids_sameroom, aux_room),use.names=F)
 same_room <- same_room[!is.na(same_room)]
 
-fil=filter(meta.fil,Room_type != 'GIS' & Room_type != 'Negative controls') %>% 
+fil=filter(meta.fil,Room_type != 'GIS' & Room_type != 'Negative controls' & timept < 3) %>% 
   filter((Sample_type == "Bed_Rail" | Sample_type == "Bedside_Locker" | Sample_type == "Cardiac_Table")) %>% 
   mutate(MDRO=ifelse(Room_type == "MDRO_cubicles", "MDRO_","")) %>% unite(MDRO,Cubicle_room,col="Cubicle_room",sep="")
 fil[which(is.na(fil$bed_number)),]$bed_number=1
@@ -386,8 +392,7 @@ ggsave('../plots/fig1e_species_in_dry_environments.pdf', height = 6, width = 4)
 ```{r echo=FALSE, eval=FALSE}
 ### PERMANOVA test
 df.fil <- df[rowSums(df[,-c(1:3)]) > 0, -c(1,3)]
-df.fil %>% filter(!Sample_type %in% c('Aerator','Sink Trap')) %>% 
-  dplyr::select(-1,-3) -> dry.dat
+df.fil %>% filter(!Sample_type %in% c('Aerator','Sink Trap')) -> dry.dat
 
 adonis2(df.fil[,-1] ~ site, data = data.frame(site=df.fil$Sample_type))
 adonis2(dry.dat[,-1] ~ site, data = data.frame(site=dry.dat$Sample_type))
