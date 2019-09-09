@@ -74,7 +74,7 @@ o <- c('Ill','BHI', 'AMP', 'CHLOR', 'KAN', 'STREP', 'TET')
 # )$median) ## summary statistics
 
 g <- ggplot(data=plot.dat, aes(x=factor(Antibiotics,level=o), y=log(value+1,2),color=Antibiotics)) +
-  geom_quasirandom(dodge.width = 1, alpha=0.8) +
+  geom_quasirandom(dodge.width = 1, alpha=0.8, size=0.3) +
   scale_color_npg(guide=FALSE) + 
   labs(x='Antibiotics', y='log2(% + 1)')+
   theme(axis.text.x = element_text(angle=40, hjust=1, size=8),
@@ -84,7 +84,7 @@ g + facet_wrap(~species,nrow=3)
 
 Save plot
 ```{r, echo=FALSE}
-ggsave('../plots/fig2b.hai_ar_species_abundance_in_illumina.pdf', g + facet_wrap(~species,nrow=1), 
+ggsave('../plots/fig3c.hai_ar_species_abundance_in_illumina.svg', g + facet_wrap(~species,nrow=1), 
        width=12, height=3)
 ```
 
