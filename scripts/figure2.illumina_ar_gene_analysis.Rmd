@@ -21,7 +21,7 @@ library(RColorBrewer)
 Merge data
 ```{r}
 metadata <-read.table("../metadata/illumina_metadata.txt",sep="\t",head=T) %>% 
-  filter(Room_type != 'GIS')
+  filter(timept %in% c(1,2))
 anti <-read.table("../tables/illumina_AR_gene_assignment.dat",sep="\t",head=T)
 df.anti <- merge(metadata, anti, by.x='Site', by.y='Lib') %>% 
   mutate(Anti_type=gsub('.*_','',Anti)) %>%
@@ -80,7 +80,7 @@ s9 <- plot.heatmap("Flq", 'GnBu')
 Main
 ```{r fig.height=7, fig.width=4}
 cowplot::plot_grid(m1$gtable)
-ggsave('../plots/fig1e_antibiotics_profile.pdf', height = 7, width = 4)
+ggsave('../plots/fig2e_antibiotics_profile.pdf', height = 7, width = 4)
 ```
 
 Supplementary figures
@@ -94,7 +94,7 @@ cowplot::plot_grid(
   ncol=1,
   rel_heights = c(4,0.5,2,0.5)
 )
-ggsave('../plots/sup5_antibiotics_profile.pdf', height = 10, width = 13)
+ggsave('../plots/sup7_antibiotics_profile.pdf', height = 10, width = 13)
 ```
 
 ### Session informaton

@@ -1,5 +1,5 @@
 ---
-title: "(Fig1d) Investigating differernt site scores"
+title: "(Fig2d) Investigating differernt site scores"
 output:
   html_document:
     df_print: paged
@@ -31,8 +31,8 @@ dat <- dat[rowSums(dat)>0, ]
 meta.filled <- meta %>% 
   select(Library, Room_type, Sample_type, timept, Cubicle_room, bed_number)
 #select timepoint 1 only
-dat.fil=filter(meta.filled,Room_type != 'GIS' & Room_type != 'Negative controls' & timept==1)
-dat.fil = mutate(dat.fil, MDRO=ifelse(Room_type == "MDRO_cubicles", "MDRO_","")) %>%
+dat.fil <- filter(meta.filled,Room_type != 'GIS' & timept==1)
+dat.fil <- mutate(dat.fil, MDRO=ifelse(Room_type == "MDRO_cubicles", "MDRO_","")) %>%
   unite(MDRO,Cubicle_room,col="Cubicle_room",sep="")
 #isolation room bed number initialise to 1
 dat.fil[which(is.na(dat.fil$bed_number)),]$bed_number=1
@@ -176,7 +176,7 @@ dat[(dat != 1 & dat !=0) ]=NA
 dat=dat[-grep('unclass',rownames(dat)),]
 
 meta.filled <- meta %>% select(Library, Room_type, Sample_type, timept, Cubicle_room, bed_number)
-dat.fil=filter(meta.filled,Room_type != 'GIS' & Room_type != 'Negative controls')
+dat.fil=filter(meta.filled,Room_type != 'GIS' & timept %in% c(1,2))
 dat.fil = mutate(dat.fil, MDRO=ifelse(Room_type == "MDRO_cubicles", "MDRO_","")) %>% unite(MDRO,Cubicle_room,col="Cubicle_room",sep="")
 
 #isolation room bed number initialise to 1
@@ -274,7 +274,7 @@ dat$READS_DECONT <- dat$READS_DECONT/dat$READS_TRIM
 
 df.m <- merge(meta, dat, by.x='Library',by.y='LIBID', all=TRUE) 
 
-d3 <- subset(df.m, !is.na(Cubicle_room)) %>%
+d3 <- subset(df.m, !is.na(Cubicle_room) & timept %in% c(1,2)) %>%
   mutate(HUMAN_READS=(1-READS_DECONT)) %>%
   select(Sample_type, HUMAN_READS) %>% 
   group_by(Sample_type) %>% 
@@ -295,11 +295,11 @@ plot.dat <- plot.dat[c(nrow(plot.dat), 1:(nrow(plot.dat)-1)), ]
 
 ggradar(plot.dat[,], values.radar = c(0,0.5,1), grid.min=0, grid.max=1,  grid.line.width = 1, 
         group.line.width=1, group.point.size=8,
-        grid.label.size=15, gridline.min.colour='black', gridline.max.colour='black',
-        #axis.label.size =0,
+        grid.label.size=0, gridline.min.colour='black', gridline.max.colour='black',
+        axis.label.size =0,
         background.circle.colour='white')
 
-ggsave("../plots/fig1d_site_score_radar.png",  height=8, width=15) ## cannot save pdf due to font
+ggsave("../plots/fig2d_site_score_radar.svg",  height=8, width=15) 
 ```
 
 ### Session informaton

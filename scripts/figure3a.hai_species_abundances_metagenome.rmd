@@ -37,7 +37,7 @@ mat.sel <- rownames_to_column(dat, "species") %>%
   column_to_rownames("species")
 
 df <- merge(meta, data.frame(t(mat.sel), Site=colnames(mat.sel)), by=0,all.y=T) %>% 
-  filter(!is.na(Sample_type)) %>% 
+  filter(timept %in% c(1,2)) %>% 
   filter(Room_type!='GIS') %>% 
   select(-Site,-Sample_ID,-Cubicle_room,-Material,-Human_Traffic,-timept,-Room_type,-bed_number) %>% 
   column_to_rownames("Row.names")
@@ -67,7 +67,7 @@ p <- pheatmap(mat, #color=pal_rickandmorty('schwifty')(12)[c(10,4,12,1,9,8,5,7,6
 
 grid.arrange(p$gtable)
 
-ggsave('../plots/fig2a.hai_species_abundance_heatmap.pdf', 
+ggsave('../plots/fig3a.hai_species_abundance_heatmap.svg', 
        grid.arrange(p$gtable),
        width = 4, height = 5)
 ```
