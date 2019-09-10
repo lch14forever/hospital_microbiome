@@ -17,6 +17,7 @@ Load plot specific libraries
 library(ape)
 library(ggtree)
 library(HiveR)
+library(magrittr)
 ```
 
 Merge data
@@ -37,17 +38,36 @@ levels(meta.merged$Sample_type) <- str_replace_all(levels(meta.merged$Sample_typ
 levels(meta.merged$Room_type) <- str_replace_all(levels(meta.merged$Room_type), c('cubicles'='wards', 'Non-cohort'='Standard'))
 levels(meta.merged$Cubicle_room) <- str_replace_all(levels(meta.merged$Cubicle_room), c('Cubicle'='Ward'))
 write.table(meta.merged, '../output_tables/merged_assembly_metadata.tsv', quote=F, row.names = F, col.names = T, sep='\t')
+meta.merged %<>% filter(timept %in% c(1,2))
 ```
 
 
 Function to plot the tree with heatmap
 ```{r}
+## function to get cluster data:
+get.clusters <- plot.tree <- function(x){
+  dist.dat <- read.table(x)
+  idx <- rownames(dist.dat) %in% (filter(meta.merged, Genome_quality=='HIGH_QUAL'))$Genome_ID | ##High quality genomes
+    str_detect(rownames(dist.dat), 'G|F') # use ['G|F'] to include the new data 
+  dist.dat <- dist.dat[idx, idx]
+  
+  ## clustering
+  cluster.full <- hclust(as.dist(dist.dat), method='single')
+  clusters <- cutree(cluster.full, h=0.001)
+  ## filter patient data
+  clusters <- clusters[str_detect(names(clusters), 's_')]
+  
+  merged <- merge(data.frame(clusters), meta.merged, by.x=0, by.y=1) %>%  
+    mutate(strain=paste0('s', clusters), input_distance_matrix=x) 
+  merged
+}
+
 ## function to plot tree
 plot.tree <- function(x, color, offset=0.01, title=NULL, scale_offset_x=0.005, scale_offset_y=0){
   dist.dat <- read.table(x)
   #idx <- str_detect(rownames(dist.dat), 's_') & rownames(dist.dat) %in% meta.merged[,1]
   idx <- rownames(dist.dat) %in% (filter(meta.merged, Genome_quality=='HIGH_QUAL'))$Genome_ID | ##High quality genomes
-    str_detect(rownames(dist.dat), 'G') # use ['G|F'] to include the new data 
+    str_detect(rownames(dist.dat), 'G|F') # use ['G|F'] to include the new data 
   dist.dat <- dist.dat[idx, idx]
   
   ## clustering
@@ -57,10 +77,15 @@ plot.tree <- function(x, color, offset=0.01, title=NULL, scale_offset_x=0.005, s
   clusters <- clusters[str_detect(names(clusters), 's_')]
   
   strains <- sapply(unique(clusters), function(x) clusters[clusters==x][1])
-  cluster.strains <- hclust(as.dist(dist.dat[names(strains), names(strains)]), method='average')
+  ##cluster.strains <- hclust(as.dist(dist.dat[names(strains), names(strains)]), method='average')
+  ## read precomputed parsnp tree
+  tree.strains <- read.tree(paste0('../tables/trees/', str_match(x, '/([A-Z][a-z]+_[a-z]+)')[,2], ".parsnp.tree"))
+  tree.strains$tip.label %<>% 
   
   merged <- merge(data.frame(clusters), meta.merged, by.x=0, by.y=1) %>%  
-    mutate(strain=paste0('s', clusters))
+    mutate(strain=paste0('s', clusters)) 
+  
+  annotate <- 
   
   antibiotics <- select(merged, clusters, Antibiotics) %>% group_by(clusters, Antibiotics) %>% 
     count() %>% spread(Antibiotics,n,fill=0) %>% merge(data.frame(strains, id=names(strains)), by.x=1, by.y=1) %>% 
@@ -79,6 +104,19 @@ plot.tree <- function(x, color, offset=0.01, title=NULL, scale_offset_x=0.005, s
     ggtitle(title)
   return(list(p=p, dat=merged))
 }
+```
+
+```{r}
+d1 <- get.clusters('../tables/Elizabethkingia_anophelis_mummer_heatmap.dat')
+d2 <- get.clusters('../tables/Staphylococcus_epidermidis_mummer_heatmap.dat')
+d3 <- get.clusters('../tables/Staphylococcus_aureus_mummer_heatmap.dat')
+d4 <- get.clusters('../tables/Acinetobacter_baumannii_mummer_heatmap.dat')
+d5 <- get.clusters('../tables/Pseudomonas_aeruginosa_mummer_heatmap.dat')
+d6 <- get.clusters('../tables/Enterococcus_faecium_mummer_heatmap.dat')
+d7 <- get.clusters('../tables/Enterococcus_faecalis_mummer_heatmap.dat')
+d8 <- get.clusters('../tables/Klebsiella_pneumoniae_mummer_heatmap.dat')
+write.table(rbind(d1, d2, d3, d4, d5, d6, d7, d8), 
+            '../output_tables/strain_cluster_summary.tsv', sep='\t', row.names = F, col.names = T, quote=F)
 ```
 
 Generate tree plots
