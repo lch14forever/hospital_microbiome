@@ -15,14 +15,13 @@ source('configuration.r')
 Load plot specific libraries
 ```{r message=FALSE, warning=FALSE}
 library(ape)
-library(ggtree)
 library(HiveR)
 library(forcats)
 ```
 
 Merge data
 ```{r}
-mat <- read.table('../tables/phage_mummer_heatmap.dat', head=TRUE, stringsAsFactors = FALSE, comment.char = '!', sep='\t')
+mat <- read.table('../tables/phage_mummer_heatmap.dat', head=TRUE, stringsAsFactors = FALSE, comment.char = '!', sep='\t', row.names = 1)
 
 df <- data.frame(Genome_ID=rownames(mat)) %>% 
   mutate(Nanopore_ID=str_extract(Genome_ID, "N[0-9]+_[A-Za-z]+[0-9]+")) 
@@ -54,27 +53,29 @@ clusters <- cutree(cluster.full, h=0.001)
 strains <- sapply(unique(clusters), function(x) clusters[clusters==x][1]) ## using first entry as the representative
 
 dat <- merge(data.frame(clusters), meta.merged, by.x=0, by.y=1)
+phage.meta <- read.table('../tables/phage_info.dat', stringsAsFactors = F, head=T, sep='\t')
 
-## filter cluster (keep clusters with size > 10)
-sel <- table(dat$clusters) %>% data.frame() %>% 
-  arrange(desc(Freq)) %>% filter(Freq>5) %>% 
-  pull(Var1) %>% as.numeric()
+dat <- merge(dat, phage.meta, by=1, all.x=TRUE) %>% 
+  mutate(is_Circular=is_Circular=="True", is_Novel=is_Novel=="True")
 
-dat.sel <- 
-  filter(dat, clusters %in% sel) %>% 
+# sel <- filter(dat, is_Novel) %>%
+#   pull(clusters) %>% unique ## keep only circular ones
+
+# ## filter cluster (keep clusters with size > X)
+# sel <- table(dat$clusters) %>% data.frame() %>% 
+#   arrange(desc(Freq)) %>% filter(Freq>0) %>% 
+#   pull(Var1) %>% as.numeric()
+
+dat.sel <- dat %>% 
+  #filter(clusters %in% sel) %>% 
   mutate(clusters=as.numeric(as.factor(clusters))) ## relevel the clusters
+write.table(dat.sel, '../output_tables/phage_selected_cluster_summary.tsv', row.names = F, col.names = T, sep='\t', quote=F)
 ```
 
 ### Novel phage analysis
 
 ```{r}
-novel.phage <- read.table('../tables/novel_phages.dat', stringsAsFactors = F)[,1]
-
-dat.sel <- mutate(dat.sel, isNovel=Row.names %in% novel.phage) 
-
-write.table(dat.sel, '../output_tables/phage_selected_cluster_summary.tsv', row.names = F, col.names = T, sep='\t', quote=F)
-
-novel_clusters <- select(dat.sel, clusters, tmp=isNovel) %>% 
+novel_clusters <- select(dat.sel, clusters, tmp=is_Novel) %>% 
   group_by(clusters) %>% 
   summarise(isNovel=any(tmp)) #, len=length(tmp), novel=sum(tmp)) ## sanity check
 ```
@@ -93,9 +94,9 @@ dat.sel %>%
   unite(n3,c(label3, Room_type, Cubicle_room), sep='=',remove=F) %>% 
   select(-label1, -label2, -label3) -> edge_data
 
-## remove strains only occurred once at one place
+## select the phage with the most genomes
 edge_data <- filter(edge_data, n1%in% 
-         (edge_data %>% group_by(n1) %>% count %>% filter(n>1))$n1)
+         (edge_data %>% group_by(n1) %>% count %>% arrange(desc(n)))[1,]$n1)
 ```
 
 
@@ -142,10 +143,10 @@ mutate(tmp, node.text=str_replace(node.text, 'Strain=.*=', 'Strain=s')) %>%
   mutate(node.text=str_replace_all(node.text, '=', ': ')) %>%
   #mutate(node.text=str_replace(node.text, 's[0-9]+', '')) %>% 
   mutate(offset=ifelse(lab=='Room' | lab=='Site' , -0.05, -0.03)) %>% 
-  select(-lab) %>% 
+  select(-lab) %>% View()
 write.table('tmp_hive.txt', sep=',', quote=T, row.names = F, col.names = T)
 
-plotHive(hive, ch=0.2, method='ranknorm', bkgnd='white', anNodes = 'tmp_hive.txt',
+plotHive(hive, ch=0.2, method='rank', bkgnd='white', anNodes = 'tmp_hive.txt',
         anNode.gpar=gpar(cex=1.5))
 ```
 
