@@ -58,16 +58,13 @@ phage.meta <- read.table('../tables/phage_info.dat', stringsAsFactors = F, head=
 dat <- merge(dat, phage.meta, by=1, all.x=TRUE) %>% 
   mutate(is_Circular=is_Circular=="True", is_Novel=is_Novel=="True")
 
-# sel <- filter(dat, is_Novel) %>%
-#   pull(clusters) %>% unique ## keep only circular ones
-
-# ## filter cluster (keep clusters with size > X)
-# sel <- table(dat$clusters) %>% data.frame() %>% 
-#   arrange(desc(Freq)) %>% filter(Freq>0) %>% 
-#   pull(Var1) %>% as.numeric()
+## filter cluster (keep clusters with size > X)
+sel <- table(dat$clusters) %>% data.frame() %>%
+  arrange(desc(Freq)) %>% filter(Freq>5) %>%
+  pull(Var1) %>% as.numeric()
 
 dat.sel <- dat %>% 
-  #filter(clusters %in% sel) %>% 
+  filter(clusters %in% sel) %>% 
   mutate(clusters=as.numeric(as.factor(clusters))) ## relevel the clusters
 write.table(dat.sel, '../output_tables/phage_selected_cluster_summary.tsv', row.names = F, col.names = T, sep='\t', quote=F)
 ```
@@ -95,8 +92,8 @@ dat.sel %>%
   select(-label1, -label2, -label3) -> edge_data
 
 ## select the phage with the most genomes
-edge_data <- filter(edge_data, n1%in% 
-         (edge_data %>% group_by(n1) %>% count %>% arrange(desc(n)))[1,]$n1)
+edge_data <- filter(edge_data, n1%in%
+         (edge_data %>% group_by(n1) %>% count %>% filter(n>1))$n1)
 ```
 
 
@@ -143,24 +140,20 @@ mutate(tmp, node.text=str_replace(node.text, 'Strain=.*=', 'Strain=s')) %>%
   mutate(node.text=str_replace_all(node.text, '=', ': ')) %>%
   #mutate(node.text=str_replace(node.text, 's[0-9]+', '')) %>% 
   mutate(offset=ifelse(lab=='Room' | lab=='Site' , -0.05, -0.03)) %>% 
-  select(-lab) %>% View()
+  select(-lab) %>% 
 write.table('tmp_hive.txt', sep=',', quote=T, row.names = F, col.names = T)
 
-plotHive(hive, ch=0.2, method='rank', bkgnd='white', anNodes = 'tmp_hive.txt',
+plotHive(hive, ch=0.2, method='ranknorm', bkgnd='white', anNodes = 'tmp_hive.txt',
         anNode.gpar=gpar(cex=1.5))
 ```
 
-
-
-
-
-<!-- ### Save plots -->
-<!-- ```{r message=FALSE, warning=FALSE} -->
-<!-- pdf('../plots/xxxxx', width = 12, height = 12) -->
-<!-- plotHive(hive, ch=0.2, method='ranknorm', bkgnd='white', anNodes = 'tmp_hive.txt', -->
-<!--         anNode.gpar=gpar(cex=1.5)) -->
-<!-- dev.off() -->
-<!-- ``` -->
+### Save plots
+```{r message=FALSE, warning=FALSE}
+pdf('../plots/fig4.phage_hive.pdf', width = 12, height = 12)
+plotHive(hive, ch=0.2, method='ranknorm', bkgnd='white', anNodes = 'tmp_hive.txt',
+        anNode.gpar=gpar(cex=1.5))
+dev.off()
+```
 
 ### Session informaton
 ```{r}
