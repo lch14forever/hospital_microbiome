@@ -45,8 +45,8 @@ meta.merged %<>% filter(timept %in% c(1,2))
 Function to plot the tree with heatmap
 ```{r}
 ## function to get cluster data:
-get.clusters <- plot.tree <- function(x){
-  dist.dat <- read.table(x)
+get.clusters <- function(x){
+  dist.dat <- read.table(paste0("../tables/", x, ""))
   idx <- rownames(dist.dat) %in% (filter(meta.merged, Genome_quality=='HIGH_QUAL'))$Genome_ID | ##High quality genomes
     str_detect(rownames(dist.dat), 'G|F') # use ['G|F'] to include the new data 
   dist.dat <- dist.dat[idx, idx]
@@ -107,14 +107,14 @@ plot.tree <- function(x, color, offset=0.01, title=NULL, scale_offset_x=0.005, s
 ```
 
 ```{r}
-d1 <- get.clusters('../tables/Elizabethkingia_anophelis_mummer_heatmap.dat')
-d2 <- get.clusters('../tables/Staphylococcus_epidermidis_mummer_heatmap.dat')
-d3 <- get.clusters('../tables/Staphylococcus_aureus_mummer_heatmap.dat')
-d4 <- get.clusters('../tables/Acinetobacter_baumannii_mummer_heatmap.dat')
-d5 <- get.clusters('../tables/Pseudomonas_aeruginosa_mummer_heatmap.dat')
-d6 <- get.clusters('../tables/Enterococcus_faecium_mummer_heatmap.dat')
-d7 <- get.clusters('../tables/Enterococcus_faecalis_mummer_heatmap.dat')
-d8 <- get.clusters('../tables/Klebsiella_pneumoniae_mummer_heatmap.dat')
+d1 <- get.clusters('Elizabethkingia_anophelis')
+d2 <- get.clusters('Staphylococcus_epidermidis')
+d3 <- get.clusters('Staphylococcus_aureus')
+d4 <- get.clusters('Acinetobacter_baumannii')
+d5 <- get.clusters('Pseudomonas_aeruginosa')
+d6 <- get.clusters('Enterococcus_faecium')
+d7 <- get.clusters('Enterococcus_faecalis')
+d8 <- get.clusters('Klebsiella_pneumoniae')
 write.table(rbind(d1, d2, d3, d4, d5, d6, d7, d8), 
             '../output_tables/strain_cluster_summary.tsv', sep='\t', row.names = F, col.names = T, quote=F)
 ```
