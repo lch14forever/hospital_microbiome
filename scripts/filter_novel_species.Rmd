@@ -15,10 +15,10 @@ Load functions
 
 merge_name <- function(x){
   str <- unlist(strsplit(x, " "))
-  if (str[1] == "Burkholderia"){
-    str_out <- paste(str[1], str[2], sep = "_")
-    return(str_out)
-  }
+  #if (str[1] == "Burkholderia"){
+  #  str_out <- paste(str[1], str[2], sep = "_")
+  #  return(str_out)
+  #}
   str_out <- paste(str[1], str[2],  str[3], sep = "_")
   return(str_out)
 }
@@ -26,29 +26,13 @@ merge_name <- function(x){
 pathogenslice <- function(x){
   str1 <- unlist(strsplit(x, "_"))[1]
   str2 <- unlist(strsplit(x, "_"))[2]
-  if (str1 == "Burkholderia"){
-    str_out <- str1
-  }
-  else{
-    str_out <- paste(str1, str2, sep = " ")
-  }
+  #if (str1 == "Burkholderia"){
+  #  str_out <- str1
+  #}
+  #else{
+  str_out <- paste(str1, str2, sep = " ")
+  #}
   return(str_out)
-}
-
-novel_genome_string <- function(x){
-  
-  str1 <- unlist(strsplit(x, "_"))[1]
-  str2 <- unlist(strsplit(x, "_"))[2]
-  str3 <- unlist(strsplit(x, "_"))[3]
-  str4 <- unlist(strsplit(x, "_"))[4]
-  if(str1 == "Burkholderia"){
-    str_out <- paste(str1, str3, str4, sep = "_")
-  }
-  else{
-    str_out <- paste(str1, str2,  str3, str4, sep = "_")
-  }
-  return(str_out)
-  
 }
 
 ```
@@ -59,18 +43,12 @@ all_genome_cluster <-read.table("../output_tables/all_genome_cluster.tsv", row.n
 novel_genome_cluster <-read.table("../output_tables/novel_genome_cluster.tsv", row.names = NULL, sep="\t")
 novel_genome_cluster$novel <- "yes"
 colnames(novel_genome_cluster)[colnames(novel_genome_cluster)=="row.names"] <- "species"
-
-novel_genome_cluster$species <- apply(novel_genome_cluster, 1, FUN = novel_genome_string)
-
 all_genome <-read.table("../tables/genome_info.dat", row.names = NULL, sep="\t", header = TRUE)
 
 ```
 
 Find the number of genome that is pathogenic, non pathogenic and high med quality
 ```{r message=FALSE, warning=FALSE}
-all_genome <-read.table(
-  "../tables/genome_info.dat",
-  row.names = NULL, sep="\t", header=TRUE)
 
 pathogen_list <-read.csv(
   "../metadata/pathogene_list.dat", row.names = NULL, header = TRUE)
@@ -103,7 +81,7 @@ all_genome$species <- apply(all_genome, 1, FUN = merge_name)
 output <- merge(all_genome, novel_genome_cluster, by = "species", all.x = TRUE,  sort = FALSE)
 output <- output[keep]
 output$novel[is.na(output$novel)] <- "no"
-#write.table(output,"../output_tables/genome_info_novel.dat", sep='\t', quote = FALSE)
+write.table(output,"../output_tables/genome_info_novel.dat", sep='\t', quote = FALSE)
 ```
 
 
