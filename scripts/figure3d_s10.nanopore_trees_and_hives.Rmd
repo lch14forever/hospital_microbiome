@@ -8,7 +8,7 @@ output:
 ### Phylogenetic analysis based on identity
 
 Load generic libraries
-```{r}
+```{r message=FALSE, warning=FALSE}
 source('configuration.r')
 ```
 
@@ -18,6 +18,8 @@ library(ape)
 library(ggtree)
 library(HiveR)
 library(magrittr)
+library(phangorn)
+library(forcats)
 ```
 
 Merge data
@@ -30,7 +32,8 @@ meta.merged <- merge(meta.nanopore, meta.illumina,
                      by.y='Library')
 meta.merged <- merge(df, meta.merged,
                      by='Nanopore_ID') %>% 
-  select(Genome_ID, everything()) 
+  select(Genome_ID, everything()) %>% 
+  mutate(Sample_type=fct_drop(Sample_type)) 
 
 colnames(meta.merged)[3] <- 'Species'
 ## fix names in metadata to be consistent with the manuscript
@@ -45,8 +48,9 @@ meta.merged %<>% filter(timept %in% c(1,2))
 Function to plot the tree with heatmap
 ```{r}
 ## function to get cluster data:
-get.clusters <- plot.tree <- function(x){
-  dist.dat <- read.table(x)
+get.clusters <- function(x){
+  dist.file <- paste0("../tables/", x, "_mummer_heatmap.dat")
+  dist.dat <- read.table(dist.file)
   idx <- rownames(dist.dat) %in% (filter(meta.merged, Genome_quality=='HIGH_QUAL'))$Genome_ID | ##High quality genomes
     str_detect(rownames(dist.dat), 'G|F') # use ['G|F'] to include the new data 
   dist.dat <- dist.dat[idx, idx]
@@ -58,93 +62,72 @@ get.clusters <- plot.tree <- function(x){
   clusters <- clusters[str_detect(names(clusters), 's_')]
   
   merged <- merge(data.frame(clusters), meta.merged, by.x=0, by.y=1) %>%  
-    mutate(strain=paste0('s', clusters), input_distance_matrix=x) 
+    mutate(strain=paste0('s', clusters), input_distance_matrix=dist.file) 
   merged
 }
 
 ## function to plot tree
 plot.tree <- function(x, color, offset=0.01, title=NULL, scale_offset_x=0.005, scale_offset_y=0){
-  dist.dat <- read.table(x)
-  #idx <- str_detect(rownames(dist.dat), 's_') & rownames(dist.dat) %in% meta.merged[,1]
-  idx <- rownames(dist.dat) %in% (filter(meta.merged, Genome_quality=='HIGH_QUAL'))$Genome_ID | ##High quality genomes
-    str_detect(rownames(dist.dat), 'G|F') # use ['G|F'] to include the new data 
-  dist.dat <- dist.dat[idx, idx]
-  
-  ## clustering
-  cluster.full <- hclust(as.dist(dist.dat), method='single')
-  clusters <- cutree(cluster.full, h=0.001)
-  ## filter patient data
-  clusters <- clusters[str_detect(names(clusters), 's_')]
-  
-  strains <- sapply(unique(clusters), function(x) clusters[clusters==x][1])
-  ##cluster.strains <- hclust(as.dist(dist.dat[names(strains), names(strains)]), method='average')
-  ## read precomputed parsnp tree
-  tree.strains <- read.tree(paste0('../tables/trees/', str_match(x, '/([A-Z][a-z]+_[a-z]+)')[,2], ".parsnp.tree"))
-  tree.strains$tip.label %<>% 
-  
-  merged <- merge(data.frame(clusters), meta.merged, by.x=0, by.y=1) %>%  
-    mutate(strain=paste0('s', clusters)) 
-  
-  annotate <- 
-  
-  antibiotics <- select(merged, clusters, Antibiotics) %>% group_by(clusters, Antibiotics) %>% 
-    count() %>% spread(Antibiotics,n,fill=0) %>% merge(data.frame(strains, id=names(strains)), by.x=1, by.y=1) %>% 
-    select(-clusters, -BHI) %>% data.frame(row.names = 'id')
+  merged <- get.clusters(x)
+  tree.strains <- read.tree(paste0('../tables/trees/', x, ".parsnp.tree"))
+  tree.strains$tip.label %<>% str_replace_all(c(".trimmed.fasta"="", "nanopore.cons.cluster_"="s", ".ref"=""))
+
+  antibiotics <- select(merged, strain, Antibiotics) %>% group_by(strain, Antibiotics) %>% 
+    count() %>% spread(Antibiotics,n,fill=0) %>% 
+    select(-BHI) %>% data.frame(row.names = 'strain')
   antibiotics[antibiotics > 0] <- 'D'
   
-  p <- ggtree(as.phylo(cluster.strains), layout="fan", open.angle=45, lwd=1.5) %<+%
-    merged + 
-    geom_tippoint(size=3, shape=19, col=color) +
-    geom_tiplab2(aes(label=strain), size=5, offset=0.0015) +
-    geom_treescale(x=scale_offset_x, y=scale_offset_y, width=0.001, linesize=1, offset=0.1) 
+  p <- 
+    ggtree(midpoint(tree.strains), layout="fan", open.angle=45, lwd=1) +
+    geom_tippoint(size=3, shape=19, col=color) + 
+    geom_tiplab2(size=5, offset=offset/3) +
+    geom_treescale(x=scale_offset_x, y=scale_offset_y, linesize=0.8, offset=0.1) 
   
   p <- gheatmap(p, offset=offset, antibiotics, color='black', colnames_offset_y = 0.3,##colnames_offset_x=10,
                 colnames_angle = 60, hjust =1, font.size=6.5) + scale_fill_manual(values=c('white', color)) + 
     theme(legend.position ='none', plot.title = element_text(size = 40, face = "bold.italic")) + 
     ggtitle(title)
-  return(list(p=p, dat=merged))
+  return(p)
 }
 ```
 
+Save merged strain table (used for generating parsnp trees)
 ```{r}
-d1 <- get.clusters('../tables/Elizabethkingia_anophelis_mummer_heatmap.dat')
-d2 <- get.clusters('../tables/Staphylococcus_epidermidis_mummer_heatmap.dat')
-d3 <- get.clusters('../tables/Staphylococcus_aureus_mummer_heatmap.dat')
-d4 <- get.clusters('../tables/Acinetobacter_baumannii_mummer_heatmap.dat')
-d5 <- get.clusters('../tables/Pseudomonas_aeruginosa_mummer_heatmap.dat')
-d6 <- get.clusters('../tables/Enterococcus_faecium_mummer_heatmap.dat')
-d7 <- get.clusters('../tables/Enterococcus_faecalis_mummer_heatmap.dat')
-d8 <- get.clusters('../tables/Klebsiella_pneumoniae_mummer_heatmap.dat')
-write.table(rbind(d1, d2, d3, d4, d5, d6, d7, d8), 
+d1 <- get.clusters('Elizabethkingia_anophelis')
+d2 <- get.clusters('Staphylococcus_epidermidis')
+d3 <- get.clusters('Staphylococcus_aureus')
+d4 <- get.clusters('Acinetobacter_baumannii')
+d5 <- get.clusters('Pseudomonas_aeruginosa')
+d6 <- get.clusters('Enterococcus_faecium')
+d7 <- get.clusters('Enterococcus_faecalis')
+d8 <- get.clusters('Klebsiella_pneumoniae')
+dat.all.species <- rbind(d1, d2, d3, d4, d5, d6, d7, d8)
+write.table(dat.all.species,
             '../output_tables/strain_cluster_summary.tsv', sep='\t', row.names = F, col.names = T, quote=F)
 ```
 
 Generate tree plots
 ```{r message=FALSE, warning=FALSE}
 colors <- pal_npg('nrc')(8)
-g1 <- plot.tree('../tables/Elizabethkingia_anophelis_mummer_heatmap.dat', colors[1], 0.004, 'Elizabethkingia anophelis')
-g2 <- plot.tree('../tables/Staphylococcus_epidermidis_mummer_heatmap.dat', colors[2], 0.004, 'Staphylococcus epidermidis')
-g3 <- plot.tree('../tables/Staphylococcus_aureus_mummer_heatmap.dat', colors[3], 0.005, 'Staphylococcus aureus')
-g4 <- plot.tree('../tables/Acinetobacter_baumannii_mummer_heatmap.dat', colors[4], 0.007, 'Acinetobacter baumannii', scale_offset_x = 0.006)
-g5 <- plot.tree('../tables/Pseudomonas_aeruginosa_mummer_heatmap.dat', colors[5], 0.004, 'Pseudomonas aeruginosa', scale_offset_x = 0.004)
-g6 <- plot.tree('../tables/Enterococcus_faecium_mummer_heatmap.dat', colors[6], 0.0055, 'Enterococcus faecium', scale_offset_x = 0.018)
-g7 <- plot.tree('../tables/Enterococcus_faecalis_mummer_heatmap.dat', colors[7], 0.007, 'Enterococcus faecalis', scale_offset_x = 0.018)
-g8 <- plot.tree('../tables/Klebsiella_pneumoniae_mummer_heatmap.dat', colors[8], 0.006, 'Klebsiella pneumoniae', scale_offset_x = 0.018)
-
-
-write.table(rbind(g1$dat, g2$dat, g3$dat, g4$dat, g5$dat, g6$dat, g7$dat, g8$dat), 
-            '../output_tables/strain_cluster_summary.tsv', sep='\t', row.names = F, col.names = T, quote=F)
+g1 <- plot.tree('Elizabethkingia_anophelis', colors[1], 1, 'Elizabethkingia anophelis', 1)
+g2 <- plot.tree('Staphylococcus_epidermidis', colors[2], 0.08, 'Staphylococcus epidermidis', 0.35)
+g3 <- plot.tree('Staphylococcus_aureus', colors[3], 0.05, 'Staphylococcus aureus', 0.2)
+g4 <- plot.tree('Acinetobacter_baumannii', colors[4], 0.2, 'Acinetobacter baumannii', scale_offset_x = 0.3)
+g5 <- plot.tree('Pseudomonas_aeruginosa', colors[5], 0.2, 'Pseudomonas aeruginosa', scale_offset_x = 0.3)
+g6 <- plot.tree('Enterococcus_faecium', colors[6], 0.9, 'Enterococcus faecium', scale_offset_x = 0.8)
+g7 <- plot.tree('Enterococcus_faecalis', colors[7], 0.05, 'Enterococcus faecalis', scale_offset_x = 0.2)
+g8 <- plot.tree('Klebsiella_pneumoniae', colors[8], 0.2, 'Klebsiella pneumoniae', scale_offset_x = 0.5)
 ```
 
 Main figure part (*S. aureus*)
 
 ```{r fig.height=10, fig.width=10}
-g3$p
+g3
 ```
 
 Supplementary figure part
 ```{r fig.height=10, fig.width=60}
-s1 <- cowplot::plot_grid(g2$p, g4$p, g5$p, g6$p, g7$p, g8$p, nrow=1)
+s1 <- cowplot::plot_grid(g2, g4, g5, g6, g7, g8, nrow=1)
 s1
 ```
 
@@ -153,13 +136,11 @@ s1
 
 Generate edge data
 ```{r}
-rbind(g2$dat, g3$dat, g4$dat, g5$dat, g6$dat, g7$dat, g8$dat) %>%
-  group_by(Species, clusters, Sample_type, Room_type, #bed_number,
+rbind(d2, d3, d4, d5, d6, d7, d8) %>%
+  count(Species, clusters, Sample_type, Room_type, #bed_number,
            timept, Sample_ID.y, Cubicle_room) %>%
-  tally()  %>% ungroup() %>% 
   mutate(clusters=sprintf("%02d", clusters)) %>% 
-  group_by(Species, clusters, Sample_type, Cubicle_room, Room_type, timept) %>% 
-  count %>% select(-n) %>% 
+  distinct(Species, clusters, Sample_type, Cubicle_room, Room_type, timept) %>% 
   mutate(label1='Strain', label2='Site', label3='Room') %>% 
   unite(n1,c(label1, Species, clusters), sep='=', remove=F) %>% 
   unite(n2,c(label2, Sample_type), sep='=', remove=F) %>% 
@@ -173,12 +154,13 @@ edge_data <- filter(edge_data, n1%in%
 
 Fisher's exact test for enrichment (multi-resitance vs. persistance)
 ```{r}
-test.dat <- rbind(g2$dat, g3$dat, g4$dat, g5$dat, g6$dat, g7$dat, g8$dat) %>% 
+test.dat <- 
+  rbind(d2, d3, d4, d5, d6, d7, d8) %>% 
   group_by(Species, clusters, Sample_type, Room_type, bed_number,
            timept, Sample_ID.y, Cubicle_room) %>% 
   summarise(n=sum(Antibiotics!='BHI')) %>%
   group_by(Species, clusters) %>% mutate(resistance= max(n)) %>% ungroup %>% 
-  count(Species, clusters, resistance, name='found')
+  count(Species, clusters, resistance, name='found') 
 
 test <- function(x){
   c1 <- nrow(filter(x, resistance>2, found>1))
@@ -195,8 +177,8 @@ c(sapply(sp, function(x) test(filter(test.dat, Species==x))), All=test(test.dat)
 Fisher's exact test for enrichment (time vs. space)
 ```{r}
 test.dat <- 
-  rbind(g2$dat, g3$dat, g4$dat, g5$dat, g6$dat, g7$dat, g8$dat) %>% 
-  count(Species, clusters, Sample_type, Room_type, bed_number,
+  rbind(d2, d3, d4, d5, d6, d7, d8) %>% 
+  distinct(Species, clusters, Sample_type, Room_type, bed_number,
            timept, Sample_ID.y, Cubicle_room) %>% 
   count(Species, clusters, timept) %>% 
   group_by(Species, clusters) %>% 
@@ -235,7 +217,8 @@ hiveplot <- function(species, col, silent=FALSE){
   hive$nodes$color[ hive$nodes$tag == 'Strain'] <- strain_col
   ## site color
   colors <- sapply(c(pal_simpsons('springfield')(16)), adjustcolor, alpha.f=0.9)
-  colormap <- data.frame(site=levels(edge_data$Sample_type), col=colors[1:9], row.names = 1, stringsAsFactors = F)
+  colormap <- data.frame(site=levels((edge_data$Sample_type)), col=pal_npg('nrc')(10)[c(5,7,2,3,10,4,1)], row.names = 1, stringsAsFactors = F)
+  #colormap <- data.frame(site=levels(edge_data$Sample_type), col=colors[1:9], row.names = 1, stringsAsFactors = F)
   site.id <- hive$nodes$tag=='Site'
   hive$nodes$color[site.id] <- colormap[str_split_fixed(hive$nodes$lab, '=', 2)[site.id, 2], ]
   ## room color
@@ -307,13 +290,13 @@ aux()
 
 ### Save plots
 ```{r message=FALSE, warning=FALSE}
-ggsave('../plots/fig2d.tree_main.pdf', g3$p, width=10, height=10)
-pdf('../plots/fig2d.hive_main.pdf', width = 10, height = 10)
+ggsave('../plots/fig3d.tree_main.svg', g3, width=10, height=10)
+pdf('../plots/fig3d.hive_main.pdf', width = 10, height = 10)
 hiveplot('Staphylococcus_aureus', colors[3])
 dev.off()
 
-ggsave('../plots/sup8.tree_sup.pdf', s1, width=54, height=9, limitsize = F)
-pdf('../plots/sup8.hive_sup.pdf', width = 60, height = 10)
+ggsave('../plots/sup10.tree_sup.svg', s1, width=54, height=9, limitsize = F)
+pdf('../plots/sup10.hive_sup.pdf', width = 84, height = 14)
 aux()
 dev.off()
 ```
