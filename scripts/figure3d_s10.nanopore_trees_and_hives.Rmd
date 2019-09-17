@@ -296,7 +296,7 @@ hiveplot('Staphylococcus_aureus', colors[3])
 dev.off()
 
 ggsave('../plots/sup10.tree_sup.svg', s1, width=54, height=9, limitsize = F)
-pdf('../plots/sup10.hive_sup.pdf', width = 60, height = 10)
+pdf('../plots/sup10.hive_sup.pdf', width = 84, height = 14)
 aux()
 dev.off()
 ```
