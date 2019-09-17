@@ -119,7 +119,7 @@ g6 <- ggiNEXT(patho_1_index, color.var="order") +
     labs(title = "Rarefaction of circular plasmids > 1 AR gene", y = "diversity index", x = "number of samples")
 g6 <- g6 + guides(fill=FALSE)
 g6 <- g6 + scale_color_discrete(labels = c("shannon", "simpson")) + 
-  scale_shape_discrete(labels = c("shannon", "simpson"))
+  scale_shape_discrete(labels = c("shannon", "simpson"))q
 
 cowplot::plot_grid(g1, g2, g3, g4, g5, g6, nrow=6)
 
