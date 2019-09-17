@@ -15,7 +15,11 @@ Load functions
 
 merge_name <- function(x){
   str <- unlist(strsplit(x, " "))
-  str_out <- paste(str[1], str[2],  sep = "_")
+  if (str[1] == "Burkholderia"){
+    str_out <- paste(str[1], str[2], sep = "_")
+    return(str_out)
+  }
+  str_out <- paste(str[1], str[2],  str[3], sep = "_")
   return(str_out)
 }
 
@@ -31,6 +35,22 @@ pathogenslice <- function(x){
   return(str_out)
 }
 
+novel_genome_string <- function(x){
+  
+  str1 <- unlist(strsplit(x, "_"))[1]
+  str2 <- unlist(strsplit(x, "_"))[2]
+  str3 <- unlist(strsplit(x, "_"))[3]
+  str4 <- unlist(strsplit(x, "_"))[4]
+  if(str1 == "Burkholderia"){
+    str_out <- paste(str1, str3, str4, sep = "_")
+  }
+  else{
+    str_out <- paste(str1, str2,  str3, str4, sep = "_")
+  }
+  return(str_out)
+  
+}
+
 ```
 
 cleaning input data
@@ -39,6 +59,9 @@ all_genome_cluster <-read.table("../output_tables/all_genome_cluster.tsv", row.n
 novel_genome_cluster <-read.table("../output_tables/novel_genome_cluster.tsv", row.names = NULL, sep="\t")
 novel_genome_cluster$novel <- "yes"
 colnames(novel_genome_cluster)[colnames(novel_genome_cluster)=="row.names"] <- "species"
+
+novel_genome_cluster$species <- apply(novel_genome_cluster, 1, FUN = novel_genome_string)
+
 all_genome <-read.table("../tables/genome_info.dat", row.names = NULL, sep="\t", header = TRUE)
 
 ```
@@ -64,8 +87,11 @@ all_genome_merge <- all_genome_merge[!is.na(all_genome_merge$Nanopore_ID),]
 
 high_qual_pathogen <- subset(all_genome_merge , pathogen == 1 & Genome_quality == "HIGH_QUAL")
 med_qual_pathogen <- subset(all_genome_merge , pathogen == 1 & Genome_quality == "MEDIUM_QUAL")
+
 high_qual_nonpatho <- subset(all_genome_merge , is.na(pathogen) & Genome_quality == "HIGH_QUAL")
 med_qual_nonpatho <- subset(all_genome_merge , is.na(pathogen) & Genome_quality == "MEDIUM_QUAL")
+
+
 ```
 
 
@@ -74,10 +100,10 @@ indicate novelty and cluster
 keep <- colnames(all_genome)
 keep <- c(keep, "novel", "clusters")
 all_genome$species <- apply(all_genome, 1, FUN = merge_name)
-output <- merge(all_genome, novel_genome_cluster, by = "row.names", all.x = TRUE,  sort = FALSE)
+output <- merge(all_genome, novel_genome_cluster, by = "species", all.x = TRUE,  sort = FALSE)
 output <- output[keep]
 output$novel[is.na(output$novel)] <- "no"
-write.table(output,"../output_tables/genome_info_novel.dat", sep='\t', quote = FALSE)
+#write.table(output,"../output_tables/genome_info_novel.dat", sep='\t', quote = FALSE)
 ```
 
 

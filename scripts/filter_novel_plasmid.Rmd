@@ -26,7 +26,7 @@ cleaning input data
 
 all_plasmid <-read.csv("../../hospital_microbiome/tables/plasmid_info.dat", row.names = NULL, sep="\t", header = TRUE) 
 # all plasmid with cluster
-cluster <-read.table("../output_tables/plasmid_cluster.tsv", row.names = NULL, sep="\t") 
+cluster <-read.table("../output_tables/output.tsv", row.names = NULL, sep="\t") 
 colnames(cluster)[colnames(cluster)=="row.names"] <- "Plasmid_ID"
 
 cluster_plasmid <- merge(all_plasmid, cluster, by = "Plasmid_ID", all = TRUE, sort = FALSE)
