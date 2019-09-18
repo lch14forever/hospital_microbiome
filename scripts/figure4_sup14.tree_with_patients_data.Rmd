@@ -16,8 +16,7 @@ Load plot specific libraries
 ```{r message=FALSE}
 library(foreach)
 library(ggtree)
-library(ape)
-library(phangorn)
+library(phytools)
 library(magrittr)
 ```
 
@@ -66,7 +65,7 @@ get_tree_data <- function(species, filter.patient.only=TRUE, outlier='', get.dis
   
   strains %<>% mutate(strain=paste0('s', strain))
     
-  list(anno=anno, strains=strains, tree=midpoint(tree.strains))
+  list(anno=anno, strains=strains, tree=midpoint.root(tree.strains))
 }
 
 test_enrichment <- function(dat){
@@ -83,7 +82,7 @@ test_enrichment <- function(dat){
 
 #### *Staphylococcus aureus*
 
-```{r fig.height=6, fig.width=6, message=FALSE}
+```{r fig.height=6, fig.width=8, message=FALSE}
 colors <- pal_npg('nrc')(9)
 
 dat <- get_tree_data('Staphylococcus_aureus', outlier = '')
@@ -92,12 +91,12 @@ attach(dat)
 p <- ggtree(tree, color=colors[3], lwd=1) %<+%
   strains +
   geom_tippoint(aes(size=n, color=lab)) +
-  geom_tiplab(color=colors[3],size=4, hjust=1, fontface='bold', offset=0.02) +
+  geom_tiplab(color=colors[3],size=4, hjust=1, fontface='bold', offset=0.05, align = TRUE) +
   scale_size_continuous(trans='log2') + 
   scale_shape_manual(values=c(21,19)) + 
   scale_color_manual(values=c('grey','black')) + 
   geom_treescale(x=0, y=15, color = colors[3], linesize=2) 
-p
+
 ## Add heatmap
 dd <- rownames_to_column(anno) %>% melt(id.vars='rowname')
 p1 <- facet_plot(p , "Antibiotics resistance profile", 
@@ -120,18 +119,18 @@ tree1
 
 #### *Elizabethkingia anophelis*
 
-```{r fig.height=2.5, fig.width=6, message=FALSE}
+```{r fig.height=2.5, fig.width=8, message=FALSE}
 dat <- get_tree_data('Elizabethkingia_anophelis',  outlier = '')
 attach(dat)
 ## create a tree
-p <- ggtree(as.phylo(clustering), color=colors[1], lwd=1) %<+%
+p <- ggtree(tree, color=colors[1], lwd=1) %<+%
   strains +
   geom_tippoint(aes(size=n, color=lab)) +
-  geom_tiplab(color=colors[1],size=4, hjust=1, fontface='bold', offset=5e-3) +
+  geom_tiplab(color=colors[1],size=4, hjust=1, fontface='bold', offset=0.5, align = TRUE) +
   scale_size_continuous(trans='log2', limits=c(1,64)) + 
   scale_shape_manual(values=c(21,19)) + 
   scale_color_manual(values=c('grey','black')) + 
-  geom_treescale(x=0.002, y=5, width=0.001,color = colors[1], linesize=2) 
+  geom_treescale(x=0.002, y=5, color = colors[1], linesize=2) 
 ## Add heatmap
 dd <- rownames_to_column(anno) %>% melt(id.vars='rowname')
 p1 <- facet_plot(p , "Antibiotics resistance profile", 
@@ -154,7 +153,7 @@ attach(dat)
 p <- ggtree(tree, color=colors[4], lwd=1) %<+%
   strains +
   geom_tippoint(aes(size=n, color=lab)) +
-  geom_tiplab(color=colors[4],size=4, hjust=1, fontface='bold', offset=1.3e-3) +
+  geom_tiplab(color=colors[4],size=4, hjust=1, fontface='bold', offset=0.03, align = TRUE) +
   scale_size_continuous(trans='log2', limits=c(1,64)) + 
   scale_shape_manual(values=c(21,19)) + 
   scale_color_manual(values=c('grey','black')) + 
@@ -174,14 +173,14 @@ tree3
 
 ### *Staphylococcus epidermidis*
 
-```{r fig.height=10, fig.width=7, message=FALSE}
+```{r fig.height=10, fig.width=8, message=FALSE}
 dat <- get_tree_data('Staphylococcus_epidermidis', outlier = '')
 attach(dat)
 ## create a tree
 p <- ggtree(tree, color=colors[2], lwd=1) %<+%
   strains +
   geom_tippoint(aes(size=n, color=lab)) +
-  geom_tiplab(color=colors[2],size=4, hjust=1, fontface='bold', offset=1.6e-3) +
+  geom_tiplab(color=colors[2],size=4, hjust=1, fontface='bold', offset=0.03, align = TRUE) +
   scale_size_continuous(trans='log2') + 
   scale_shape_manual(values=c(21,19)) + 
   scale_color_manual(values=c('grey','black')) + 
@@ -203,6 +202,7 @@ tree4
 p1 <- cowplot::plot_grid(tree1, tree3, ncol=1, rel_heights = c(0.75,1))
 p2 <- cowplot::plot_grid(tree4, tree2, ncol=1, rel_heights = c(1,0.2))
 cowplot::plot_grid(p1, p2, nrow=1)
+ggsave('../plots/fig5_phylogenetic_trees.svg', height=10, width=14)
 ```
 
 
@@ -226,7 +226,7 @@ rownames(full_mat) <- colnames(full_mat) <- meta$Genome_ID[match(rownames(full_m
 aux <- function(species){ ## function with side effect to fill in the mummer distance
   dist.ab <- get_tree_data(species, get.dist = TRUE)
   sel <- str_subset(rownames(dist.ab) ,'s_')
-  full_mat[sel, sel] <<- dist.ab[sel, sel]
+  full_mat[sel, sel] <- dist.ab[sel, sel]
   return(sel)
 }
 ## fill mash matrix with mummer distance
@@ -239,17 +239,21 @@ clustering <- hclust(as.dist(full_mat), method='single')
 #anno <- meta[match(rownames(full_mat), meta$genomeID), ]
 tree <- groupOTU(as.phylo(clustering), list(ea=ea, se=se, sa=sa, ab=ab))
 
-p <- ggtree(tree, aes(color=group) , lwd=1.5) + 
-  ##geom_text2(aes(subset=!isTip, label=node), hjust=-0.8) + 
+## helper to identify internal clade for shading
+# ggtree(tree, aes(color=group) , lwd=1.5) + 
+#   geom_text2(aes(subset=!isTip, label=node)) 
+
+p <- 
+  ggtree(tree, aes(color=group) , lwd=1.5) + 
   scale_color_manual(values=c("black", colors[c(4,1,3,2)])) +
-  geom_treescale(x=0, y=550, width=0.01, linesize=3, offset=3, fontsize = 10) + 
-  geom_hilight(node=540, alpha=0.2, fill = colors[2]) +
+  geom_hilight(node=538, alpha=0.2, fill = colors[2]) +
   geom_hilight(node=535, alpha=0.2, fill = colors[4]) +
   geom_hilight(node=533, alpha=0.2, fill = colors[1]) +
-  geom_hilight(node=539, alpha=0.2, fill = colors[3]) +
+  geom_hilight(node=537, alpha=0.2, fill = colors[3]) +
   theme(legend.position = 'left')
   ##flip(p, 533, 534) %>% flip(535,536) %>% flip(539, 540)
 p
+ggsave("../plots/fig5_cladrogram.svg", height=15, width=10)
 ```
 
 

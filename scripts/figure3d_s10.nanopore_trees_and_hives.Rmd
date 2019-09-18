@@ -14,11 +14,10 @@ source('configuration.r')
 
 Load plot specific libraries
 ```{r message=FALSE, warning=FALSE}
-library(ape)
 library(ggtree)
 library(HiveR)
 library(magrittr)
-library(phangorn)
+library(phytools)
 library(forcats)
 ```
 
@@ -40,8 +39,8 @@ colnames(meta.merged)[3] <- 'Species'
 levels(meta.merged$Sample_type) <- str_replace_all(levels(meta.merged$Sample_type), c('handle-interior'='Handle'))
 levels(meta.merged$Room_type) <- str_replace_all(levels(meta.merged$Room_type), c('cubicles'='wards', 'Non-cohort'='Standard'))
 levels(meta.merged$Cubicle_room) <- str_replace_all(levels(meta.merged$Cubicle_room), c('Cubicle'='Ward'))
-write.table(meta.merged, '../output_tables/merged_assembly_metadata.tsv', quote=F, row.names = F, col.names = T, sep='\t')
 meta.merged %<>% filter(timept %in% c(1,2))
+write.table(meta.merged, '../output_tables/merged_assembly_metadata.tsv', quote=F, row.names = F, col.names = T, sep='\t')
 ```
 
 
@@ -78,7 +77,7 @@ plot.tree <- function(x, color, offset=0.01, title=NULL, scale_offset_x=0.005, s
   antibiotics[antibiotics > 0] <- 'D'
   
   p <- 
-    ggtree(midpoint(tree.strains), layout="fan", open.angle=45, lwd=1) +
+    ggtree(midpoint.root(tree.strains), layout="fan", open.angle=45, lwd=1) +
     geom_tippoint(size=3, shape=19, col=color) + 
     geom_tiplab2(size=5, offset=offset/3) +
     geom_treescale(x=scale_offset_x, y=scale_offset_y, linesize=0.8, offset=0.1) 
@@ -99,7 +98,8 @@ d3 <- get.clusters('Staphylococcus_aureus')
 d4 <- get.clusters('Acinetobacter_baumannii')
 d5 <- get.clusters('Pseudomonas_aeruginosa')
 d6 <- get.clusters('Enterococcus_faecium')
-d7 <- get.clusters('Enterococcus_faecalis')
+d7 <- get.clusters('Enterococcus_faecalis') %>% filter(Nanopore_ID != 'N182_BC10') 
+## N182_BC10 is removed due to low coverage comparing to the reference when constructing the tree
 d8 <- get.clusters('Klebsiella_pneumoniae')
 dat.all.species <- rbind(d1, d2, d3, d4, d5, d6, d7, d8)
 write.table(dat.all.species,
@@ -291,12 +291,12 @@ aux()
 ### Save plots
 ```{r message=FALSE, warning=FALSE}
 ggsave('../plots/fig3d.tree_main.svg', g3, width=10, height=10)
-pdf('../plots/fig3d.hive_main.pdf', width = 10, height = 10)
+svg('../plots/fig3d.hive_main.svg', width = 10, height = 10)
 hiveplot('Staphylococcus_aureus', colors[3])
 dev.off()
 
 ggsave('../plots/sup10.tree_sup.svg', s1, width=54, height=9, limitsize = F)
-pdf('../plots/sup10.hive_sup.pdf', width = 84, height = 14)
+svg('../plots/sup10.hive_sup.svg', width = 84, height = 14)
 aux()
 dev.off()
 ```
