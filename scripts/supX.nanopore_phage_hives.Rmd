@@ -22,7 +22,6 @@ library(forcats)
 Merge data
 ```{r}
 mat <- read.table('../tables/phage_mummer_heatmap.dat', head=TRUE, stringsAsFactors = FALSE, comment.char = '!', sep='\t', row.names = 1)
-
 df <- data.frame(Genome_ID=rownames(mat)) %>% 
   mutate(Nanopore_ID=str_extract(Genome_ID, "N[0-9]+_[A-Za-z]+[0-9]+")) 
 
@@ -60,7 +59,7 @@ dat <- merge(dat, phage.meta, by=1, all.x=TRUE) %>%
 
 ## filter cluster (keep clusters with size > X)
 sel <- table(dat$clusters) %>% data.frame() %>%
-  arrange(desc(Freq)) %>% filter(Freq>5) %>%
+  arrange(desc(Freq)) %>% filter(Freq>1) %>%
   pull(Var1) %>% as.numeric()
 
 dat.sel <- dat %>% 
@@ -98,7 +97,7 @@ edge_data <- filter(edge_data, n1%in%
 
 
 Hive plot for phages
-```{r fig.height=12, fig.width=12}
+```{r fig.height=15, fig.width=15}
 edge_plot <- edge_data
 ## strain_col <- 'orange'
 
@@ -127,14 +126,14 @@ colormap <-data.frame(room=unique(edge_data$Room_type), col=colors[c(13,15,16)],
 room.id <- hive$nodes$tag=='Room'
 hive$nodes$color[room.id] <- colormap[str_split_fixed(hive$nodes$lab[room.id], '=', 3)[,2], ]
 
-hive$nodes$size=2
-##hive$nodes$size[ hive$nodes$tag == 'Strain'] <- 1.5
+hive$nodes$size=3
+hive$nodes$size[ hive$nodes$tag == 'Strain'] <- 1.5
 
 hive$edges$weight <- hive$edges$weight*3-1
 hive$edges$color <- ifelse(e$color<2, '#ff990055','#66ccff55')
 #hive$edges$color <- ifelse(e$color<2,'#66ccff77',  '#ff330077')
 tmp <- data.frame(node.lab=hive$nodes$lab, node.text=hive$nodes$lab, angle=0, radius=0, offset=0, hjust=1, vjust=0.5)
-mutate(tmp, node.text=str_replace(node.text, 'Strain=.*=', 'Strain=s')) %>% 
+mutate(tmp, node.text=str_replace(node.text, 'Strain=.*=', 'Strain=')) %>% 
   separate(col=node.text, into=c('lab','node.text'), '=', extra='merge') %>% 
   mutate(node.text=str_replace_all(node.text, '_', ' ')) %>% 
   mutate(node.text=str_replace_all(node.text, '=', ': ')) %>%
@@ -149,7 +148,7 @@ plotHive(hive, ch=0.2, method='ranknorm', bkgnd='white', anNodes = 'tmp_hive.txt
 
 ### Save plots
 ```{r message=FALSE, warning=FALSE}
-pdf('../plots/fig4.phage_hive.pdf', width = 12, height = 12)
+pdf('../plots/supX.phage_hive.pdf', width = 15, height = 15)
 plotHive(hive, ch=0.2, method='ranknorm', bkgnd='white', anNodes = 'tmp_hive.txt',
         anNode.gpar=gpar(cex=1.5))
 dev.off()
