@@ -1,11 +1,11 @@
 ---
-title: "Supplimentary Figure 6"
+title: "Violin plots showing the distribution of genus-level diversity metrics for various culture-enriched communities"
 output:
   html_document:
     df_print: paged
 ---
 
-### Supplimentary Figure 6
+### Nanopore diversity plot
 
 Load generic libraries
 ```{r}
@@ -46,42 +46,9 @@ g.a <- ggplot(data = diversity1, aes(x=Antibiotics,y=value,fill=Antibiotics)) +
 g.a
 ```
 
-
-<!-- ```{r} -->
-<!-- df.nanopore <- read.table('../tables/nanopore.kraken.table.s',head=T,sep='\t',row.names=1, quote='&', comment.char='&') -->
-<!-- nanopore <- merge(t(df.nanopore), df.mapping,by.x=0,by.y="Nanopore_ID")%>% -->
-<!--   select(-contains("virus")) -->
-<!-- Anticount <- group_by(nanopore,Antibiotics) %>% count() -->
-
-<!-- nanopore <- select(nanopore,-Row.names,-Sample_ID,-Illumina_Library_ID)%>% -->
-<!--   melt(id=c("Antibiotics","Culturing_Sample_ID"))%>% -->
-<!--   filter(grepl("Burkholderia", variable) | variable %in% c("Acinetobacter_baumannii","Candida_albicans","Clostridium_difficile",  -->
-<!-- 		"Clostridium_sordellii", "Klebsiella_pneumoniae", "Klebsiella_oxytoca", -->
-<!-- 		"Escherichia_coli", "Staphylococcus_aureus","Pseudomonas_aeruginosa","Mycobacterium_abscessus", -->
-<!--     "Mycobacterium_tuberculosis","Enterococcus_faecalis","Enterococcus_faecium", "Staphylococcus_epidermidis"))%>% -->
-<!--   filter(value>10)%>% -->
-<!--   select(-Culturing_Sample_ID)%>% -->
-<!--   group_by(Antibiotics,variable)%>% -->
-<!--   count() -->
-
-<!-- nanopore_final=merge(Anticount,nanopore,by=("Antibiotics"))%>% -->
-<!--   mutate(freq=n.y/n.x)%>% -->
-<!--   select(-n.x,-n.y) %>%  -->
-<!--   mutate(variable=str_replace(variable, '_', ' ')) -->
-
-<!-- o <- c('BHI', 'AMP', 'CHLOR', 'KAN', 'STREP', 'TET') -->
-<!-- nanopore_final <- mutate(nanopore_final, Antibiotics=factor(Antibiotics,level=o, ordered = T)) -->
-
-<!-- g.b <- ggplot(data=nanopore_final, aes(x=variable,y=freq,fill=Antibiotics)) + -->
-<!--   geom_bar(width=0.8,color="black",position="dodge",stat="identity") + -->
-<!--   theme(axis.text.x = element_text(angle=40, hjust=1, size=10, face='bold.italic') ) + -->
-<!--   scale_fill_manual(values=pal_simpsons(c("springfield"))(16)[-c(2,8)]) -->
-<!-- g.b -->
-<!-- ``` -->
-
 Save plot
 ```{r fig.height=10, fig.width=10}
-ggsave('../plots/sup6.pdf', g.a, width = 10, height = 5)
+ggsave('../plots/sup8.svg', g.a, width = 10, height = 5)
 ```
 
 

@@ -1,0 +1,74 @@
+---
+title: "Heatmap showing microbiome species profiling of blank and mock controls"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load generic libraries
+```{r message=FALSE, warning=FALSE}
+source('configuration.r')
+```
+
+Load specific libraries
+```{r message=FALSE, warning=FALSE}
+library(pheatmap)
+library(RColorBrewer)
+library(magrittr)
+library(purrr)
+```
+
+Heatmap
+```{r}
+meta <- read.table('../metadata/illumina_metadata.txt', head=T, stringsAsFactors = F) %>% 
+ filter(Room_type %in% c('Mock', 'Negative_Control'))
+dat <- 
+  read.table('../tables/metagenomics.metaphlan2.table.s', head=TRUE, row.names=1) %>% 
+  select(meta$Library)
+
+dat[dat < 0.1] <- 0
+dat <- dat[-grep("unclassified",rownames(dat)),]
+dat <- dat[rowSums(dat)>0, ]
+dat <- dat[order(dat[,1], decreasing = TRUE),]
+dat <- prop.table(as.matrix(dat),2)
+a <- c("#FFFFFFFF", "#FFFFFFFF", "#00A087FF", "#3C5488FF", "#F39B7FFF", "#8491B4FF", "#91D1C2FF", "#B09C85FF", "orange", "#82491EFF", "#B7E4F9FF", "#FB6467FF", "#526E2DFF", "#E762D7FF", "#FAE48BFF", "#A6EEE6FF", "#95CC5EFF")
+
+rownames(dat) %<>%
+  str_replace_all(c('s__'='', '_'=' ', 'Propionibacterium'='Cutibacterium')) %>% 
+  str_replace('[a-z]+ ', '. ')
+
+
+make_bold_italic_names <- function(mat, rc_fun, rc_names=rc_fun(mat)) {
+  ## adapted from https://github.com/raivokolde/pheatmap/issues/48
+  bold_names <- rc_fun(mat)
+  ids <- rc_names %>% match(rc_fun(mat))
+  ids %>%
+    walk(
+      function(i)
+        bold_names[i] <<-
+        bquote(bolditalic(.(rc_fun(mat)[i]))) %>%
+        as.expression()
+    )
+  bold_names
+}
+
+p <- pheatmap(log10(dat+0.0001), color=a[c(1:2,8:15)],
+         legend_breaks=log10(c(0.0005,0.001, 0.01, 0.1,1)+0.0001),
+         legend_labels=c("0","0.1", "1", "10","100"),
+         labels_row = make_bold_italic_names(dat, rownames, rownames(dat)),
+         border_color="black",cluster_rows = F, cluster_cols = F, silent = TRUE)
+
+grid.arrange(p$gtable)
+
+ggsave("../plots/sup2b.control_mock_heatmap.pdf", 
+  grid.arrange(p$gtable), width = 4, height = 5)
+```
+
+```{r}
+sessionInfo()
+```

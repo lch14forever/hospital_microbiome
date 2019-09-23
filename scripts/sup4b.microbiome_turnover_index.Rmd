@@ -1,0 +1,325 @@
+---
+title: "Heatmap representation of turnover index"
+output:
+  html_document:
+    df_print: paged
+---
+
+### Turn over index
+
+Load generic libraries
+```{r message=FALSE, warning=FALSE}
+source('configuration.r')
+```
+
+Load plot specific libraries
+```{r message=FALSE}
+library(ComplexHeatmap)
+library(RColorBrewer)
+library(magrittr)
+```
+
+#### Genus level microbiome turnover index
+
+Compute TI
+```{r}
+#read
+meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2, stringsAsFactors = F)
+dat <- dat.bk <-  read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
+
+#set threshold for absence/presence
+dat[dat < 0.1] <- 0
+dat[dat >= 0.5] <- 1
+dat[(dat != 1 & dat !=0) ]=NA
+dat <- dat[-grep('unclass',rownames(dat)),]
+
+meta.filled <- meta %>%
+  select(Library, Room_type, Sample_type, timept, Cubicle_room, bed_number)
+dat.fil=filter(meta.filled, timept %in% c(1,2))
+dat.fil = mutate(dat.fil, MDRO=ifelse(Room_type == "MDRO_cubicles", "MDRO_","")) %>%
+  unite(MDRO,Cubicle_room,col="Cubicle_room",sep="")
+
+#isolation room bed number initialise to 1
+dat.fil[which(is.na(dat.fil$bed_number)),]$bed_number=1
+dat.fil.sel=select(dat, dat.fil$Library)
+
+ST=filter(dat.fil,Sample_type=="Sink_Trap")
+A=filter(dat.fil,Sample_type=="Aerator")
+BR=filter(dat.fil,Sample_type=="Bed_Rail")
+CT=filter(dat.fil,Sample_type=="Cardiac_Table")
+PO=filter(dat.fil,Sample_type=="Pulse_Oxymeter")
+BL=filter(dat.fil,Sample_type=="Bedside_Locker")
+DH=filter(dat.fil,Sample_type=="Door_handle-interior")
+
+#find all samples IDs belonging to each site
+grouped_ids_ST <- sapply((group_by(ST,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                            summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_A <- sapply((group_by(A,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                           summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_BL <- sapply((group_by(BL,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                            summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_BR <- sapply((group_by(BR,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                            summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_PO <- sapply((group_by(PO,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                            summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_CT <- sapply((group_by(CT,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                            summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_DH <- sapply((group_by(DH,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                            summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+
+#remove sites without 2 timepoints
+group <- function(x){
+  grouped=c()
+  for (i in 1:length(x)){
+    if(length(x[[i]])==2){
+      grouped=c(grouped,x[i])
+    }
+  }
+  grouped
+}
+
+grouped_ids_ST=group(grouped_ids_ST)
+grouped_ids_A=group(grouped_ids_A)
+grouped_ids_PO=group(grouped_ids_PO)
+grouped_ids_BR=group(grouped_ids_BR)
+grouped_ids_BL=group(grouped_ids_BL)
+grouped_ids_CT=group(grouped_ids_CT)
+grouped_ids_DH=group(grouped_ids_DH)
+
+#measure number of turn over events
+turn<-function(x){
+  SpeciesTO=list()
+  for (k in rownames(dat.fil.sel)){
+    SpeciesTO[k]=0
+  }
+  for (j in 1:length(x)){
+    for (i in (rownames(dat.fil.sel))){
+      if(!is.na(dat.fil.sel[i,x[[j]][1]]) & !is.na(dat.fil.sel[i,x[[j]][2]]) & dat.fil.sel[i,x[[j]][1]]!=dat.fil.sel[i,x[[j]][2]])
+        SpeciesTO[i]=as.numeric(SpeciesTO[i])+1
+    }
+  }
+  SpeciesTO
+}
+
+#measure number of events (present-present or present-NA or NA-present)
+stable<-function(x){
+  SpeciesTotal=list()
+  SpeciesStable=list()
+  for (k in rownames(dat.fil.sel)){
+    SpeciesTotal[k]=0
+    SpeciesStable[k]=0
+  }
+  for (j in 1:length(x)){
+    for (i in (rownames(dat.fil.sel))){
+      if((!is.na(dat.fil.sel[i,x[[j]][1]])&dat.fil.sel[i,x[[j]][1]]==1)|
+         (!is.na(dat.fil.sel[i,x[[j]][2]])&dat.fil.sel[i,x[[j]][2]]==1))
+        SpeciesStable[i]=as.numeric(SpeciesStable[i])+1
+    }
+  }
+  for (j in 1:length(x)){
+    for (i in names(SpeciesStable[SpeciesStable>0])){
+      if((is.na(dat.fil.sel[i,x[[j]][1]]) | is.na(dat.fil.sel[i,x[[j]][2]])) | dat.fil.sel[i,x[[j]][1]]+dat.fil.sel[i,x[[j]][2]]==2)
+        SpeciesTotal[i]=as.numeric(SpeciesTotal[i])+1
+    }
+  }
+  SpeciesTotal
+}
+
+#calculate turnover Index for genus with at least 3 events
+Dry_turn=turn(c(grouped_ids_BR,grouped_ids_BL,grouped_ids_CT,grouped_ids_PO,grouped_ids_DH))
+Dry_stable=stable(c(grouped_ids_BR,grouped_ids_BL,grouped_ids_CT,grouped_ids_PO,grouped_ids_DH))
+Dry_T=Dry_turn[which(rowSums(cbind(unlist(Dry_stable),unlist(Dry_turn)))>2)]
+Dry_S=Dry_stable[which(rowSums(cbind(unlist(Dry_stable),unlist(Dry_turn)))>2)]
+Dry=data.frame(Dry=(as.numeric(Dry_T))/(as.numeric(Dry_T)+(as.numeric(Dry_S))),row.names=names(Dry_S))
+
+Wet_turn=turn(c(grouped_ids_ST,grouped_ids_A))
+Wet_stable=stable(c(grouped_ids_ST,grouped_ids_A))
+Wet_T=Wet_turn[which(rowSums(cbind(unlist(Wet_stable),unlist(Wet_turn)))>2)]
+Wet_S=Wet_stable[which(rowSums(cbind(unlist(Wet_stable),unlist(Wet_turn)))>2)]
+Wet=data.frame(Wet=((as.numeric(Wet_T))/(as.numeric(Wet_T)+as.numeric(Wet_S))),row.names=names(Wet_S))
+
+Merge=data.frame(merge(Dry,Wet,by=0),row.names=1)
+
+```
+
+Plot heatmap
+```{r fig.height=7, fig.width=4}
+## remove genera not found at timepoint 3
+tp3 <- filter(meta, timept==3) %>% pull(Library)
+tmp <- rowSums(dat.bk[, tp3] >= 0.5) > 0
+
+Merge <- Merge[rownames(Merge) %in% names(tmp[tmp]), ]
+rownames(Merge) %<>% str_replace_all(c('g__'='', '_noname'='', 'Propionibacterium'='Cutibacterium'))
+
+p.g <- Heatmap(Merge, col=colorRampPalette(brewer.pal(9,'Reds'))(10),
+        rect_gp = gpar(col = "black", lty = 1, lwd = 1),
+        heatmap_legend_param = list(title='', legend_height=unit(7, "cm"), labels_gp=gpar(fontsize=15), title_gp=gpar(fontsize=20,fontface="bold")),
+        row_dend_width = unit(25, "mm"),
+        row_names_gp=gpar(fontface = "bold.italic"),
+        column_labels=c('CTA','CTB'), column_names_gp=gpar(fontface = "bold"),
+ border="black",cluster_rows = T, cluster_columns = F)
+draw(p.g, heatmap_legend_side = "left")
+```
+
+#### Species level microbiome turnover index
+
+Compute TI
+```{r}
+#read
+meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2, stringsAsFactors = F)
+dat <- dat.bk <- read.table('../tables/metagenomics.metaphlan2.table.s', head=TRUE, row.names=1)
+
+#set threshold for absence/presence, remove phages
+dat[dat < 0.1] <- 0
+dat[dat >= 0.5] <- 1
+dat[(dat != 1 & dat !=0)]=NA
+dat=dat[-grep('unclass',rownames(dat)),]
+dat=dat[-grep('phage',rownames(dat)),]
+
+meta.filled <- meta %>%
+  select(Library, Room_type, Sample_type, timept, Cubicle_room, bed_number)
+dat.fil=filter(meta.filled, timept %in% c(1,2))
+dat.fil = mutate(dat.fil, MDRO=ifelse(Room_type == "MDRO_cubicles", "MDRO_","")) %>%
+  unite(MDRO,Cubicle_room,col="Cubicle_room",sep="")
+
+#isolation room bed number initialise to 1
+dat.fil[which(is.na(dat.fil$bed_number)),]$bed_number=1
+dat.fil.sel=select(dat, dat.fil$Library)
+
+
+ST=filter(dat.fil,Sample_type=="Sink_Trap")
+A=filter(dat.fil,Sample_type=="Aerator")
+BR=filter(dat.fil,Sample_type=="Bed_Rail")
+CT=filter(dat.fil,Sample_type=="Cardiac_Table")
+PO=filter(dat.fil,Sample_type=="Pulse_Oxymeter")
+BL=filter(dat.fil,Sample_type=="Bedside_Locker")
+DH=filter(dat.fil,Sample_type=="Door_handle-interior")
+
+#find all samples IDs belonging to each site
+grouped_ids_ST <- sapply((group_by(ST,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                            summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_A <- sapply((group_by(A,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                           summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_BL <- sapply((group_by(BL,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                            summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_BR <- sapply((group_by(BR,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                            summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_PO <- sapply((group_by(PO,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                            summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_CT <- sapply((group_by(CT,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                            summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+grouped_ids_DH <- sapply((group_by(DH,Room_type,Cubicle_room,Sample_type,bed_number) %>%
+                            summarise(id=str_c(Library, collapse=',')))$id, str_split, pattern=',')
+
+#remove sites without 2 timepoints
+group <- function(x){
+  grouped=c()
+  for (i in 1:length(x)){
+    if(length(x[[i]])==2){
+      grouped=c(grouped,x[i])
+    }
+  }
+  grouped
+}
+
+grouped_ids_ST=group(grouped_ids_ST)
+grouped_ids_A=group(grouped_ids_A)
+grouped_ids_PO=group(grouped_ids_PO)
+grouped_ids_BR=group(grouped_ids_BR)
+grouped_ids_BL=group(grouped_ids_BL)
+grouped_ids_CT=group(grouped_ids_CT)
+grouped_ids_DH=group(grouped_ids_DH)
+
+#measure number of turn over events
+turn<-function(x){
+  SpeciesTO=list()
+  for (k in rownames(dat.fil.sel)){
+    SpeciesTO[k]=0
+  }
+  for (j in 1:length(x)){
+    for (i in (rownames(dat.fil.sel))){
+      if(!is.na(dat.fil.sel[i,x[[j]][1]]) & !is.na(dat.fil.sel[i,x[[j]][2]]) & dat.fil.sel[i,x[[j]][1]]!=dat.fil.sel[i,x[[j]][2]])
+        SpeciesTO[i]=as.numeric(SpeciesTO[i])+1
+    }
+  }
+  SpeciesTO
+}
+
+#measure number of events (present-prsent or present-NA or NA-present)
+stable<-function(x){
+  SpeciesTotal=list()
+  SpeciesStable=list()
+  for (k in rownames(dat.fil.sel)){
+    SpeciesTotal[k]=0
+    SpeciesStable[k]=0
+  }
+  for (j in 1:length(x)){ #find species with at least 1 present event
+    for (i in (rownames(dat.fil.sel))){
+      if((!is.na(dat.fil.sel[i,x[[j]][1]])&dat.fil.sel[i,x[[j]][1]]==1)|
+         (!is.na(dat.fil.sel[i,x[[j]][2]])&dat.fil.sel[i,x[[j]][2]]==1))
+        SpeciesStable[i]=as.numeric(SpeciesStable[i])+1
+    }
+  }
+  for (j in 1:length(x)){ # calculate NA/Present-Present events for each species
+    for (i in names(SpeciesStable[SpeciesStable>0])){
+      if((is.na(dat.fil.sel[i,x[[j]][1]]) | is.na(dat.fil.sel[i,x[[j]][2]])) | dat.fil.sel[i,x[[j]][1]]+dat.fil.sel[i,x[[j]][2]]==2)
+        SpeciesTotal[i]=as.numeric(SpeciesTotal[i])+1
+    }
+  }
+  SpeciesTotal
+}
+
+#calculate turnover Index for genus Species at least 3 events
+Dry_turn=turn(c(grouped_ids_BR,grouped_ids_BL,grouped_ids_CT,grouped_ids_PO,grouped_ids_DH))
+Dry_stable=stable(c(grouped_ids_BR,grouped_ids_BL,grouped_ids_CT,grouped_ids_PO,grouped_ids_DH))
+Dry_T=Dry_turn[which(rowSums(cbind(unlist(Dry_stable),unlist(Dry_turn)))>2)]
+Dry_S=Dry_stable[which(rowSums(cbind(unlist(Dry_stable),unlist(Dry_turn)))>2)]
+Dry=data.frame(Dry=(as.numeric(Dry_T))/(as.numeric(Dry_T)+(as.numeric(Dry_S))),row.names=names(Dry_S))
+
+Wet_turn=turn(c(grouped_ids_ST,grouped_ids_A))
+Wet_stable=stable(c(grouped_ids_ST,grouped_ids_A))
+Wet_T=Wet_turn[which(rowSums(cbind(unlist(Wet_stable),unlist(Wet_turn)))>2)]
+Wet_S=Wet_stable[which(rowSums(cbind(unlist(Wet_stable),unlist(Wet_turn)))>2)]
+Wet=data.frame(Wet=((as.numeric(Wet_T))/(as.numeric(Wet_T)+as.numeric(Wet_S))),row.names=names(Wet_S))
+
+#Species present in Dry and Wet niche
+Merge=merge(Dry,Wet,by=0)
+Merge=data.frame(Merge,row.names=1)
+colnames(Merge)=c("Dry","Wet")
+Merge=Merge[order(Merge["Dry"]),]
+
+```
+
+Plot heatmap
+```{r fig.height=5, fig.width=4.8}
+## remove genera not found at timepoint 3
+tp3 <- filter(meta, timept==3) %>% pull(Library)
+tmp <- rowSums(dat.bk[, tp3] >= 0.5) > 0
+
+Merge <- Merge[rownames(Merge) %in% names(tmp)[tmp], ]
+rownames(Merge) %<>% str_replace_all(c("s__"='', '_'=' ', 'Propionibacterium'='Cutibacterium'))
+
+p.s <- Heatmap(Merge, col=colorRampPalette(brewer.pal(9,'Blues'))(10),
+        rect_gp = gpar(col = "black", lty = 1, lwd = 1),
+        heatmap_legend_param = list(title='', legend_height=unit(7, "cm"), labels_gp=gpar(fontsize=15), title_gp=gpar(fontsize=20,fontface="bold")),
+        row_dend_width = unit(25, "mm"),
+        row_names_gp=gpar(fontface = "bold.italic"),
+        column_labels=c('CTA','CTB'), column_names_gp=gpar(fontface = "bold"),
+ border="black",cluster_rows = T, cluster_columns = F)
+draw(p.s, heatmap_legend_side = "left")
+```
+
+
+### Save plots
+```{r}
+pdf('../plots/sup4b_microbiome_turnover_index_genus.pdf', width=4, height=7)
+draw(p.g,heatmap_legend_side = "left")
+dev.off()
+pdf('../plots/sup4b_microbiome_turnover_index_species.pdf', width=4.8, height=5)
+draw(p.s,heatmap_legend_side = "left")
+dev.off()
+```
+
+```{r}
+sessionInfo()
+```
