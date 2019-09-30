@@ -1,0 +1,71 @@
+---
+title: "Principle coordinates analysis (genus-level Bray-Curtis dissimilarity) of environmental microbiomes in different wards of the hospital"
+output:
+  html_document:
+    df_print: paged
+---
+
+### PCoA
+
+Load generic libraries
+```{r message=FALSE, warning=FALSE}
+source('configuration.r')
+```
+
+Load plot specific libraries
+```{r message=FALSE}
+library(vegan)
+```
+
+MDS plot
+```{r fig.height=10, fig.width=20}
+meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2)
+dat <- read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
+dat[dat < 0.1] <- 0
+dat <- dat[rowSums(dat)>0, ]
+
+meta.filled <- meta %>% select(Sample_ID, Room_type, Sample_type, timept, bed_number, Cubicle_room)
+
+## PCoA
+dist.mat <- vegdist(t(dat))
+cmds <- cmdscale(dist.mat, eig=TRUE)
+eigen <- cmds$eig / sum(cmds$eig) * 100
+
+dat.merged <- (merge(cmds$points, meta.filled, by.x=0, by.y=0, all.x=TRUE))
+
+dat.merged <- filter(dat.merged, Room_type != 'GIS', timept %in% c(1,2)) 
+levels(dat.merged$Sample_type) <- stringr::str_replace_all(levels(dat.merged$Sample_type), c('_'=' ', 'None'='Negative controls','-'=' ', 'interior'=''))
+levels(dat.merged$Room_type) <- stringr::str_replace_all(levels(dat.merged$Room_type), c('_'=' ', 'None'='Negative controls','Non-cohort'='Standard', 'cubicles'='wards'))
+levels(dat.merged$Cubicle_room) <- stringr::str_replace_all(levels(dat.merged$Cubicle_room), c('_'=' ', 'Cubicle'='Ward'))
+
+## links:
+from <- dat.merged %>% filter(timept==1) %>% arrange(Sample_ID) %>%
+    select(V1,V2,Sample_ID) 
+to <- dat.merged %>% filter(timept==2) %>% arrange(Sample_ID)%>%
+    select(V1,V2,Sample_ID)
+arrows <- (merge(from, to, by='Sample_ID'))
+
+plot.dat <- merge(dat.merged, arrows, by='Sample_ID')
+
+plot.dat$Time_point <- paste0("Timepoint ", plot.dat$timept)
+plot.dat$Sample_type <- relevel(factor(plot.dat$Sample_type), 'Sink Trap')
+
+ggplot(plot.dat, aes(x=V1, y=V2, col=Sample_type, shape=Time_point), lwd=2) +
+    geom_curve(data=plot.dat, aes(x=V1.x,y=V2.x,xend=V1.y, yend=V2.y),
+               arrow = arrow(length = unit(0.02, "npc")), lwd=1, alpha=0.5,
+               inherit.aes = FALSE) +
+    geom_point(size=3, alpha=0.9) +
+    labs(x=paste0('PCoA1 (',round(eigen[1], 1),'%)'),
+         y=paste0('PCoA2 (',round(eigen[2], 1),'%)')) +
+    scale_shape_manual(values=c(17, 19, 1)) + 
+    scale_color_manual(values=pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)]) +
+    facet_wrap(~Room_type+Cubicle_room) + 
+    theme(legend.title=element_blank())
+
+ggsave('../plots/sup5.pca_w_arrow.svg', height = 10, width = 20)
+```
+
+### Session informaton
+```{r}
+sessionInfo()
+```

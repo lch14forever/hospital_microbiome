@@ -9,8 +9,7 @@ clustering function
 ```{r message=FALSE, warning=FALSE}
 hcluster <- function(dist_matrix, output_file, threshold){
   
-  dist.dat <- read.table(dist_matrix)
-  cluster.full <- hclust(as.dist(dist.dat), method = 'single' )
+  cluster.full <- hclust(as.dist(dist_matrix), method = 'single' )
   clusters <- cutree(cluster.full, h = threshold)
   write.table(data.frame(clusters), output_file, sep='\t')
 }
@@ -18,26 +17,30 @@ hcluster <- function(dist_matrix, output_file, threshold){
 
 clustering novel species without filter the known species  # 0.05 42 clusters
 ```{r message=FALSE, warning=FALSE}
-hcluster("../tables/genome_dist_matrix.txt", "../output_tables/novel_genome_cluster.tsv", 0.05)
+dist.dat <- read.table("../tables/novel_genome_matrix.txt")
+hcluster(dist.dat, "../tmp/genome_cluster.tsv", 0.05)
+system("python ./remove_nonnovel_genome.py ../tmp/genome_cluster.tsv ../tables/non_novel_genome.dat ../output_tables/novel_genome_cluster.tsv")
+
 ```
 
 clustering, all high quality genome, novel + not novel # 0.05
 ```{r message=FALSE, warning=FALSE}
-hcluster("../tables/high_qual_matrix.txt", "../output_tables/high_qual_genome_cluster.tsv", 0.05)
+############################################################################################
+dist.dat <- read.table("../tables/high_qual_matrix.txt", header = TRUE, row.names =1)
+hcluster(dist.dat, "../output_tables/high_qual_genome_cluster.tsv", 0.05)
 ```
 
 plasmid all genome, novel + not novel #0.01
 ```{r message=FALSE, warning=FALSE, cache=TRUE}
 dist.dat <- readRDS("../tables/compressed_plasmid_ref_matrix.rds")
-cluster.full <- hclust(as.dist(dist.dat), method = 'single' )
-clusters <- cutree(cluster.full, h = 0.01)
-write.table(data.frame(clusters), ../output_tables/plasmid_cluster.tsv, sep='\t')
+hcluster(dist.dat, "../output_tables/plasmid_cluster.tsv", 0.01)
 
 ```
 
 all genome species novel + not novel #0.05
 ```{r message=FALSE, warning=FALSE}
-hcluster("../tables/genome_genome_matrix.txt", "../output_tables/all_genome_cluster.tsv", 0.05)
+dist.dat <- read.table("../tables/all_genome_matrix.txt", header = TRUE, row.names =1)
+hcluster(dist.dat, "../output_tables/all_genome_cluster.tsv", 0.05)
 ```
 
 
