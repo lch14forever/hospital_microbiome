@@ -1,0 +1,135 @@
+---
+title: "Derivative isolates and direct transfer between timepoints 1 and 2"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load generic libraries
+```{r message=FALSE, warning=FALSE}
+source('configuration.r')
+```
+
+Load plot specific libraries
+```{r message=FALSE, warning=FALSE}
+library(foreach)
+library(forcats)
+```
+
+
+Read metadata
+
+```{r}
+meta <- read.table('../output_tables/strain_cluster_summary.tsv', sep='\t', head=TRUE)
+
+antibiotics <- distinct(meta, Species, strain, Antibiotics) %>% 
+  count(Species, strain) %>% 
+  select(species=Species, everything()) %>% 
+  mutate(MDR=n > 2)
+```
+
+Read mummer matrix
+```{r}
+species.list <- as.character(unique(meta$Species))
+
+species.list <- species.list[c(1, 2, 3, 4)]
+
+aggregate_dat <- function(species){
+  dat <- read.table(paste0('../tables/', species, '_opera_ms_mummer_dist.dat'), head=F) %>% 
+    #select(V1, V2, coverage=V7, identity=V10)
+    select(V1, V2, coverage=V3, identity=V6)
+  
+  tp.info <- filter(meta, Species==species) %>% 
+    select(Nanopore_ID, timept, strain, Cubicle_room, Sample_type, Room_type, bed_number) %>% 
+    unite("location", Room_type, Cubicle_room, Sample_type, bed_number)
+  
+  tmp <- 
+    filter(dat, coverage>90, identity>99.99) %>% 
+    merge(tp.info, by.x=1, by.y=1) %>%  ## add information for the first genome
+    merge(tp.info, by.x=2, by.y=1)      ## add information for the second genome 
+
+  if (nrow(tmp) == 0) {
+    message(paste0("Species ", species, " didn't pass the filter."))
+    return(NULL)
+  }
+  
+  tmp <- tmp %>% 
+    ##select(tmp, strain=strain.x,  everything()) %>% 
+    mutate(derivative=identity>99.99, transfer=identity>99.999) %>% 
+    select(-V2,-V1,-coverage, -identity) %>% 
+    group_by(strain.x, strain.y, timept.x, location.x, timept.y, location.y) %>% 
+    summarise(derivative=sum(derivative)>0, transfer=sum(transfer)>0) %>% ungroup() %>% ## collapse the profile
+    filter(timept.x != timept.y)
+  if (nrow(tmp) == 0) {
+    message(paste0("Species ", species, " didn't pass the filter."))
+    return(NULL)
+  }
+
+  d1 <- tmp[tmp$timept.x < tmp$timept.y, ]
+  d2 <- tmp[tmp$timept.x > tmp$timept.y, ] 
+  
+  d2[,c(1,2)] <- d2[,c(2,1)]
+  d2[,c(3,5)] <- d2[,c(5,3)] ## swap x and y
+  d2[,c(4,6)] <- d2[,c(6,4)]
+  
+  d <- rbind(d1, d2) %>% 
+    group_by(strain.x, strain.y, timept.x, location.x, timept.y, location.y) %>% 
+    summarise(derivative=sum(derivative)>0, transfer=sum(transfer)>0) %>% ungroup() %>% ## collapse the profile
+    select(strain.x, strain.y, derivative, transfer) %>% 
+    group_by(strain.x, strain.y) %>% 
+    summarise(derivative=sum(derivative), transfer=sum(transfer)) %>% 
+    melt(id.vars=c('strain.x', 'strain.y')) 
+  d$species <- species
+  d
+}
+
+plot.dat <- foreach(x=species.list, .combine = rbind) %do% {aggregate_dat(x)} 
+plot.dat <- filter(plot.dat, strain.x==strain.y) %>%  ## remove potential false positives due to sequencing error
+  select(strain=strain.x, everything())
+plot.dat <- merge(plot.dat, select(antibiotics,-n), all.x = TRUE) %>% 
+  select(N=value, everything())
+```
+
+Plot
+```{r fig.height=6, fig.width=23}
+plot.dat %>% mutate(species=str_replace(species, '_', ' ')) %>% 
+  mutate(variable=fct_recode(variable, 'Derivative\nisolates'='derivative', 'Direct\ntransfer'='transfer')) %>% 
+  ggplot(aes(x=variable, y=strain, size=N, col=MDR)) + 
+  geom_point() + 
+  labs(x=NULL, y='Strain') + 
+  scale_size(trans = 'log10', range = c(5,10), ) + 
+  facet_wrap(~species, scales='free_y', nrow=1) + 
+  theme(axis.text.x = element_text(angle=45, hjust=1),
+        strip.text = element_text(face='bold.italic'))
+```
+
+Statistical test
+
+```{r}
+## MDR proportion based on time point 1
+mdr_prop <- filter(meta, timept==1) %>% 
+  distinct(Species, strain) %>% 
+  select(species=Species, everything()) %>% 
+  merge(antibiotics) %>% 
+  group_by(species) %>% 
+  summarise(MDR_prop=sum(MDR)/n())
+
+## Test on time point 2
+test.dat <- group_by(plot.dat, species, variable) %>% 
+  summarise(total=sum(N), MDR_obs=sum(MDR*N)) %>% 
+  merge(mdr_prop) 
+
+test.dat$p.value <- sapply(1:nrow(test.dat), function(x) 
+  binom.test(test.dat$MDR_obs[x], test.dat$total[x], test.dat$MDR_prop[x])$p.value )
+test.dat
+```
+
+Session information
+```{r}
+sessionInfo()
+```
+

@@ -39,8 +39,8 @@ colnames(meta.merged)[3] <- 'Species'
 levels(meta.merged$Sample_type) <- str_replace_all(levels(meta.merged$Sample_type), c('handle-interior'='Handle'))
 levels(meta.merged$Room_type) <- str_replace_all(levels(meta.merged$Room_type), c('cubicles'='wards', 'Non-cohort'='Standard'))
 levels(meta.merged$Cubicle_room) <- str_replace_all(levels(meta.merged$Cubicle_room), c('Cubicle'='Ward'))
-meta.merged %<>% filter(timept %in% c(1,2))
 write.table(meta.merged, '../output_tables/merged_assembly_metadata.tsv', quote=F, row.names = F, col.names = T, sep='\t')
+meta.merged %<>% filter(timept %in% c(1,2))
 ```
 
 
@@ -174,6 +174,21 @@ sp <- unique(test.dat$Species)
 c(sapply(sp, function(x) test(filter(test.dat, Species==x))), All=test(test.dat))
 ```
 
+Barplot for fraction of strains that spread and/or persist
+```{r fig.height=5, fig.width=8}
+filter(test.dat, found>1) %>% 
+  group_by(Species) %>% 
+  summarise(MDR=sum(resistance>2)/n(), `non-MDR`=1-MDR) %>% 
+  melt() %>% 
+  mutate(Species=str_replace(Species, '[a-z]+_', '. ')) %>% 
+  ggplot(aes(x=Species, y=value, fill=variable)) + 
+  geom_bar(stat='identity') + 
+  labs(y='Fraction of strains') + 
+  theme(axis.text.x = element_text(angle=45, hjust=1, face='bold.italic'), legend.title = element_blank())
+
+ggsave('../plots/sup12.fraction_of_MDR_strains_persist.svg', width=5.5, height=8)
+```
+
 Fisher's exact test for enrichment (time vs. space)
 ```{r}
 test.dat <- 
@@ -300,6 +315,8 @@ png('../plots/sup11.hive_sup.png', width = 200, height = 30, units='cm', res=400
 aux()
 dev.off()
 ```
+
+
 
 ### Session informaton
 ```{r}
