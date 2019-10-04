@@ -1,5 +1,5 @@
 ---
-title: "(Fig3) Antibiotics gene linkage graph"
+title: "Antibiotics gene linkage graph"
 output:
   html_document:
     df_print: paged

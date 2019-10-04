@@ -23,7 +23,13 @@ library(forcats)
 
 Merge data
 ```{r}
-df <- read.table('../tables/genome_info.dat', head=TRUE, stringsAsFactors = FALSE, comment.char = '!', sep='\t')
+operams.sp.list <- c('Elizabethkingia_anophelis', 'Acinetobacter_baumannii', 'Staphylococcus_aureus', 'Staphylococcus_epidermidis') ## only use opera-ms assemblies for these species
+df.canu <- read.table('../tables/genome_info.dat', head=TRUE, stringsAsFactors = FALSE, comment.char = '!', sep='\t')
+df.operams <- read.table('../tables/genome_info_opera_ms.dat', head=TRUE, stringsAsFactors = FALSE, comment.char = '!', sep='\t')
+
+df <- bind_rows(filter(df.canu, !Species_name %in% operams.sp.list) %>% mutate(Assembler='Canu'),
+       filter(df.operams, Species_name %in% operams.sp.list) %>% mutate(Assembler='OPERA-MS'))
+
 meta.illumina <- read.table('../metadata/illumina_metadata.txt', head=TRUE)[,-2]
 meta.nanopore <- read.table('../metadata/nanopore.metadata.txt', head=TRUE, sep='\t', strip.white = TRUE)
 meta.merged <- merge(meta.nanopore, meta.illumina,
@@ -47,20 +53,21 @@ meta.merged %<>% filter(timept %in% c(1,2))
 Function to plot the tree with heatmap
 ```{r}
 ## function to get cluster data:
-get.clusters <- function(x){
-  dist.file <- paste0("../tables/", x, "_mummer_heatmap.dat")
+get.clusters <- function(x, algo){
+  dist.file <- paste0("../tables/", x, "_", algo, "_mummer_heatmap.dat")
   dist.dat <- read.table(dist.file)
-  idx <- rownames(dist.dat) %in% (filter(meta.merged, Genome_quality=='HIGH_QUAL'))$Genome_ID | ##High quality genomes
+  meta.fil <- filter(meta.merged, Species==x)
+  idx <- rownames(dist.dat) %in% (filter(meta.fil, Genome_quality=='HIGH_QUAL'))$Genome_ID | ##High quality genomes
     str_detect(rownames(dist.dat), 'G|F') # use ['G|F'] to include the new data 
   dist.dat <- dist.dat[idx, idx]
   
   ## clustering
   cluster.full <- hclust(as.dist(dist.dat), method='single')
-  clusters <- cutree(cluster.full, h=0.001)
+  clusters <- cutree(cluster.full, h=0.00001)
   ## filter patient data
   clusters <- clusters[str_detect(names(clusters), 's_')]
   
-  merged <- merge(data.frame(clusters), meta.merged, by.x=0, by.y=1) %>%  
+  merged <- merge(data.frame(clusters), meta.fil, by.x=0, by.y=1) %>%  
     mutate(strain=paste0('s', clusters), input_distance_matrix=dist.file) 
   merged
 }
@@ -92,15 +99,15 @@ plot.tree <- function(x, color, offset=0.01, title=NULL, scale_offset_x=0.005, s
 
 Save merged strain table (used for generating parsnp trees)
 ```{r}
-d1 <- get.clusters('Elizabethkingia_anophelis')
-d2 <- get.clusters('Staphylococcus_epidermidis')
-d3 <- get.clusters('Staphylococcus_aureus')
-d4 <- get.clusters('Acinetobacter_baumannii')
-d5 <- get.clusters('Pseudomonas_aeruginosa')
-d6 <- get.clusters('Enterococcus_faecium')
-d7 <- get.clusters('Enterococcus_faecalis') %>% filter(Nanopore_ID != 'N182_BC10') 
+d1 <- get.clusters('Elizabethkingia_anophelis', 'opera_ms')
+d2 <- get.clusters('Staphylococcus_epidermidis', 'opera_ms')
+d3 <- get.clusters('Staphylococcus_aureus', 'opera_ms')
+d4 <- get.clusters('Acinetobacter_baumannii', 'opera_ms')
+d5 <- get.clusters('Pseudomonas_aeruginosa', 'canu')
+d6 <- get.clusters('Enterococcus_faecium', 'canu')
+d7 <- get.clusters('Enterococcus_faecalis', 'canu') #%>% filter(Nanopore_ID != 'N182_BC10') 
 ## N182_BC10 is removed due to low coverage comparing to the reference when constructing the tree
-d8 <- get.clusters('Klebsiella_pneumoniae')
+d8 <- get.clusters('Klebsiella_pneumoniae', 'canu')
 dat.all.species <- rbind(d1, d2, d3, d4, d5, d6, d7, d8)
 write.table(dat.all.species,
             '../output_tables/strain_cluster_summary.tsv', sep='\t', row.names = F, col.names = T, quote=F)
@@ -186,7 +193,7 @@ filter(test.dat, found>1) %>%
   labs(y='Fraction of strains') + 
   theme(axis.text.x = element_text(angle=45, hjust=1, face='bold.italic'), legend.title = element_blank())
 
-ggsave('../plots/sup12.fraction_of_MDR_strains_persist.svg', width=5.5, height=8)
+ggsave('../plots/sup12.fraction_of_MDR_strains_persist.svg', width=8, height=5)
 ```
 
 Fisher's exact test for enrichment (time vs. space)
