@@ -47,6 +47,7 @@ levels(meta.merged$Room_type) <- str_replace_all(levels(meta.merged$Room_type), 
 levels(meta.merged$Cubicle_room) <- str_replace_all(levels(meta.merged$Cubicle_room), c('Cubicle'='Ward'))
 write.table(meta.merged, '../output_tables/merged_assembly_metadata.tsv', quote=F, row.names = F, col.names = T, sep='\t')
 meta.merged %<>% filter(timept %in% c(1,2))
+colors <- pal_npg('nrc')(8)
 ```
 
 
@@ -63,7 +64,7 @@ get.clusters <- function(x, algo){
   
   ## clustering
   cluster.full <- hclust(as.dist(dist.dat), method='single')
-  clusters <- cutree(cluster.full, h=0.00001)
+  clusters <- cutree(cluster.full, h=0.001)
   ## filter patient data
   clusters <- clusters[str_detect(names(clusters), 's_')]
   
@@ -115,7 +116,6 @@ write.table(dat.all.species,
 
 Generate tree plots
 ```{r message=FALSE, warning=FALSE}
-colors <- pal_npg('nrc')(8)
 g1 <- plot.tree('Elizabethkingia_anophelis', colors[1], 1, 'Elizabethkingia anophelis', 1)
 g2 <- plot.tree('Staphylococcus_epidermidis', colors[2], 0.08, 'Staphylococcus epidermidis', 0.35)
 g3 <- plot.tree('Staphylococcus_aureus', colors[3], 0.05, 'Staphylococcus aureus', 0.2)
