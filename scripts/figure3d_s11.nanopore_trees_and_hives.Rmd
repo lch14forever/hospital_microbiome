@@ -313,10 +313,10 @@ aux <- function(){
   h <- hiveplot('Pseudomonas_aeruginosa', colors[5], silent=TRUE) ## only one node -- cannot use 'ranknorm'
   plotHive(h, ch=0.2, method='rank', bkgnd='white', anNodes = 'tmp_hive.txt', np=FALSE,anNode.gpar=gpar(cex=1.5))
   
-  #popViewport(2)
-  #pushViewport(vplayout(1, 4))
-  #h <- hiveplot('Enterococcus_faecium', colors[6], silent=TRUE)
-  #plotHive(h, ch=0.2, method='ranknorm', bkgnd='white', anNodes = 'tmp_hive.txt', np=FALSE,anNode.gpar=gpar(cex=1.5))
+  popViewport(2)
+  pushViewport(vplayout(1, 4))
+  h <- hiveplot('Enterococcus_faecium', colors[6], silent=TRUE)
+  plotHive(h, ch=0.2, method='rank', bkgnd='white', anNodes = 'tmp_hive.txt', np=FALSE,anNode.gpar=gpar(cex=1.5))
   
   popViewport(2)
   pushViewport(vplayout(1, 5))
@@ -326,7 +326,7 @@ aux <- function(){
   popViewport(2)
   pushViewport(vplayout(1, 6))
   h <- hiveplot('Klebsiella_pneumoniae', colors[8], silent=TRUE) ## only one node -- cannot use 'ranknorm'
-  plotHive(h, ch=0.2, method='rank', bkgnd='white', anNodes = 'tmp_hive.txt', np=FALSE,anNode.gpar=gpar(cex=1.5))
+  plotHive(h, ch=0.2, method='ranknorm', bkgnd='white', anNodes = 'tmp_hive.txt', np=FALSE,anNode.gpar=gpar(cex=1.5))
 }
 aux()
 ```
