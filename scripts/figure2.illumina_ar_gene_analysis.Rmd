@@ -23,6 +23,12 @@ Merge data
 metadata <-read.table("../metadata/illumina_metadata.txt",sep="\t",head=T) %>% 
   filter(timept %in% c(1,2))
 anti <-read.table("../tables/illumina_AR_gene_assignment.dat",sep="\t",head=T)
+
+## save the expanded matrix
+mutate(anti, Cover=1*(Cover>0)) %>% 
+  pivot_wider(id_cols = Anti, names_from = Lib, values_from = Cover, values_fill = list(Cover = 0)) %>% 
+  write.table("../output_tables/illumina_AR_gene_assignment_matrix.dat", quote=F, row.names = F, col.names = T, sep="\t")
+
 df.anti <- merge(metadata, anti, by.x='Site', by.y='Lib') %>% 
   mutate(Anti_type=gsub('.*_','',Anti)) %>%
   group_by(Sample_type,Anti_type,Anti,Library) %>%
