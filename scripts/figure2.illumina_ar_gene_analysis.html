@@ -1593,11 +1593,6 @@ library(RColorBrewer)</code></pre>
   filter(timept %in% c(1,2))
 anti &lt;-read.table(&quot;../tables/illumina_AR_gene_assignment.dat&quot;,sep=&quot;\t&quot;,head=T)
 
-## save the expanded matrix
-mutate(anti, Cover=1*(Cover&gt;0)) %&gt;% 
-  pivot_wider(id_cols = Anti, names_from = Lib, values_from = Cover, values_fill = list(Cover = 0)) %&gt;% 
-  write.table(&quot;../output_tables/illumina_AR_gene_assignment_matrix.dat&quot;, quote=F, row.names = F, col.names = T, sep=&quot;\t&quot;)
-
 df.anti &lt;- merge(metadata, anti, by.x='Site', by.y='Lib') %&gt;% 
   mutate(Anti_type=gsub('.*_','',Anti)) %&gt;%
   group_by(Sample_type,Anti_type,Anti,Library) %&gt;%
