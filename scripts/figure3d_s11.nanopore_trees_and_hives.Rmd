@@ -54,8 +54,8 @@ colors <- pal_npg('nrc')(8)
 Function to plot the tree with heatmap
 ```{r}
 ## function to get cluster data:
-get.clusters <- function(x, algo){
-  dist.file <- paste0("../tables/", x, "_", algo, "_mummer_heatmap.dat")
+get.clusters <- function(x, algo, diff_threshold, dist_type){
+  dist.file <- paste0("../tables/", x, "_", algo, "_mummer_heatmap_", dist_type, ".dat")
   dist.dat <- read.table(dist.file)
   meta.fil <- filter(meta.merged, Species==x)
   idx <- rownames(dist.dat) %in% (filter(meta.fil, Genome_quality=='HIGH_QUAL'))$Genome_ID | ##High quality genomes
@@ -64,7 +64,7 @@ get.clusters <- function(x, algo){
   
   ## clustering
   cluster.full <- hclust(as.dist(dist.dat), method='single')
-  clusters <- cutree(cluster.full, h=0.001)
+  clusters <- cutree(cluster.full, h=diff_threshold)
   ## filter patient data
   clusters <- clusters[str_detect(names(clusters), 's_')]
   
@@ -74,8 +74,8 @@ get.clusters <- function(x, algo){
 }
 
 ## function to plot tree
-plot.tree <- function(x, color, offset=0.01, title=NULL, scale_offset_x=0.005, scale_offset_y=0){
-  merged <- get.clusters(x)
+plot.tree <- function(x, color, offset=0.01, title=NULL, scale_offset_x=0.005, scale_offset_y=0, algo, diff_threshold, dist_type){
+  merged <- get.clusters(x, algo, diff_threshold, dist_type)
   tree.strains <- read.tree(paste0('../tables/trees/', x, ".parsnp.tree"))
   tree.strains$tip.label %<>% str_replace_all(c(".trimmed.fasta"="", "nanopore.cons.cluster_"="s", ".ref"=""))
 
@@ -100,15 +100,35 @@ plot.tree <- function(x, color, offset=0.01, title=NULL, scale_offset_x=0.005, s
 
 Save merged strain table (used for generating parsnp trees)
 ```{r}
-d1 <- get.clusters('Elizabethkingia_anophelis', 'opera_ms')
-d2 <- get.clusters('Staphylococcus_epidermidis', 'opera_ms')
-d3 <- get.clusters('Staphylococcus_aureus', 'opera_ms')
-d4 <- get.clusters('Acinetobacter_baumannii', 'opera_ms')
-d5 <- get.clusters('Pseudomonas_aeruginosa', 'canu')
-d6 <- get.clusters('Enterococcus_faecium', 'canu')
-d7 <- get.clusters('Enterococcus_faecalis', 'canu') #%>% filter(Nanopore_ID != 'N182_BC10') 
+dist_type = "gsnp"
+opera_ms_threshold = 0.0001
+d1 <- get.clusters('Elizabethkingia_anophelis', 'opera_ms', 0.00001, dist_type)
+d2 <- get.clusters('Staphylococcus_epidermidis', 'opera_ms', opera_ms_threshold, dist_type)
+d3 <- get.clusters('Staphylococcus_aureus', 'opera_ms', opera_ms_threshold, dist_type)
+d4 <- get.clusters('Acinetobacter_baumannii', 'opera_ms', opera_ms_threshold, dist_type)
+#################
+dist_type = "gsnp"
+canu_threshold = 0.001
+d5 <- get.clusters('Pseudomonas_aeruginosa', 'canu', canu_threshold, dist_type)
+d6 <- get.clusters('Enterococcus_faecium', 'canu', canu_threshold, dist_type)
+d7 <- get.clusters('Enterococcus_faecalis', 'canu', canu_threshold, dist_type) #%>% filter(Nanopore_ID != 'N182_BC10') 
 ## N182_BC10 is removed due to low coverage comparing to the reference when constructing the tree
-d8 <- get.clusters('Klebsiella_pneumoniae', 'canu')
+d8 <- get.clusters('Klebsiella_pneumoniae', 'canu', canu_threshold, dist_type)
+
+sort(d6$clusters)
+#for play
+cluster_size=c(
+length(unique(sort(d1$clusters))),
+length(unique(sort(d2$clusters))),
+length(unique(sort(d3$clusters))),
+length(unique(sort(d4$clusters))),
+length(unique(sort(d5$clusters))),
+length(unique(sort(d6$clusters))),
+length(unique(sort(d7$clusters))),
+length(unique(sort(d8$clusters)))
+)
+cluster_size
+
 dat.all.species <- rbind(d1, d2, d3, d4, d5, d6, d7, d8)
 write.table(dat.all.species,
             '../output_tables/strain_cluster_summary.tsv', sep='\t', row.names = F, col.names = T, quote=F)
@@ -116,14 +136,15 @@ write.table(dat.all.species,
 
 Generate tree plots
 ```{r message=FALSE, warning=FALSE}
-g1 <- plot.tree('Elizabethkingia_anophelis', colors[1], 1, 'Elizabethkingia anophelis', 1)
-g2 <- plot.tree('Staphylococcus_epidermidis', colors[2], 0.08, 'Staphylococcus epidermidis', 0.35)
-g3 <- plot.tree('Staphylococcus_aureus', colors[3], 0.05, 'Staphylococcus aureus', 0.2)
-g4 <- plot.tree('Acinetobacter_baumannii', colors[4], 0.2, 'Acinetobacter baumannii', scale_offset_x = 0.3)
-g5 <- plot.tree('Pseudomonas_aeruginosa', colors[5], 0.2, 'Pseudomonas aeruginosa', scale_offset_x = 0.3)
-g6 <- plot.tree('Enterococcus_faecium', colors[6], 0.9, 'Enterococcus faecium', scale_offset_x = 0.8)
-g7 <- plot.tree('Enterococcus_faecalis', colors[7], 0.05, 'Enterococcus faecalis', scale_offset_x = 0.2)
-g8 <- plot.tree('Klebsiella_pneumoniae', colors[8], 0.2, 'Klebsiella pneumoniae', scale_offset_x = 0.5)
+g1 <- plot.tree('Elizabethkingia_anophelis', colors[1], 1, 'Elizabethkingia anophelis', 1, 0, 'opera_ms', 0.0001, opera_ms_threshold, "gsnp")
+g2 <- plot.tree('Staphylococcus_epidermidis', colors[2], 0.08, 'Staphylococcus epidermidis', 0.35, 0, 'opera_ms', opera_ms_threshold, "gsnp")
+g3 <- plot.tree('Staphylococcus_aureus', colors[3], 0.05, 'Staphylococcus aureus', 0.2, 0, 'opera_ms', opera_ms_threshold, "gsnp")
+g4 <- plot.tree('Acinetobacter_baumannii', colors[4], 0.2, 'Acinetobacter baumannii', scale_offset_x = 0.3, 0, 'opera_ms', opera_ms_threshold, "gsnp")
+####
+g5 <- plot.tree('Pseudomonas_aeruginosa', colors[5], 0.2, 'Pseudomonas aeruginosa', scale_offset_x = 0.3, 0, 'canu', canu_threshold, "snp" )
+g6 <- plot.tree('Enterococcus_faecium', colors[6], 0.9, 'Enterococcus faecium', scale_offset_x = 0.8, 0, 'canu', canu_threshold, "snp")
+g7 <- plot.tree('Enterococcus_faecalis', colors[7], 0.05, 'Enterococcus faecalis', scale_offset_x = 0.2, 0, 'canu', canu_threshold, "snp")
+g8 <- plot.tree('Klebsiella_pneumoniae', colors[8], 0.2, 'Klebsiella pneumoniae', scale_offset_x = 0.5, 0, 'canu', canu_threshold, "snp")
 ```
 
 Main figure part (*S. aureus*)
@@ -143,7 +164,7 @@ s1
 
 Generate edge data
 ```{r}
-rbind(d2, d3, d4, d5, d6, d7, d8) %>%
+rbind(d1, d2, d3, d4, d5, d6, d7, d8) %>%
   count(Species, clusters, Sample_type, Room_type, #bed_number,
            timept, Sample_ID.y, Cubicle_room) %>%
   mutate(clusters=sprintf("%02d", clusters)) %>% 
@@ -162,12 +183,13 @@ edge_data <- filter(edge_data, n1%in%
 Fisher's exact test for enrichment (multi-resitance vs. persistance)
 ```{r}
 test.dat <- 
-  rbind(d2, d3, d4, d5, d6, d7, d8) %>% 
+  rbind(d1, d2, d3, d4, d5, d6, d7, d8) %>% 
   group_by(Species, clusters, Sample_type, Room_type, bed_number,
            timept, Sample_ID.y, Cubicle_room) %>% 
   summarise(n=sum(Antibiotics!='BHI')) %>%
   group_by(Species, clusters) %>% mutate(resistance= max(n)) %>% ungroup %>% 
   count(Species, clusters, resistance, name='found') 
+
 
 test <- function(x){
   c1 <- nrow(filter(x, resistance>2, found>1))
@@ -294,7 +316,7 @@ aux <- function(){
   popViewport(2)
   pushViewport(vplayout(1, 4))
   h <- hiveplot('Enterococcus_faecium', colors[6], silent=TRUE)
-  plotHive(h, ch=0.2, method='ranknorm', bkgnd='white', anNodes = 'tmp_hive.txt', np=FALSE,anNode.gpar=gpar(cex=1.5))
+  plotHive(h, ch=0.2, method='rank', bkgnd='white', anNodes = 'tmp_hive.txt', np=FALSE,anNode.gpar=gpar(cex=1.5))
   
   popViewport(2)
   pushViewport(vplayout(1, 5))
@@ -304,7 +326,7 @@ aux <- function(){
   popViewport(2)
   pushViewport(vplayout(1, 6))
   h <- hiveplot('Klebsiella_pneumoniae', colors[8], silent=TRUE) ## only one node -- cannot use 'ranknorm'
-  plotHive(h, ch=0.2, method='rank', bkgnd='white', anNodes = 'tmp_hive.txt', np=FALSE,anNode.gpar=gpar(cex=1.5))
+  plotHive(h, ch=0.2, method='ranknorm', bkgnd='white', anNodes = 'tmp_hive.txt', np=FALSE,anNode.gpar=gpar(cex=1.5))
 }
 aux()
 ```
