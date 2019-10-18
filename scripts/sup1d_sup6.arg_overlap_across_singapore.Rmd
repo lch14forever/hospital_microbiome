@@ -1,0 +1,501 @@
+---
+title: "Antibiotics resistant gene overlap analysis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.height=7, fig.width=9)
+```
+
+## ARG overlap
+
+Load generic libraries
+```{r message=FALSE, warning=FALSE}
+source('configuration.r')
+```
+
+Load libraries
+```{r message=FALSE, warning=FALSE}
+library(readr)
+library(reshape2)
+library(UpSetR)
+```
+
+Set seed
+```{r message=FALSE, warning=FALSE}
+set.seed(0)
+```
+
+Process and merge metadata
+```{r message=FALSE, warning=FALSE}
+meta <- read_csv("../tables/metasub_singapore/complete_metadata.csv")
+meta_hosp <- read_tsv("../metadata/illumina_metadata.txt")
+
+dat_metasub <- read_tsv("../tables/metasub_singapore/arg_metasub.dat")
+dat_gis_hosp <- read_tsv("../tables/illumina_AR_gene_assignment.dat")
+
+dat <- rbind(dat_metasub, dat_gis_hosp)
+
+# remove samples with missing metadata
+missing_dat <- filter(meta, is.na(meta$metasub_name))$uuid
+
+meta_fil <-
+  meta %>% 
+  filter(!(uuid %in% missing_dat)) %>% 
+  rename("sample" = "uuid") %>% 
+  mutate(sample = str_remove(sample, "hai.*XY_")) %>% 
+  mutate(location = "MetaSUB") %>% 
+  filter(surface %in% c("handrail",
+                        "lift_buttons",
+                        "overhead_handrail",
+                        "pedestrian_crossing_button",
+                        "playground",
+                        "seat",
+                        "table",
+                        "exercise_hand_grip")) %>% 
+  select(sample, location)
+
+meta_gis <-
+  meta_hosp %>% 
+  filter(Room_type == "GIS") %>% 
+  rename("sample" = "Library") %>%
+  mutate(location = "Office") %>% 
+  select(sample, location)
+
+meta_hosp_fil <-
+  meta_hosp %>%
+  filter(Room_type != "Mock") %>% 
+  filter(Room_type != "GIS") %>% 
+  filter(!str_detect(Room_type, "Control")) %>%
+  rename("sample" = "Library") %>% 
+  mutate(location = if_else(Room_type == "GIS",
+                            if_else(Sample_type == "Aerator" | Sample_type == "Sink_Trap", "Office Wet", "Office Dry"),
+                            if_else(Sample_type == "Aerator" | Sample_type == "Sink_Trap", "CTB", "CTA"))) %>% 
+  select(sample, location, timept)
+
+meta_merged <-
+  merge(meta_fil, meta_gis, all = TRUE) %>% 
+  merge(meta_hosp_fil, all = TRUE) %>% 
+  select(sample, location, timept)
+```
+
+Process subsamples
+```{r message=FALSE, warning=FALSE}
+subsample_main <- 100
+
+samples_metasub <- list()
+for (n in 1:subsample_main) {
+  samples_metasub[n] <- list(sample_n(meta_fil, 30))
+}
+
+samples_gis <- list()
+for (n in 1:subsample_main) {
+  samples_gis[n] <- list(sample_n(meta_gis, 30))
+}
+
+samples_cta <- list()
+for (n in 1:subsample_main) {
+  samples_cta[n] <- list(sample_n(meta_hosp_fil %>% filter(location == "CTA"), 30))
+}
+
+samples_ctb <- list()
+for (n in 1:subsample_main) {
+  samples_ctb[n] <- list(sample_n(meta_hosp_fil %>% filter(location == "CTB"), 30))
+}
+
+meta_samples_merged <- list()
+for (n in 1:subsample_main) {
+  meta_samples_merged[n] <- list(merge(samples_metasub[n], samples_gis[n], all = TRUE) %>% 
+    merge(samples_cta[n], all = TRUE) %>% 
+    merge(samples_ctb[n], all = TRUE))
+}
+
+genes <- lapply(meta_samples_merged, function(samples) {
+    merge(samples, dat, by.x='sample', by.y='Lib') %>% 
+    mutate(Anti_type=str_replace(Anti, '.*_', '')) %>% 
+    group_by(location, Anti_type, Anti) %>%
+    summarise(n = 1)
+  })
+
+mats <- lapply(genes, function(gene) {
+  df <- data.frame(acast(gene, Anti ~ location)) %>% 
+    replace(is.na(.), 0)
+  if (!"MetaSUB" %in% colnames(df)) {
+    df <- mutate(df, MetaSUB = 0)
+  }
+  return(df)
+})
+
+intersections <- list()
+for (n in 1:subsample_main) {
+  df <- data.frame(i_office = NA,
+                   i_metasub = NA,
+                   i_metasub_office = NA,
+                   i_ctb = NA,
+                   i_ctb_office = NA,
+                   i_ctb_metasub = NA,
+                   i_ctb_metasub_office = NA,
+                   i_cta = NA,
+                   i_cta_office = NA,
+                   i_cta_metasub = NA,
+                   i_cta_metasub_office = NA,
+                   i_cta_ctb = NA,
+                   i_cta_ctb_office = NA,
+                   i_cta_ctb_metasub = NA,
+                   i_all = NA)
+  
+  df$i_office = (mats[[n]] %>% 
+    filter(CTA == 0 & CTB == 0 & MetaSUB == 0 & Office == 1) %>% 
+    tally())$n
+  df$i_metasub = (mats[[n]] %>% 
+    filter(CTA == 0 & CTB == 0 & MetaSUB == 1 & Office == 0) %>% 
+    tally())$n
+  df$i_metasub_office = (mats[[n]] %>% 
+    filter(CTA == 0 & CTB == 0 & MetaSUB == 1 & Office == 1) %>% 
+    tally())$n
+  df$i_ctb = (mats[[n]] %>% 
+    filter(CTA == 0 & CTB == 1 & MetaSUB == 0 & Office == 0) %>% 
+    tally())$n
+  df$i_ctb_office = (mats[[n]] %>% 
+    filter(CTA == 0 & CTB == 1 & MetaSUB == 0 & Office == 1) %>% 
+    tally())$n
+  df$i_ctb_metasub = (mats[[n]] %>% 
+    filter(CTA == 0 & CTB == 1 & MetaSUB == 1 & Office == 0) %>% 
+    tally())$n
+  df$i_ctb_metasub_office = (mats[[n]] %>% 
+    filter(CTA == 0 & CTB == 1 & MetaSUB == 1 & Office == 1) %>% 
+    tally())$n
+  df$i_cta = (mats[[n]] %>% 
+    filter(CTA == 1 & CTB == 0 & MetaSUB == 0 & Office == 0) %>% 
+    tally())$n
+  df$i_cta_office = (mats[[n]] %>% 
+    filter(CTA == 1 & CTB == 0 & MetaSUB == 0 & Office == 1) %>% 
+    tally())$n
+  df$i_cta_metasub = (mats[[n]] %>% 
+    filter(CTA == 1 & CTB == 0 & MetaSUB == 1 & Office == 0) %>% 
+    tally())$n
+  df$i_cta_metasub_office = (mats[[n]] %>% 
+    filter(CTA == 1 & CTB == 0 & MetaSUB == 1 & Office == 1) %>% 
+    tally())$n
+  df$i_cta_ctb = (mats[[n]] %>% 
+    filter(CTA == 1 & CTB == 1 & MetaSUB == 0 & Office == 0) %>% 
+    tally())$n
+  df$i_cta_ctb_office = (mats[[n]] %>% 
+    filter(CTA == 1 & CTB == 1 & MetaSUB == 0 & Office == 1) %>% 
+    tally())$n
+  df$i_cta_ctb_metasub = (mats[[n]] %>% 
+    filter(CTA == 1 & CTB == 1 & MetaSUB == 1 & Office == 0) %>% 
+    tally())$n
+  df$i_all = (mats[[n]] %>% 
+    filter(CTA == 1 & CTB == 1 & MetaSUB == 1 & Office == 1) %>% 
+    tally())$n
+  intersections[n] <- list(df)
+}
+```
+
+Create matrix using subsamples
+```{r message=FALSE, warning=FALSE}
+intersection_means <- do.call("rbind", intersections) %>% 
+  summarise_all(mean) %>% 
+  round()
+
+intersection_sd <- do.call("rbind", intersections) %>% 
+  summarise_all(sd)
+
+mat <- data.frame(CTA = NA, CTB = NA, MetaSUB = NA, Office = NA) %>% 
+  drop_na()
+
+for (n in 0:intersection_means$i_office) {
+  if(n < intersection_means$i_office) {
+    mat <- add_row(mat, Office = 1)
+  }
+}
+for (n in 0:intersection_means$i_metasub) {
+  if(n < intersection_means$i_metasub) {
+    mat <- add_row(mat, MetaSUB = 1)
+  }
+}
+for (n in 0:intersection_means$i_metasub_office) {
+  if(n < intersection_means$i_metasub_office) {
+    mat <- add_row(mat, MetaSUB = 1, Office = 1)
+  }
+}
+for (n in 0:intersection_means$i_ctb) {
+  if(n < intersection_means$i_ctb) {
+    mat <- add_row(mat, CTB = 1)
+  }
+}
+for (n in 0:intersection_means$i_ctb_office) {
+  if(n < intersection_means$i_ctb_office) {
+    mat <- add_row(mat, CTB = 1, Office = 1)
+  }
+}
+for (n in 0:intersection_means$i_ctb_metasub) {
+  if(n < intersection_means$i_ctb_metasub) {
+    mat <- add_row(mat, CTB = 1, MetaSUB = 1)
+  }
+}
+for (n in 0:intersection_means$i_ctb_metasub_office) {
+  if(n < intersection_means$i_ctb_metasub_office) {
+    mat <- add_row(mat, CTB = 1, MetaSUB = 1, Office = 1)
+  }
+}
+for (n in 0:intersection_means$i_cta) {
+  if(n < intersection_means$i_cta) {
+    mat <- add_row(mat, CTA = 1)
+  }
+}
+for (n in 0:intersection_means$i_cta_office) {
+  if(n < intersection_means$i_cta_office) {
+    mat <- add_row(mat, CTA = 1, Office = 1)
+  }
+}
+for (n in 0:intersection_means$i_cta_metasub) {
+  if(n < intersection_means$i_cta_metasub) {
+    mat <- add_row(mat, CTA = 1, MetaSUB = 1)
+  }
+}
+for (n in 0:intersection_means$i_cta_metasub_office) {
+  if(n < intersection_means$i_cta_metasub_office) {
+    mat <- add_row(mat, CTA = 1, MetaSUB = 1, Office = 1)
+  }
+}
+for (n in 0:intersection_means$i_cta_ctb) {
+  if(n < intersection_means$i_cta_ctb) {
+    mat <- add_row(mat, CTA = 1, CTB = 1)
+  }
+}
+for (n in 0:intersection_means$i_cta_ctb_office) {
+  if(n < intersection_means$i_cta_ctb_office) {
+    mat <- add_row(mat, CTA = 1, CTB = 1, Office = 1)
+  }
+}
+for (n in 0:intersection_means$i_cta_ctb_metasub) {
+  if(n < intersection_means$i_cta_ctb_metasub) {
+    mat <- add_row(mat, CTA = 1, CTB = 1, MetaSUB = 1)
+  }
+}
+for (n in 0:intersection_means$i_all) {
+  if(n < intersection_means$i_all) {
+    mat <- add_row(mat, CTA = 1, CTB = 1, MetaSUB = 1, Office = 1)
+  }
+}
+
+mat <-
+  mat %>%
+  replace(is.na(.), 0)
+```
+
+Generate figure
+```{r message=FALSE, warning=FALSE}
+upset_main <- upset(mat, empty.intersections = NULL, scale.intersections = "identity", mb.ratio = c(0.65, 0.35), group.by = "degree",
+                    set_size.show = F,
+                    point.size = 3.5, line.size = 2, 
+                    mainbar.y.label = "ARG Intersections", sets.x.label = "# ARG", 
+                    text.scale = c(3, 3, 2.5, 2.5, 3, 3), order.by = "freq")
+
+upset_main
+
+#graph2ppt(file = "figures/upset_main", width = 12, height = 9)
+```
+
+Process subsamples for CTA only
+```{r message=FALSE, warning=FALSE}
+subsample_cta <- 77
+
+cta_samples <- list()
+for (n in 1:subsample_cta) {
+  cta_samples[n] <- list(sample_n(meta_hosp_fil %>% filter(location == "CTA"), 77))
+}
+
+genes_cta <- lapply(cta_samples, function(samples) {
+  merge(samples, dat, by.x='sample', by.y='Lib') %>% 
+    group_by(location, Anti, timept) %>%
+    summarise(n = 1) %>% 
+    ungroup() %>% 
+    select(-location)
+})
+
+mats_cta <- lapply(genes_cta, function(gene) {
+  df <- data.frame(acast(gene, Anti ~ timept)) %>% 
+    replace(is.na(.), 0) %>% 
+    rename("T1" = "X1", "T2" = "X2", "T3" = "X3")
+  return(df)
+})
+
+intersections_cta <- list()
+for (n in 1:subsample_cta) {
+  df <- data.frame(i_1 = NA,
+                   i_2 = NA,
+                   i_1_2 = NA,
+                   i_3 = NA,
+                   i_1_3 = NA,
+                   i_2_3 = NA,
+                   i_1_2_3 = NA)
+  
+  df$i_1 = (mats_cta[[n]] %>% 
+                   filter(T1 == 1 & T2 == 0 & T3 == 0) %>% 
+                   tally())$n
+  df$i_2 = (mats_cta[[n]] %>% 
+              filter(T1 == 0 & T2 == 1 & T3 == 0) %>% 
+                    tally())$n
+  df$i_1_2 = (mats_cta[[n]] %>% 
+                filter(T1 == 1 & T2 == 1 & T3 == 0) %>% 
+                           tally())$n
+  df$i_3 = (mats_cta[[n]] %>% 
+              filter(T1 == 0 & T2 == 0 & T3 == 1) %>% 
+                tally())$n
+  df$i_1_3 = (mats_cta[[n]] %>% 
+                filter(T1 == 1 & T2 == 0 & T3 == 1) %>% 
+                       tally())$n
+  df$i_2_3 = (mats_cta[[n]] %>% 
+                filter(T1 == 0 & T2 == 1 & T3 == 1) %>% 
+                        tally())$n
+  df$i_1_2_3 = (mats_cta[[n]] %>% 
+                  filter(T1 == 1 & T2 == 1 & T3 == 1) %>% 
+                  tally())$n
+  
+  intersections_cta[n] <- list(df)
+}
+```
+
+Create matrix using CTA subsamples
+```{r message=FALSE, warning=FALSE}
+intersection_cta_means <- do.call("rbind", intersections_cta) %>% 
+  summarise_all(mean) %>% 
+  round()
+
+intersection_cta_sd <- do.call("rbind", intersections_cta) %>% 
+  summarise_all(sd)
+
+mat_CTA <- data.frame("T1" = NA, "T2" = NA, "T3" = NA) %>% 
+  drop_na()
+
+for (n in 0:intersection_cta_means$i_1) {
+  if(n < intersection_cta_means$i_1) {
+    mat_CTA <- add_row(mat_CTA, T1 = 1)
+  }
+}
+for (n in 0:intersection_cta_means$i_2) {
+  if(n < intersection_cta_means$i_2) {
+    mat_CTA <- add_row(mat_CTA, T2 = 1)
+  }
+}
+for (n in 0:intersection_cta_means$i_1_2) {
+  if(n < intersection_cta_means$i_1_2) {
+    mat_CTA <- add_row(mat_CTA, T1 = 1, T2 = 1)
+  }
+}
+for (n in 0:intersection_cta_means$i_3) {
+  if(n < intersection_cta_means$i_3) {
+    mat_CTA <- add_row(mat_CTA, T3 = 1)
+  }
+}
+for (n in 0:intersection_cta_means$i_1_3) {
+  if(n < intersection_cta_means$i_1_3) {
+    mat_CTA <- add_row(mat_CTA, T1 = 1, T3 = 1)
+  }
+}
+for (n in 0:intersection_cta_means$i_2_3) {
+  if(n < intersection_cta_means$i_2_3) {
+    mat_CTA <- add_row(mat_CTA, T2 = 1, T3 = 1)
+  }
+}
+for (n in 0:intersection_cta_means$i_1_2_3) {
+  if(n < intersection_cta_means$i_1_2_3) {
+    mat_CTA <- add_row(mat_CTA, T1 = 1, T2 = 1, T3 = 1)
+  }
+}
+
+mat_CTA <-
+  mat_CTA %>%
+  replace(is.na(.), 0) %>% 
+  rename("Time point 1" = "T1", "Time point 2" = "T2", "Time point 3" = "T3")
+```
+
+Get CTB matrix
+```{r message=FALSE, warning=FALSE}
+ctb_samples <-
+  meta_hosp_fil %>% 
+  filter(location == "CTB") %>% 
+  sample_n(77)
+
+genes_ctb <- merge(ctb_samples, dat, by.x='sample', by.y='Lib') %>% 
+  group_by(location, Anti, timept) %>% 
+  summarise(n = 1)
+
+genes_timept_CTB <-
+  genes_ctb %>% 
+  ungroup() %>% 
+  select(-location)
+
+mat_CTB <- data.frame(acast(genes_timept_CTB, Anti ~ timept)) %>% 
+  replace(is.na(.), 0) %>% 
+  rename("Time point 1" = "X1", "Time point 2" = "X2", "Time point 3" = "X3")
+```
+
+Generate hospital figures
+```{r message=FALSE, warning=FALSE}
+upset_CTA <- upset(mat_CTA, point.size = 3.5, line.size = 2, 
+                   sets = c("Time point 3", "Time point 2", "Time point 1"),
+                   mainbar.y.label = "ARG Intersections", sets.x.label = "# ARG", 
+                   text.scale = c(3, 3, 2.5, 2.5, 3, 3),
+                   order.by = "freq", keep.order = TRUE,
+                   main.bar.color = "#00A087",
+                   matrix.color = "#00A087",
+                   sets.bar.color = "#00A087")
+upset_CTA
+
+#graph2ppt(file = "figures/upset_CTA", width = 12, height = 9)
+
+
+
+upset_CTB <- upset(mat_CTB, point.size = 3.5, line.size = 2, 
+                   mainbar.y.label = "ARG Intersections", sets.x.label = "# ARG", 
+                   text.scale = c(3, 3, 2.5, 2.5, 3, 3), order.by = "freq",
+                   main.bar.color = "#E64B35",
+                   matrix.color = "#E64B35",
+                   sets.bar.color = "#E64B35")
+upset_CTB
+
+#graph2ppt(file = "figures/upset_CTB", width = 12, height = 9)
+```
+
+Generate figure for matched samples
+```{r message=FALSE, warning=FALSE}
+matched_samples <- read_lines("../output_tables/matched_samples.txt")
+
+meta_matched <-
+  meta_merged %>% 
+  filter(sample %in% matched_samples)
+
+dat_matched <-
+  dat %>% 
+  filter(Lib %in% matched_samples)
+
+genes_matched <- merge(meta_matched, dat_matched, by.x='sample', by.y='Lib') %>% 
+  mutate(Anti_type=str_replace(Anti, '.*_', '')) %>%
+  group_by(location, Anti_type, Anti) %>%
+  summarise(n = 1) %>% 
+  ungroup() %>% 
+  mutate(location = str_replace(location, "Office Dry", "Office")) %>% 
+  mutate(location = str_replace(location, "CT(A|B)", "Hospital"))
+
+mat_matched <- data.frame(acast(genes_matched, Anti ~ location)) %>% 
+  replace(is.na(.), 0) %>% 
+  replace(. == 2, 1)
+
+upset_matched <- upset(mat_matched, point.size = 3.5, line.size = 2, 
+                   mainbar.y.label = "ARG Intersections", sets.x.label = "# ARG", 
+                   text.scale = c(3, 3, 2.5, 2.5, 3, 3),
+                   order.by = "freq")
+upset_matched
+
+#graph2ppt(file = "figures/upset_matched", width = 12, height = 9)
+```
+
+Session information
+
+```{r}
+sessionInfo()
+```

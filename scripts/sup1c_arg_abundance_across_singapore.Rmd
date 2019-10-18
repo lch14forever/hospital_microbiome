@@ -1,0 +1,119 @@
+---
+title: "Antibiotics resistance gene abundances in samples across Singapore"
+output: html_document
+---
+
+## ARG abundance
+
+Load generic libraries
+```{r message=FALSE, warning=FALSE}
+source('configuration.r')
+```
+Load specific libraries
+```{r message=FALSE, warning=FALSE}
+library(readr)
+library(ggpubr)
+```
+
+Process and merge metadata
+```{r message=FALSE, warning=FALSE}
+meta <- read_csv("../tables/metasub_singapore/complete_metadata.csv")
+meta_hosp <- read_tsv("../metadata/illumina_metadata.txt")
+
+# remove samples with missing metadata
+missing_dat <- filter(meta, is.na(meta$metasub_name))$uuid
+
+meta_fil <-
+  meta %>% 
+  filter(!(uuid %in% missing_dat)) %>% 
+  mutate(uuid = str_remove(uuid, "hai.*XY_")) %>% 
+  mutate(location = "MetaSUB") %>% 
+  rename("sample" = "uuid") %>% 
+  filter(surface %in% c("handrail",
+                        "lift_buttons",
+                        "overhead_handrail",
+                        "pedestrian_crossing_button",
+                        "playground",
+                        "seat",
+                        "table",
+                        "exercise_hand_grip")) %>% 
+  select(sample, location)
+
+meta_hosp_fil <-
+  meta_hosp %>% 
+  select(Library, Room_type, Sample_type) %>% 
+  filter(Room_type != "Mock") %>% 
+  filter(!str_detect(Room_type, "Control")) %>% 
+  rename("sample" = "Library") %>% 
+  mutate(location = if_else(Room_type == "GIS", "Office", "Hospital")) %>%
+  select(sample, location)
+
+meta_merged <-
+  merge(meta_fil, meta_hosp_fil, all = TRUE)
+```
+
+Process data and generate figure
+```{r fig.height=6, fig.width=8, message=FALSE, warning=FALSE}
+kraken_hosp <- read_tsv("../tables/metasub_singapore/kraken_read_counts_hospital.dat")
+kraken_metasub <- read_tsv("../tables/metasub_singapore/kraken_read_counts_metasub.dat")
+srst_hosp <- read_tsv("../tables/metasub_singapore/srst_read_counts_hospital.dat")
+srst_metasub <- read_tsv("../tables/metasub_singapore/srst_read_counts_metasub.dat")
+
+kraken <- rbind(kraken_metasub, kraken_hosp)
+srst <- rbind(srst_metasub, srst_hosp)
+
+dat <- merge(meta_merged, kraken) %>% 
+  rename("kraken" = "reads") %>% 
+  merge(srst) %>% 
+  rename("srst" = "reads") %>% 
+  mutate(value = srst / kraken)
+
+cols <- c("Hospital" = "#E64B35", "MetaSUB" = "#3C5488", "Office" = "#FFCC00")
+
+ggplot(dat, aes(x = location, y = value)) +
+  geom_boxplot(aes(fill = location)) +
+  scale_fill_manual(values = cols) +
+  scale_y_log10(breaks = c(0, 0.001, 0.01, 0.1, 1, 10), labels = c(0, 0.001, 0.01, 0.1, 1, 10)) +
+  labs(x = "Site", y = "Normalized ARG Abundance") +
+  guides(fill = guide_legend(title = "Site")) +
+  theme(axis.text = element_text(size = 14),
+        axis.text.x = element_text(angle = 45, hjust = 1)) +
+  stat_compare_means(comparisons = list(c("Hospital", "MetaSUB"),
+                                        c("Hospital", "Office")),
+                     label = "p.format") +
+  stat_compare_means(comparisons = list(c("Hospital", "MetaSUB"),
+                                        c("Hospital", "Office")),
+                     label = "p.signif",
+                     label.y = c(0.25, 0.7),
+                     bracket.size = 0)
+```
+
+Generate figure for matched samples
+```{r fig.height=6, fig.width=8, message=FALSE, warning=FALSE}
+matched_samples <- read_lines("../output_tables/matched_samples.txt")
+
+dat_matched <-
+  dat %>% 
+  filter(sample %in% matched_samples) %>% 
+  mutate(location = str_replace(location, "CT(A|B)", "Hospital")) %>% 
+  mutate(location = str_replace(location, "Office (Dry|Wet)", "Office"))
+
+cols <- c("Hospital" = "#E64B35", "Office" = "#3C5488")
+
+ggplot(dat_matched, aes(x = location, y = value)) +
+  geom_boxplot(aes(fill = location)) +
+  scale_fill_manual(values = cols) +
+  scale_y_log10() +
+  labs(x = "Site", y = "Normalized ARG Abundance") +
+  guides(fill = guide_legend(title = "Site")) +
+  stat_compare_means(comparisons = list(c("Hospital", "Office"))) +
+  stat_compare_means(comparisons = list(c("Hospital", "Office")),
+                     label = "p.signif",
+                     label.y = -1.65,
+                     bracket.size = 0)
+```
+
+Session information
+```{r}
+sessionInfo()
+```

@@ -1,0 +1,166 @@
+---
+title: "PCoA plots comparing samples across Singapore"
+output:
+  html_document:
+    df_print: paged
+---
+
+## PCoA plots for hospital, office, and MetaSUB data
+
+Load generic libraries
+```{r message=FALSE, warning=FALSE}
+source('configuration.r')
+```
+
+Load specific libraries
+```{r message=FALSE, warning=FALSE}
+library(readr)
+library(vegan)
+```
+
+Process and merge metadata
+```{r message=FALSE, warning=FALSE}
+meta <- read_csv("../tables/metasub_singapore/complete_metadata.csv")
+dat <- read_tsv("../tables/metasub_singapore/g.metaphlan2.profile_merged.tsv") %>% 
+  column_to_rownames("Index")
+
+meta_hosp <- read_tsv("../metadata//illumina_metadata.txt")
+dat_hosp <- read_tsv("../tables/metagenomics.metaphlan2.table.g") %>% 
+  column_to_rownames("Index")
+
+# remove samples with missing metadata
+missing_dat <- filter(meta, is.na(meta$metasub_name))$uuid
+
+# filter for high human contact sites
+meta_fil <-
+  meta %>% 
+  filter(!(uuid %in% missing_dat)) %>% 
+  mutate(uuid = str_remove(uuid, "hai.*XY_")) %>% 
+  mutate(site = "MetaSUB") %>% 
+  filter(surface %in% c("handrail",
+                        "lift_buttons",
+                        "overhead_handrail",
+                        "pedestrian_crossing_button",
+                        "playground",
+                        "seat",
+                        "table",
+                        "exercise_hand_grip")) %>% 
+  select(uuid, site)
+
+# remove mock and control samples, filter for time point 1 only
+meta_hosp_fil <-
+  meta_hosp %>%
+  select(Library, Room_type, Sample_type, timept) %>% 
+  filter(Room_type != "Mock") %>% 
+  filter(!str_detect(Room_type, "Control")) %>% 
+  filter(is.na(timept) | timept == 1) %>% 
+  rename("uuid" = "Library") %>% 
+  mutate(site = if_else(Room_type == "GIS", "Office", "Hospital")) %>%
+  select(uuid, site)
+
+meta_merged <-
+  merge(meta_fil, meta_hosp_fil, all = TRUE) %>% 
+  column_to_rownames("uuid")
+```
+
+Process data and generate figure (Using time point 1 only)
+```{r fig.height=6, fig.width=8, message=FALSE, warning=FALSE}
+dat_merged <-
+  merge(dat, dat_hosp, by = "row.names", all = TRUE) %>%
+  column_to_rownames("Row.names") %>% 
+  replace(is.na(.), 0)
+
+dat_merged_fil <- dat_merged[, as.character(rownames(meta_merged))]
+dat_merged_fil[dat_merged_fil < 0.1] <- 0
+dat_merged_fil <- dat_merged_fil[rowSums(dat_merged_fil) > 0, ]
+
+dist_mat <- vegdist(t(dat_merged_fil))
+cmds <- cmdscale(dist_mat, k = 3, eig = TRUE)
+eigen <- cmds$eig / sum(cmds$eig) * 100
+
+dat_merged_all <- (merge(cmds$points, meta_merged, by.x=0, by.y=0, all = TRUE))
+
+cols <- c("Hospital" = "#E64B35", "MetaSUB" = "#3C5488", "Office" = "#FFCC00")
+
+ggplot(dat_merged_all, aes(x = V1, y = V2, fill = site, label = Row.names), lwd=2) +
+  geom_density_2d(aes(x = V1, y = V2), inherit.aes = FALSE, col = 'grey', lwd=1) + 
+  geom_point(size = 3, shape = 21) +
+  labs(x=paste0('PCoA1 (',round(eigen[1], 1),'%)'),
+       y=paste0('PCoA2 (',round(eigen[2], 1),'%)')) +
+  scale_fill_manual(values = cols) +
+  theme(legend.title = element_blank(), legend.background = element_blank(),
+        legend.key = element_blank(), legend.text = element_text(size = 12))
+
+```
+
+Generate figure for all time points
+```{r fig.height=5.5, fig.width=9, message=FALSE, warning=FALSE}
+meta_hosp_fil_all <-
+  meta_hosp %>%
+  select(Library, Room_type, Sample_type, timept) %>% 
+  filter(Room_type != "Mock") %>% 
+  filter(!str_detect(Room_type, "Control")) %>% 
+  rename("uuid" = "Library") %>% 
+  mutate(site = if_else(Room_type == "GIS", "Office",
+                        if_else(Sample_type == "Aerator" | Sample_type == "Sink_Trap", "CTB", "CTA"))) %>%
+  select(uuid, site, timept)
+
+meta_merged_all <- 
+  merge(meta_fil, meta_hosp_fil_all, all = TRUE) %>% 
+  column_to_rownames("uuid")
+
+dat_merged_fil <- dat_merged[, as.character(rownames(meta_merged_all))]
+dat_merged_fil[dat_merged_fil < 0.1] <- 0
+dat_merged_fil <- dat_merged_fil[rowSums(dat_merged_fil) > 0, ]
+
+dist_mat_all <- vegdist(t(dat_merged_fil))
+
+# ## scratch
+# cmds <- cmdscale(dist_mat_all, k = 3, eig = TRUE)
+# eigen <- cmds$eig / sum(cmds$eig) * 100
+# 
+# dat_merged_all <- (merge(cmds$points, meta_merged_all, by.x=0, by.y=0, all = TRUE))
+# 
+# ggplot(dat_merged_all, aes(x=V1, y=V2, fill=site, label=Row.names)) +
+#   geom_point(shape=21)
+```
+
+Get matched samples
+```{r message=FALSE, warning=FALSE}
+dists <- as.matrix(dist_mat_all) %>% 
+  melt() %>% 
+  filter(!str_detect(Var1, "SL") & !str_detect(Var2, "SL")) %>% 
+  filter(str_detect(Var1, "MEM") | Var1 %in% c("WEE330", "WEE349", "WEE368", "WEE387", "WEE388")) %>% 
+  filter(!str_detect(Var2, "MEM") & !Var2 %in% c("WEE330", "WEE349", "WEE368", "WEE387", "WEE388")) %>% 
+  arrange(value)
+
+dists_matched <- setNames(data.frame(matrix(ncol = 3, nrow = 0)), c("Var1", "Var2", "value"))
+
+n <- 1
+while (n <= 12) {
+  if (!(dists[1,]$Var1 %in% dists_matched$Var1) & !(dists[1,]$Var2 %in% dists_matched$Var2)) {
+    dists_matched[n,]$Var1 <- as.character(dists[1,]$Var1)
+    dists_matched[n,]$Var2 <- as.character(dists[1,]$Var2)
+    dists_matched[n,]$value <- as.character(dists[1,]$value)
+    n <- n + 1
+  }
+  dists <- dists[-1,]
+}
+
+write.table(dists_matched, "../output_tables/matched_pairs.txt", quote = F, row.names = F, col.names = F)
+
+matched_samples <-
+  dists_matched %>% 
+  select(-value) %>% 
+  gather() %>% 
+  select(value)
+
+write.table(matched_samples, "../output_tables/matched_samples.txt", quote = F, row.names = F, col.names = F)
+
+```
+
+Session information
+
+```{r}
+sessionInfo()
+```

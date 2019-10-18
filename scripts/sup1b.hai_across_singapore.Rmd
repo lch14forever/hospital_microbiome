@@ -1,0 +1,155 @@
+---
+title: "HAI species abundances in samples across Singapore"
+output: html_document
+---
+
+## HAI species abundance
+
+Load generic libraries
+```{r message=FALSE, warning=FALSE}
+source('configuration.r')
+```
+
+Load specific libraries
+```{r message=FALSE, warning=FALSE}
+library(stringr)
+library(readr)
+library(ggbeeswarm)
+library(scales)
+```
+
+Process and merge data
+```{r message=FALSE, warning=FALSE}
+meta <- read_csv("../tables/metasub_singapore/complete_metadata.csv")
+dat <- read_tsv("../tables/metasub_singapore/s.metaphlan2.profile_merged.tsv")
+
+meta_hosp <- read_tsv("../metadata/illumina_metadata.txt")
+dat_hosp <- read_tsv("../tables/metagenomics.metaphlan2.table.s")
+
+# remove samples with missing metadata
+missing_dat <- filter(meta, is.na(meta$metasub_name))$uuid
+
+meta_fil <-
+  meta %>% 
+  filter(!(uuid %in% missing_dat)) %>% 
+  mutate(uuid = str_remove(uuid, "hai.*XY_")) %>% 
+  mutate(location = "MetaSUB") %>% 
+  filter(surface %in% c("handrail",
+                        "lift_buttons",
+                        "overhead_handrail",
+                        "pedestrian_crossing_button",
+                        "playground",
+                        "seat",
+                        "table",
+                        "exercise_hand_grip")) %>% 
+  select(uuid, location)
+
+meta_hosp_fil <-
+  meta_hosp %>%
+  select(Library, Room_type, Sample_type) %>%
+  filter(Room_type != "Mock") %>% 
+  filter(!str_detect(Room_type, "Control")) %>% 
+  rename("uuid" = "Library") %>% 
+  mutate(location = if_else(Room_type == "GIS", "Office",
+                            if_else(Sample_type == "Aerator" | Sample_type == "Sink_Trap", "CTB", "CTA"))) %>% 
+  select(uuid, location)
+
+dat_merged <-
+  merge(dat, dat_hosp, by = "Index", all = TRUE) %>%
+  column_to_rownames("Index") %>% 
+  replace(is.na(.), 0)
+
+dat_merged[dat_merged < 0.1] <- 0
+dat_merged <- dat_merged[rowSums(dat_merged) > 0, ]
+
+meta_merged <-
+  merge(meta_fil, meta_hosp_fil, all = TRUE) %>% 
+  filter(uuid %in% colnames(dat_merged)) %>%
+  column_to_rownames("uuid")
+```
+
+Filter data for HAI species and generate figure
+```{r fig.height=5, fig.width=9, message=FALSE, warning=FALSE}
+dat_hai <-
+  dat_merged %>% 
+  rownames_to_column("species") %>% 
+  filter(str_detect(species, "Burkholderia") | 
+           species %in% c("s__Acinetobacter_baumannii","s__Candida_albicans",
+                          "s__Clostridium_difficile", "s__Clostridium_sordellii", 
+                          "s__Klebsiella_pneumoniae", "s__Klebsiella_oxytoca",
+                          "s__Escherichia_coli", "s__Staphylococcus_aureus",
+                          "s__Pseudomonas_aeruginosa","s__Mycobacterium_abscessus",
+                          "s__Mycobacterium_tuberculosis","s__Enterococcus_faecalis",
+                          "s__Enterococcus_faecium", "s__Staphylococcus_epidermidis")) %>% 
+  column_to_rownames("species")
+
+dat_hai <- dat_hai[, as.character(rownames(meta_merged))]
+dat_hai[dat_hai < 0.1] <- 0
+dat_hai <- dat_hai[, colSums(dat_hai) > 0]
+
+df <- merge(meta_merged, data.frame(t(dat_hai)), by=0,all.y=T) %>% 
+  column_to_rownames("Row.names")
+
+burk_idx <- str_detect(colnames(df), 'Burkholderia')
+tmp <- rowSums(df[, burk_idx])
+df_burk <- df[, !burk_idx]
+df_burk$"Burkholderia spp." <- tmp
+
+df_median <-
+  df_burk %>%
+  group_by(location) %>% 
+  summarise_all(median) %>%
+  melt() %>% 
+  rename("Median" = "value")
+
+df_mean <-
+  df_burk %>%
+  group_by(location) %>% 
+  summarise_all(mean) %>%
+  melt() %>% 
+  rename("Mean" = "value")
+
+df_merged <-
+  merge(df_mean, df_median) %>% 
+  rename("species" = "variable") %>% 
+  mutate(species = (str_remove(species, "s__"))) %>% 
+  mutate(species = (str_replace_all(species, "_", " "))) %>% 
+  arrange(species)
+
+# Filter species to plot
+df_merged_species <-
+  df_merged %>% 
+  filter(Median > 0) %>% 
+  select(species)
+
+df_merged <-
+  df_merged %>% 
+  filter(species %in% df_merged_species$species)
+
+df <-
+  df_merged %>% 
+  gather("key", "value", -location, -species)
+
+# Order species alphabetically
+df$species <- factor(df$species, levels = rev(unique(df$species)))
+
+cols <- c("CTA" = "#3C5488", "CTB" = "#E64B35", "MetaSUB" = "#B09C85", "Office" = "#FFCC00")
+
+ggplot(df, aes(x = value + 0.001, y = species)) +
+  geom_beeswarm(aes(fill = location), shape = 21, size = 3, groupOnX = F, cex = 2) +
+  labs(x = "Abundance", y = "Species", fill = "Site") +
+  scale_x_log10(breaks = c(0.001, 0.01, 0.1, 1, 10), labels = c(0, 0.01, 0.1, 1, 10)) +
+  scale_fill_manual(values = cols) +
+  guides(fill = guide_legend(override.aes = list(size = 5, shape = 22)), shape = F) +
+  theme(axis.title = element_text(size = 14),
+        axis.text.x = element_text(size = 11),
+        axis.text.y = element_text(size = 12, face = "italic"),
+        legend.title = element_text(size = 14),
+        legend.text = element_text(size = 12)) +
+  facet_wrap(~key)
+```
+
+Sesssion information
+```{r}
+sessionInfo()
+```
