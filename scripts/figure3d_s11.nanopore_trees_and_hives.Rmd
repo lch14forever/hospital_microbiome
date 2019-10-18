@@ -111,23 +111,8 @@ dist_type = "gsnp"
 canu_threshold = 0.001
 d5 <- get.clusters('Pseudomonas_aeruginosa', 'canu', canu_threshold, dist_type)
 d6 <- get.clusters('Enterococcus_faecium', 'canu', canu_threshold, dist_type)
-d7 <- get.clusters('Enterococcus_faecalis', 'canu', canu_threshold, dist_type) #%>% filter(Nanopore_ID != 'N182_BC10') 
-## N182_BC10 is removed due to low coverage comparing to the reference when constructing the tree
+d7 <- get.clusters('Enterococcus_faecalis', 'canu', canu_threshold, dist_type) 
 d8 <- get.clusters('Klebsiella_pneumoniae', 'canu', canu_threshold, dist_type)
-
-sort(d6$clusters)
-#for play
-cluster_size=c(
-length(unique(sort(d1$clusters))),
-length(unique(sort(d2$clusters))),
-length(unique(sort(d3$clusters))),
-length(unique(sort(d4$clusters))),
-length(unique(sort(d5$clusters))),
-length(unique(sort(d6$clusters))),
-length(unique(sort(d7$clusters))),
-length(unique(sort(d8$clusters)))
-)
-cluster_size
 
 dat.all.species <- rbind(d1, d2, d3, d4, d5, d6, d7, d8)
 write.table(dat.all.species,
