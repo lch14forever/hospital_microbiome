@@ -107,7 +107,6 @@ d2 <- get.clusters('Staphylococcus_epidermidis', 'opera_ms', opera_ms_threshold,
 d3 <- get.clusters('Staphylococcus_aureus', 'opera_ms', opera_ms_threshold, dist_type)
 d4 <- get.clusters('Acinetobacter_baumannii', 'opera_ms', opera_ms_threshold, dist_type)
 #################
-dist_type = "gsnp"
 canu_threshold = 0.001
 d5 <- get.clusters('Pseudomonas_aeruginosa', 'canu', canu_threshold, dist_type)
 d6 <- get.clusters('Enterococcus_faecium', 'canu', canu_threshold, dist_type)
@@ -121,15 +120,15 @@ write.table(dat.all.species,
 
 Generate tree plots
 ```{r message=FALSE, warning=FALSE}
-g1 <- plot.tree('Elizabethkingia_anophelis', colors[1], 1, 'Elizabethkingia anophelis', 1, 0, 'opera_ms', 0.0001, opera_ms_threshold, "gsnp")
-g2 <- plot.tree('Staphylococcus_epidermidis', colors[2], 0.08, 'Staphylococcus epidermidis', 0.35, 0, 'opera_ms', opera_ms_threshold, "gsnp")
-g3 <- plot.tree('Staphylococcus_aureus', colors[3], 0.05, 'Staphylococcus aureus', 0.2, 0, 'opera_ms', opera_ms_threshold, "gsnp")
-g4 <- plot.tree('Acinetobacter_baumannii', colors[4], 0.2, 'Acinetobacter baumannii', scale_offset_x = 0.3, 0, 'opera_ms', opera_ms_threshold, "gsnp")
+g1 <- plot.tree('Elizabethkingia_anophelis', colors[1], 1, 'Elizabethkingia anophelis', 1, 0, 'opera_ms', 0.00001, dist_type)
+g2 <- plot.tree('Staphylococcus_epidermidis', colors[2], 0.08, 'Staphylococcus epidermidis', 0.35, 0, 'opera_ms', opera_ms_threshold, dist_type)
+g3 <- plot.tree('Staphylococcus_aureus', colors[3], 0.05, 'Staphylococcus aureus', 0.2, 0, 'opera_ms', opera_ms_threshold, dist_type)
+g4 <- plot.tree('Acinetobacter_baumannii', colors[4], 0.2, 'Acinetobacter baumannii', scale_offset_x = 0.3, 0, 'opera_ms', opera_ms_threshold, dist_type)
 ####
-g5 <- plot.tree('Pseudomonas_aeruginosa', colors[5], 0.2, 'Pseudomonas aeruginosa', scale_offset_x = 0.3, 0, 'canu', canu_threshold, "snp" )
-g6 <- plot.tree('Enterococcus_faecium', colors[6], 0.9, 'Enterococcus faecium', scale_offset_x = 0.8, 0, 'canu', canu_threshold, "snp")
-g7 <- plot.tree('Enterococcus_faecalis', colors[7], 0.05, 'Enterococcus faecalis', scale_offset_x = 0.2, 0, 'canu', canu_threshold, "snp")
-g8 <- plot.tree('Klebsiella_pneumoniae', colors[8], 0.2, 'Klebsiella pneumoniae', scale_offset_x = 0.5, 0, 'canu', canu_threshold, "snp")
+g5 <- plot.tree('Pseudomonas_aeruginosa', colors[5], 0.2, 'Pseudomonas aeruginosa', scale_offset_x = 0.3, 0, 'canu', canu_threshold, dist_type)
+g6 <- plot.tree('Enterococcus_faecium', colors[6], 0.9, 'Enterococcus faecium', scale_offset_x = 0.8, 0, 'canu', canu_threshold, dist_type)
+g7 <- plot.tree('Enterococcus_faecalis', colors[7], 0.05, 'Enterococcus faecalis', scale_offset_x = 0.2, 0, 'canu', canu_threshold, dist_type)
+g8 <- plot.tree('Klebsiella_pneumoniae', colors[8], 0.2, 'Klebsiella pneumoniae', scale_offset_x = 0.5, 0, 'canu', canu_threshold, dist_type)
 ```
 
 Main figure part (*S. aureus*)
