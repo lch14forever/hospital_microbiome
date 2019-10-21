@@ -26,7 +26,9 @@ Read metadata
 ```{r}
 meta <- read.table('../output_tables/strain_cluster_summary.tsv', sep='\t', head=TRUE)
 
-antibiotics <- distinct(meta, Species, strain, Antibiotics) %>% 
+antibiotics <- 
+  filter(meta, Antibiotics!='BHI') %>% 
+  distinct(Species, strain, Antibiotics) %>% 
   count(Species, strain) %>% 
   select(species=Species, everything()) %>% 
   mutate(MDR=n > 2)
@@ -36,12 +38,11 @@ Read mummer matrix
 ```{r}
 species.list <- as.character(unique(meta$Species))
 
-species.list <- species.list[c(1, 2, 3, 4)]
+species.list <- species.list[c(2, 3, 4)]
 
 aggregate_dat <- function(species){
   dat <- read.table(paste0('../tables/', species, '_opera_ms_mummer_dist.dat'), head=F) %>% 
-    #select(V1, V2, coverage=V7, identity=V10)
-    select(V1, V2, coverage=V3, identity=V6)
+    select(V1, V2, coverage=V7, identity=V10)
   
   tp.info <- filter(meta, Species==species) %>% 
     select(Nanopore_ID, timept, strain, Cubicle_room, Sample_type, Room_type, bed_number) %>% 
@@ -95,7 +96,7 @@ plot.dat <- merge(plot.dat, select(antibiotics,-n), all.x = TRUE) %>%
 ```
 
 Plot
-```{r fig.height=6, fig.width=23}
+```{r fig.height=5, fig.width=15}
 plot.dat %>% mutate(species=str_replace(species, '_', ' ')) %>% 
   mutate(variable=fct_recode(variable, 'Derivative\nisolates'='derivative', 'Direct\ntransfer'='transfer')) %>% 
   ggplot(aes(x=variable, y=strain, size=N, col=MDR)) + 
@@ -105,21 +106,24 @@ plot.dat %>% mutate(species=str_replace(species, '_', ' ')) %>%
   facet_wrap(~species, scales='free_y', nrow=1) + 
   theme(axis.text.x = element_text(angle=45, hjust=1),
         strip.text = element_text(face='bold.italic'))
+ggsave('../plots/sup13.strain_persistance.svg', height = 5, width = 15)
 ```
 
 Statistical test
 
 ```{r}
 ## MDR proportion based on time point 1
-mdr_prop <- filter(meta, timept==1) %>% 
+mdr_prop <- 
+  filter(meta, timept==1) %>% 
   distinct(Species, strain) %>% 
   select(species=Species, everything()) %>% 
   merge(antibiotics) %>% 
   group_by(species) %>% 
-  summarise(MDR_prop=sum(MDR)/n())
+  summarise(MDR_prop_background=sum(MDR)/n())
 
 ## Test on time point 2
-test.dat <- group_by(plot.dat, species, variable) %>% 
+test.dat <-
+  group_by(plot.dat, species, variable) %>% 
   summarise(total=sum(N), MDR_obs=sum(MDR*N)) %>% 
   merge(mdr_prop) 
 

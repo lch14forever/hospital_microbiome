@@ -167,11 +167,12 @@ edge_data <- filter(edge_data, n1%in%
 Fisher's exact test for enrichment (multi-resitance vs. persistance)
 ```{r}
 test.dat <- 
-  rbind(d1, d2, d3, d4, d5, d6, d7, d8) %>% 
+  rbind(d2, d3, d4, d5, d6, d7, d8) %>% 
   group_by(Species, clusters, Sample_type, Room_type, bed_number,
            timept, Sample_ID.y, Cubicle_room) %>% 
   summarise(n=sum(Antibiotics!='BHI')) %>%
   group_by(Species, clusters) %>% mutate(resistance= max(n)) %>% ungroup %>% 
+  distinct(Species, clusters, resistance, timept) %>% 
   count(Species, clusters, resistance, name='found') 
 
 
@@ -187,7 +188,7 @@ sp <- unique(test.dat$Species)
 c(sapply(sp, function(x) test(filter(test.dat, Species==x))), All=test(test.dat))
 ```
 
-Barplot for fraction of strains that spread and/or persist
+Barplot for fraction of strains that persist
 ```{r fig.height=5, fig.width=8}
 filter(test.dat, found>1) %>% 
   group_by(Species) %>% 
@@ -208,10 +209,11 @@ test.dat <-
   rbind(d2, d3, d4, d5, d6, d7, d8) %>% 
   distinct(Species, clusters, Sample_type, Room_type, bed_number,
            timept, Sample_ID.y, Cubicle_room) %>% 
+  distinct(Species, clusters, Room_type, bed_number, timept, Cubicle_room) %>% 
   count(Species, clusters, timept) %>% 
   group_by(Species, clusters) %>% 
   summarise(time=length(timept), space=max(n))
-
+  
 test <- function(x){
   c1 <- nrow(filter(x, time>1, space>1))
   c2 <- nrow(filter(x, time>1, space<=1))
