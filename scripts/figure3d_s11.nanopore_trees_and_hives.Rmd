@@ -102,7 +102,7 @@ Save merged strain table (used for generating parsnp trees)
 ```{r}
 dist_type = "gsnp"
 opera_ms_threshold = 0.0001
-d1 <- get.clusters('Elizabethkingia_anophelis', 'opera_ms', 0.00001, dist_type)
+d1 <- get.clusters('Elizabethkingia_anophelis', 'opera_ms', opera_ms_threshold, dist_type)
 d2 <- get.clusters('Staphylococcus_epidermidis', 'opera_ms', opera_ms_threshold, dist_type)
 d3 <- get.clusters('Staphylococcus_aureus', 'opera_ms', opera_ms_threshold, dist_type)
 d4 <- get.clusters('Acinetobacter_baumannii', 'opera_ms', opera_ms_threshold, dist_type)
@@ -120,7 +120,7 @@ write.table(dat.all.species,
 
 Generate tree plots
 ```{r message=FALSE, warning=FALSE}
-g1 <- plot.tree('Elizabethkingia_anophelis', colors[1], 1, 'Elizabethkingia anophelis', 1, 0, 'opera_ms', 0.00001, dist_type)
+g1 <- plot.tree('Elizabethkingia_anophelis', colors[1], 1, 'Elizabethkingia anophelis', 1, 0, 'opera_ms', opera_ms_threshold, dist_type)
 g2 <- plot.tree('Staphylococcus_epidermidis', colors[2], 0.08, 'Staphylococcus epidermidis', 0.35, 0, 'opera_ms', opera_ms_threshold, dist_type)
 g3 <- plot.tree('Staphylococcus_aureus', colors[3], 0.05, 'Staphylococcus aureus', 0.2, 0, 'opera_ms', opera_ms_threshold, dist_type)
 g4 <- plot.tree('Acinetobacter_baumannii', colors[4], 0.2, 'Acinetobacter baumannii', scale_offset_x = 0.3, 0, 'opera_ms', opera_ms_threshold, dist_type)
