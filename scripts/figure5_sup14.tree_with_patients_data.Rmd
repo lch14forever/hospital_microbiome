@@ -27,14 +27,14 @@ colors <- pal_npg('nrc')(9)
 get_tree_data <- function(species, diff_threshold=0.0001){
     strain.dat <- filter(strains.all, Species==species)
     dist.dat <- read.table(paste0('../tables/',species,'_opera_ms_mummer_dist.dat')) %>% 
-      select(V1, V2, coverage=V7, ngsnp=V9, identity=V10)
+      select(V1, V2, coverage=V3, ngsnp=V9, identity=V10)
     ## add strain information to dist.dat
     tmp <- 
       select(strain.dat, Nanopore_ID, strain) %>% 
       merge(dist.dat, ., by.x=1, by.y=1, all.x=TRUE) %>% ## annotate left
       merge(strain.dat, by.x=2, by.y=1, all.x=TRUE) %>%  ## merge right
       select(V1,V2,strain.x,strain.y,coverage,ngsnp,identity) %>% 
-      filter(coverage>0.9, identity>(1-diff_threshold) * 100) 
+      filter(coverage>80, identity>(1-diff_threshold) * 100) 
     ## aggregated overlap data
     overlaps <- bind_rows(
       filter(tmp, !is.na(strain.x) & is.na(strain.y)) %>% 
@@ -290,6 +290,7 @@ dat <- get_tree_data('Staphylococcus_epidermidis')
 ## patient overlapping profile
 patient <- 
   filter(dat$overlaps, str_detect(V2, 'ADD')) %>% 
+  filter(!str_detect(V2, 'SAMEA3712712|SAMEA3712767')) %>% ## removed because they were mutant
   group_by(strain, V2) %>% summarise(identity=max(identity)) %>% ungroup() %>% 
   group_by(strain) %>% 
   summarise('99.99%'=n(), '99.999%'=sum(identity>99.999)) %>% ungroup() %>% 
@@ -326,11 +327,6 @@ p1 <- binom.test(filter(test.dat, MDR) %>% pull(`99.99%.x`) %>% sum(na.rm = T),
 p2 <- binom.test(filter(test.dat, MDR, !is.na(`99.99%.x`)) %>% pull(`99.99%.y`) %>% sum(na.rm = T), 
            sum(test.dat$`99.99%.y`, na.rm = T), 
            filter(test.dat, MDR, !is.na(`99.99%.x`)) %>% nrow / nrow(test.dat) ## MDR + overlap with patient
-           )$p.value
-
-binom.test(filter(test.dat, MDR) %>% pull(`99.99%.y`) %>% sum(na.rm = T), 
-           sum(test.dat$`99.99%.y`, na.rm = T), 
-           filter(test.dat, MDR) %>% nrow / nrow(test.dat) ## MDR + overlap with patient
            )$p.value
 
 print(paste0('Test for 99.99% overlapping with patient: ', p1))
