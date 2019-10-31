@@ -22,239 +22,401 @@ library(magrittr)
 
 Function to plot tree
 ```{r}
-get_tree_data <- function(species, filter.patient.only=TRUE, outlier='', get.dist=FALSE){
-  dist.dat <- read.table(paste0('../tables/',species,'_mummer_heatmap.dat'))
-  meta <- read.table('../output_tables/merged_assembly_metadata.tsv', head=TRUE, sep='\t') %>% filter(Species==species)
-  idx <- rownames(dist.dat) %in% (filter(meta, Genome_quality=='HIGH_QUAL'))$Genome_ID |## High quality genomes
-    str_detect(rownames(dist.dat), 'G_|F_')
-  dist.dat <- dist.dat[idx, idx]
-  if(get.dist) return(dist.dat)
-  clustering.all <- hclust(as.dist(dist.dat), method='single')
-  clusters.all <- cutree(clustering.all, h=0.001)
-  strains <- foreach(x=unique(clusters.all), .combine=rbind) %do% {
-    tmp <- clusters.all[clusters.all==x]
-    dat <- data.frame(strain=tmp[order(names(tmp), decreasing = T)][1]) ## select hospital if possible
-    dat$n <- length(tmp)
-    dat$Hospital <- sum(str_detect(names(tmp), 's'))/dat$n
-    dat$Patient <- sum(!str_detect(names(tmp), 's'))/dat$n
-    dat
-  }
-  
-  ## filter patient only strains
-  if(filter.patient.only) strains <- filter(strains, Patient<1)
-  ## filter strains that are very different
-  strains <- filter(strains, strain!=outlier) 
-  strains$lab <- ifelse(strains$Hospital==1, 'Hospital', 'Hospital/Patient')
-  
-  tree.strains <- read.tree(paste0('../tables/trees/', species, '.parsnp.tree'))
-  tree.strains$tip.label %<>% str_replace_all(c(".trimmed.fasta"="", "nanopore.cons.cluster_"="s", ".ref"=""))
-  
-  merge(data.frame(clusters=clusters.all), meta, by.x=0, by.y=1, all.x=TRUE) %>%
-     mutate(strain=paste0('s', clusters)) %>%
-     mutate(lab=ifelse(str_detect(Row.names, 's'), 'Hospital', 'Patient')) -> merged
-  
-  mutate_at(merged, vars(Antibiotics), function(x) ifelse(merged$lab=='Patient', 'MET', as.character(x)) ) %>%
-    select(clusters, Antibiotics) %>% count(clusters, Antibiotics) %>% 
-    mutate(n=Antibiotics) %>% 
-    spread(Antibiotics,n,fill=NA) %>% 
-    merge(x=strains, y=., by=1) %>% 
-    select(-n, -BHI) %>% 
-    mutate(strain=paste0('s', strain)) %>% 
-    select(strain, AMP, CHLOR, KAN, STREP, TET) %>% 
-    column_to_rownames("strain") -> anno
-  
-  strains %<>% mutate(strain=paste0('s', strain))
+strains.all <- read.table('../output_tables/strain_cluster_summary.tsv', head=TRUE, stringsAsFactors = FALSE)
+colors <- pal_npg('nrc')(9)
+get_tree_data <- function(species, diff_threshold=0.0001){
+    strain.dat <- filter(strains.all, Species==species)
+    dist.dat <- read.table(paste0('../tables/',species,'_opera_ms_mummer_dist.dat')) %>% 
+      select(V1, V2, coverage=V3, ngsnp=V9, identity=V10)
+    ## add strain information to dist.dat
+    tmp <- 
+      select(strain.dat, Nanopore_ID, strain) %>% 
+      merge(dist.dat, ., by.x=1, by.y=1, all.x=TRUE) %>% ## annotate left
+      merge(strain.dat, by.x=2, by.y=1, all.x=TRUE) %>%  ## merge right
+      select(V1,V2,strain.x,strain.y,coverage,ngsnp,identity) %>% 
+      filter(coverage>80, identity>(1-diff_threshold) * 100) 
+    ## aggregated overlap data
+    overlaps <- bind_rows(
+      filter(tmp, !is.na(strain.x) & is.na(strain.y)) %>% 
+        select(strain=strain.x, V1, V2, coverage,ngsnp,identity),
+      filter(tmp, !is.na(strain.y) & is.na(strain.x)) %>% 
+        select(strain=strain.y, V1, V2, coverage,ngsnp,identity)
+    )
+    ## get antibiotics profile
+    distinct(strain.dat, strain, Antibiotics) %>% 
+      mutate(detect=Antibiotics) %>% 
+      pivot_wider(id_cols = strain, names_from = Antibiotics, values_from = detect) %>% 
+      select(strain, AMP, CHLOR, KAN, STREP, TET) %>% 
+      column_to_rownames("strain")  -> profile.antibiotics
+    ## get tree
+    tree.strains <- read.tree(paste0('../tables/trees/', species, '.parsnp.tree'))
+    tree.strains$tip.label %<>% str_replace_all(c(".trimmed.fasta"="", "nanopore.cons.cluster_"="s", ".ref"=""))
     
-  list(anno=anno, strains=strains, tree=midpoint.root(tree.strains))
-}
-
-test_enrichment <- function(dat){
-  anti <- apply(dat$anno, 1, function(x) sum(!is.na(x))) > 2 ## resistant to > 2
-  patient <- dat$strains$lab=="Hospital/Patient"             ## shared strain
-  c1 <- sum(anti & patient)
-  c2 <- sum(!anti & patient)
-  c3 <- sum(anti & !patient)
-  c4 <- sum(!anti & !patient)
-  fisher.test(matrix(c(c1,c2,c3,c4), 2,2))$p.value
+    list(tree=tree.strains, overlaps=overlaps, antibiotics=profile.antibiotics)
 }
 ```
 
-
 #### *Staphylococcus aureus*
 
-```{r fig.height=6, fig.width=8, message=FALSE}
-colors <- pal_npg('nrc')(9)
+Overlapping analysis
+```{r}
+dat <- get_tree_data('Staphylococcus_aureus')
 
-dat <- get_tree_data('Staphylococcus_aureus', outlier = '')
-attach(dat)
-## create a tree
-p <- ggtree(tree, color=colors[3], lwd=1) %<+%
-  strains +
-  geom_tippoint(aes(size=n, color=lab)) +
-  geom_tiplab(color=colors[3],size=4, hjust=1, fontface='bold', offset=0.05, align = TRUE) +
-  scale_size_continuous(trans='log2') + 
-  scale_shape_manual(values=c(21,19)) + 
-  scale_color_manual(values=c('grey','black')) + 
+## patient overlapping profile
+patient <- distinct(dat$overlaps, strain, V2) %>% 
+  filter(str_detect(V2, 'ADD')) %>% 
+  count(strain, name = '99.99%') %>% 
+  merge(dat$antibiotics, all.y = TRUE, by.x=1, by.y=0) %>% 
+  select(strain, `99.99%`) 
+
+## persistance after 1.5 year
+persistance <- distinct(dat$overlaps, strain, V2) %>% 
+  filter(str_detect(V2, 'barcode')) %>%  ## 3rd time point identified by keyword 'barcode' from qcat demuxer
+  count(strain, name = '99.99%') %>% 
+  merge(dat$antibiotics, all.y = TRUE, by.x=1, by.y=0) %>% 
+  select(strain, `99.99%`) 
+```
+
+Full overlapping table
+```{r}
+arrange(dat$overlaps %>% filter(str_detect(V2, 'ADD')), desc(identity))
+```
+
+Test for significance of MDR
+```{r}
+test.dat <- rownames_to_column(dat$antibiotics, 'strain') %>% 
+  mutate(MDR=rowSums(!is.na(dat$antibiotics)) > 2) %>% 
+  select(strain, MDR) %>% 
+  merge(patient,all=TRUE, by=1) %>% 
+  merge(persistance, all=TRUE, by=1)
+
+p1 <- binom.test(filter(test.dat, MDR) %>% pull(`99.99%.x`) %>% sum(na.rm = T), 
+           sum(test.dat$`99.99%.x`, na.rm = T), 
+           sum(test.dat$MDR)/nrow(test.dat)
+           )$p.value
+p2 <- binom.test(filter(test.dat, MDR, !is.na(`99.99%.x`)) %>% pull(`99.99%.y`) %>% sum(na.rm = T), 
+           sum(test.dat$`99.99%.y`, na.rm = T), 
+           filter(test.dat, MDR, !is.na(`99.99%.x`)) %>% nrow / nrow(test.dat) ## MDR + overlap with patient
+           )$p.value
+
+print(paste0('Test for 99.99% overlapping with patient: ', p1))
+print(paste0('Test for 99.99% overlapping with time point 3: ', p2))
+```
+
+
+Plot the tree
+```{r fig.height=6, fig.width=8, message=FALSE}
+p <- ggtree(dat$tree, color=colors[3], lwd=1) + 
+  #geom_tippoint(size=4, color=colors[3]) +
+  geom_tiplab(color=colors[3],hjust=1, fontface='bold', offset=0.05, align = TRUE) +
   geom_treescale(x=0, y=15, color = colors[3], linesize=2) 
 
-## Add heatmap
-dd <- rownames_to_column(anno) %>% melt(id.vars='rowname')
-p1 <- facet_plot(p , "Antibiotics resistance profile", 
-                 data=dd,
-                 geom=geom_tile, mapping=aes(x = as.numeric(variable),  fill = value), color='white', lwd=2) +
-  scale_fill_manual(values=colors[c(1,5,2,6,4)],na.value='white') + theme(legend.position = 'right')
-tree1 <- facet_widths(p1, c(2,1))
+d1 <- rownames_to_column(dat$antibiotics) %>% melt(id.vars='rowname') %>% mutate(`Antibiotic resistance`=value)
+d2 <- melt(patient) %>% mutate(N=value)
+d3 <- melt(persistance) %>% mutate(N=value)
 
-test_enrichment(dat)
-# ## Add bar plot
-# tree <- inset(tree, bars, width=0.0006, height=1.4, hjust=-0.0003)
-# ## Add legend for bars
-# l1 <- cowplot::get_legend(bars[[1]] + theme_bw() + theme(legend.title =element_blank()))
-# l2 <- cowplot::get_legend(tree)
-# l <- cowplot::plot_grid(l1, l2, nrow=2)
-# tree <- cowplot::plot_grid(l, tree + theme(legend.position="none"),
-#           rel_widths=c(0.1,1) , nrow=1)
+p1 <- p + 
+  geom_facet(panel='Htun et al\nDerivative', data=d2, geom=geom_point, 
+             mapping=aes(x = as.numeric(variable), size=N), color=colors[3]) +
+  geom_facet(panel='Timepoint 3\nDerivative', data=d3, geom=geom_point, 
+             mapping=aes(x = as.numeric(variable), size=N), color=colors[3]) +
+  geom_facet(panel='Antibiotic\nresistance profile', data=d1, geom=geom_tile, 
+               mapping=aes(x = as.numeric(variable),  fill = `Antibiotic resistance`), color='white', lwd=2) + 
+  scale_fill_manual(values=colors[c(1,5,2,6,4)],na.value='white') +
+  theme(legend.position = 'right', strip.background =element_rect(fill=NA, color=NA), 
+        strip.text = element_text(size=10, face='bold'))
+        
+tree1 <- facet_widths(p1, c(2,0.5,0.5,1))
 tree1
 ```
 
 #### *Elizabethkingia anophelis*
 
-```{r fig.height=2.5, fig.width=8, message=FALSE}
-dat <- get_tree_data('Elizabethkingia_anophelis',  outlier = '')
-attach(dat)
-## create a tree
-p <- ggtree(tree, color=colors[1], lwd=1) %<+%
-  strains +
-  geom_tippoint(aes(size=n, color=lab)) +
-  geom_tiplab(color=colors[1],size=4, hjust=1, fontface='bold', offset=0.5, align = TRUE) +
-  scale_size_continuous(trans='log2', limits=c(1,64)) + 
-  scale_shape_manual(values=c(21,19)) + 
-  scale_color_manual(values=c('grey','black')) + 
-  geom_treescale(x=0.002, y=5, color = colors[1], linesize=2) 
-## Add heatmap
-dd <- rownames_to_column(anno) %>% melt(id.vars='rowname')
-p1 <- facet_plot(p , "Antibiotics resistance profile", 
-                 data=dd,
-                 geom=geom_tile, mapping=aes(x = as.numeric(variable),  fill = value), color='white', lwd=2) +
-  scale_fill_manual(values=colors[c(1,5,2,6,4)],na.value='white') + theme(legend.position = 'right')
+Overlapping analysis
+```{r}
+dat <- get_tree_data('Elizabethkingia_anophelis')
 
-tree2 <- facet_widths(p1, c(2,1))
-test_enrichment(dat)
+## patient overlapping profile
+patient <- 
+  filter(dat$overlaps, str_detect(V2, 'ADD')) %>% 
+  mutate(anno=ifelse(!str_detect(V2, 'WEB'), 'Teo et al', 'This study')) %>%
+  group_by(strain, V2, anno) %>% summarise(identity=max(identity)) %>% ungroup() %>% 
+  group_by(strain, anno) %>% 
+  summarise('99.99%'=n(), '99.999%'=sum(identity>99.999)) %>% ungroup() %>% 
+  merge(dat$antibiotics, all.y = TRUE, by.x=1, by.y=0) %>% 
+  select(strain:`99.999%`)
 
+## persistance after 1.5 year
+persistance <- filter(dat$overlaps, str_detect(V2, 'barcode')) %>% 
+  group_by(strain, V2) %>% summarise(identity=max(identity)) %>% ungroup() %>% 
+  group_by(strain) %>% 
+  summarise('99.99%'=n(), '99.999%'=sum(identity>99.999)) %>% ungroup() %>% 
+  merge(dat$antibiotics, all.y = TRUE, by.x=1, by.y=0) %>% 
+  select(strain:`99.999%`)
+```
+
+Full overlapping table
+```{r}
+arrange(dat$overlaps %>% filter(str_detect(V2, 'ADD')), desc(identity)) 
+```
+
+
+Plot the tree
+```{r fig.height=2, fig.width=11, message=FALSE}
+p <- ggtree(dat$tree, color=colors[1], lwd=1) + 
+  #geom_tippoint(size=4, color=colors[3]) +
+  geom_tiplab(color=colors[1],hjust=1, fontface='bold', offset=0.4, align = TRUE) +
+  geom_treescale(x=0, y=3.4, color = colors[1], linesize=2) 
+
+d1 <- rownames_to_column(dat$antibiotics) %>% melt(id.vars='rowname') %>% mutate(`Antibiotic resistance`=value)
+d2 <- filter(patient, anno=='Teo et al') %>% melt() %>% 
+  filter(value!=0) %>% 
+  unite('variable', c(anno, variable)) %>% 
+  mutate(N=value, variable=as.factor(variable))
+d3 <- filter(patient, anno!='Teo et al') %>% melt() %>% 
+  filter(value!=0) %>% 
+  unite('variable', c(anno, variable)) %>% 
+  mutate(N=value, variable=as.factor(variable))
+
+d4 <- melt(persistance) %>% mutate(N=value)
+
+p1 <- 
+  p + geom_facet(panel='Teo et al\nDerivative', data=d2, geom=geom_point, 
+             mapping=aes(x = as.numeric(variable), size=N), color=colors[1]) +
+  geom_facet(panel='This study\nDerivative', data=subset(d3, variable=='This study_99.99%'), geom=geom_point, 
+             mapping=aes(x = as.numeric(variable), size=N), color=colors[1]) +
+  geom_facet(panel='This study\nTransfer', data=subset(d3, variable=='This study_99.999%'), geom=geom_point, 
+             mapping=aes(x = as.numeric(variable), size=N), color=colors[1])  + 
+  geom_facet(panel='Timepoint 3\nDerivative', data=subset(d4, variable=='99.99%'), geom=geom_point, 
+             mapping=aes(x = as.numeric(variable), size=N), color=colors[1]) +
+  geom_facet(panel='Timepoint 3\nTransfer', data=subset(d4, variable=='99.999%'), geom=geom_point, 
+             mapping=aes(x = as.numeric(variable), size=N), color=colors[1]) +
+  geom_facet(panel='Antibiotic\nresistance profile', data=d1, geom=geom_tile, 
+               mapping=aes(x = as.numeric(variable),  fill = `Antibiotic resistance`), color='white', lwd=2) + 
+  scale_fill_manual(values=colors[c(1,5,2,6,4)],na.value='white',guide=F) +
+  theme(legend.position = 'right', strip.background =element_rect(fill=NA, color=NA), 
+        strip.text = element_text(size=10, face='bold'))
+        
+tree2 <- facet_widths(p1, c(2,0.5,0.5,0.5,0.5,0.5,1))
 tree2
 ```
 
+
+
 #### *Acinetobacter baumannii*
 
-```{r fig.height=9, fig.width=8, message=FALSE}
-dat <- get_tree_data('Acinetobacter_baumannii',  outlier = '')
-attach(dat)
-## create a tree
-p <- ggtree(tree, color=colors[4], lwd=1) %<+%
-  strains +
-  geom_tippoint(aes(size=n, color=lab)) +
-  geom_tiplab(color=colors[4],size=4, hjust=1, fontface='bold', offset=0.03, align = TRUE) +
-  scale_size_continuous(trans='log2', limits=c(1,64)) + 
-  scale_shape_manual(values=c(21,19)) + 
-  scale_color_manual(values=c('grey','black')) + 
-  geom_treescale(x=0, y=20, color = colors[4], linesize=2) 
-## Add heatmap
-dd <- rownames_to_column(anno) %>% melt(id.vars='rowname')
-p1 <- facet_plot(p , "Antibiotics resistance profile", 
-                 data=dd,
-                 geom=geom_tile, mapping=aes(x = as.numeric(variable),  fill = value), color='white', lwd=2) +
-  scale_fill_manual(values=colors[c(1,5,2,6,4)],na.value='white') + theme(legend.position = 'right')
+Overlapping analysis
+```{r}
+dat <- get_tree_data('Acinetobacter_baumannii')
 
-tree3 <- facet_widths(p1, c(2,1))
-test_enrichment(dat)
+## patient overlapping profile
+patient <- 
+  filter(dat$overlaps, str_detect(V2, 'ADD')) %>% 
+  mutate(anno=ifelse(!str_detect(V2, 'MBB'), 'Nasser et al', 'This study')) %>% 
+  group_by(strain, V2, anno) %>% summarise(identity=max(identity)) %>% ungroup() %>% 
+  group_by(strain, anno) %>% 
+  summarise('99.99%'=n(), '99.999%'=sum(identity>99.999)) %>% ungroup() %>% 
+  merge(dat$antibiotics, all.y = TRUE, by.x=1, by.y=0) %>% 
+  select(strain:`99.999%`)
+```
 
+Full overlapping table
+```{r}
+arrange(dat$overlaps %>% filter(str_detect(V2, 'ADD')), desc(identity)) 
+```
+
+Test for significance of MDR
+```{r}
+test.dat <- 
+  rownames_to_column(dat$antibiotics, 'strain') %>% 
+  mutate(MDR=rowSums(!is.na(dat$antibiotics)) > 2) %>% 
+  select(strain, MDR) %>% 
+  merge(filter(patient, anno=='This study') %>% select(strain, `99.99%`), all=TRUE, by=1) %>% 
+  merge(filter(patient, anno!='This study') %>% select(strain, `99.99%`), all=TRUE, by=1)
+
+p1 <- binom.test(filter(test.dat, MDR) %>% pull(`99.99%.x`) %>% sum(na.rm = T), 
+           sum(test.dat$`99.99%.x`, na.rm = T), 
+           sum(test.dat$MDR)/nrow(test.dat)
+           )$p.value
+p2 <- binom.test(filter(test.dat, MDR) %>% pull(`99.99%.y`) %>% sum(na.rm = T), 
+           sum(test.dat$`99.99%.y`, na.rm = T), 
+           sum(test.dat$MDR)/nrow(test.dat)
+           )$p.value
+
+print(paste0('Test for 99.99% overlapping with patient in this study: ', p1))
+print(paste0('Test for 99.99% overlapping with patient in Nasser et al: ', p2))
+```
+
+Plot the tree
+
+```{r fig.height=6, fig.width=12, message=FALSE}
+p <- ggtree(dat$tree, color=colors[4], lwd=1) + 
+  #geom_tippoint(size=4, color=colors[3]) +
+  geom_tiplab(color=colors[4],hjust=1, fontface='bold', offset=0.02, align = TRUE) +
+  geom_treescale(x=0, y=15, color = colors[4], linesize=2) 
+
+d1 <- rownames_to_column(dat$antibiotics) %>% melt(id.vars='rowname') %>% mutate(`Antibiotic resistance`=value)
+
+d2 <- filter(patient, anno=='Nasser et al') %>% melt() %>% 
+  filter(value!=0) %>% 
+  unite('variable', c(anno, variable)) %>% 
+  mutate(N=value, variable=as.factor(variable))
+d3 <- filter(patient, anno!='Nasser et al') %>% melt() %>% 
+  filter(value!=0) %>% 
+  unite('variable', c(anno, variable)) %>% 
+  mutate(N=value, variable=as.factor(variable))
+
+p1 <- 
+  p + geom_facet(panel='Nasser et al\nDerivative', data=d2, geom=geom_point, 
+             mapping=aes(x = as.numeric(variable), size=N), color=colors[4]) +  
+  geom_facet(panel='This study\nDerivative', data=d3, geom=geom_point, 
+             mapping=aes(x = as.numeric(variable), size=N), color=colors[4]) +
+  geom_facet(panel='Antibiotic\nresistance profile', data=d1, geom=geom_tile, 
+               mapping=aes(x = as.numeric(variable),  fill = `Antibiotic resistance`), color='white', lwd=2) + 
+  scale_fill_manual(values=colors[c(1,5,2,6,4)],na.value='white',guide=F) +
+  theme(legend.position = 'right', strip.background =element_rect(fill=NA, color=NA), 
+        strip.text = element_text(size=10, face='bold'))
+        
+tree3 <- facet_widths(p1, c(2,0.5,0.5,0.5,1))
 tree3
 ```
 
 ### *Staphylococcus epidermidis*
 
+Overlapping analysis
+```{r}
+dat <- get_tree_data('Staphylococcus_epidermidis')
+
+## patient overlapping profile
+patient <- 
+  filter(dat$overlaps, str_detect(V2, 'ADD')) %>% 
+  filter(!str_detect(V2, 'SAMEA3712712|SAMEA3712767')) %>% ## removed because they were mutant
+  group_by(strain, V2) %>% summarise(identity=max(identity)) %>% ungroup() %>% 
+  group_by(strain) %>% 
+  summarise('99.99%'=n(), '99.999%'=sum(identity>99.999)) %>% ungroup() %>% 
+  merge(dat$antibiotics, all.y = TRUE, by.x=1, by.y=0) %>% 
+  select(strain:`99.999%`)
+
+## persistance after 1.5 year
+persistance <- filter(dat$overlaps, str_detect(V2, 'barcode')) %>% 
+  group_by(strain, V2) %>% summarise(identity=max(identity)) %>% ungroup() %>% 
+  group_by(strain) %>% 
+  summarise('99.99%'=n(), '99.999%'=sum(identity>99.999)) %>% ungroup() %>% 
+  merge(dat$antibiotics, all.y = TRUE, by.x=1, by.y=0) %>% 
+  select(strain:`99.999%`)
+```
+
+Full overlapping table
+```{r}
+arrange(dat$overlaps %>% filter(str_detect(V2, 'ADD')), desc(identity))
+```
+
+Test for significance of MDR
+
+```{r}
+test.dat <- rownames_to_column(dat$antibiotics, 'strain') %>% 
+  mutate(MDR=rowSums(!is.na(dat$antibiotics)) > 2) %>% 
+  select(strain, MDR) %>% 
+  merge(patient,all=TRUE, by=1) %>% 
+  merge(persistance, all=TRUE, by=1)
+
+p1 <- binom.test(filter(test.dat, MDR) %>% pull(`99.99%.x`) %>% sum(na.rm = T), 
+           sum(test.dat$`99.99%.x`, na.rm = T), 
+           sum(test.dat$MDR)/nrow(test.dat)
+           )$p.value
+p2 <- binom.test(filter(test.dat, MDR, !is.na(`99.99%.x`)) %>% pull(`99.99%.y`) %>% sum(na.rm = T), 
+           sum(test.dat$`99.99%.y`, na.rm = T), 
+           filter(test.dat, MDR, !is.na(`99.99%.x`)) %>% nrow / nrow(test.dat) ## MDR + overlap with patient
+           )$p.value
+
+print(paste0('Test for 99.99% overlapping with patient: ', p1))
+print(paste0('Test for 99.99% overlapping with time point 3: ', p2))
+```
+
 ```{r fig.height=10, fig.width=8, message=FALSE}
-dat <- get_tree_data('Staphylococcus_epidermidis', outlier = '')
-attach(dat)
-## create a tree
-p <- ggtree(tree, color=colors[2], lwd=1) %<+%
-  strains +
-  geom_tippoint(aes(size=n, color=lab)) +
-  geom_tiplab(color=colors[2],size=4, hjust=1, fontface='bold', offset=0.03, align = TRUE) +
-  scale_size_continuous(trans='log2') + 
-  scale_shape_manual(values=c(21,19)) + 
-  scale_color_manual(values=c('grey','black')) + 
-  geom_treescale(x=0, y=30, color = colors[2], linesize=2) 
-## Add heatmap
-dd <- rownames_to_column(anno) %>% melt(id.vars='rowname')
-p1 <- facet_plot(p , "Antibiotics resistance profile", 
-                 data=dd,
-                 geom=geom_tile, mapping=aes(x = as.numeric(variable),  fill = value), color='white', lwd=2) +
-  scale_fill_manual(values=colors[c(1,5,2,6,4)],na.value='white') + theme(legend.position = 'right')
+p <- ggtree(dat$tree, color=colors[2], lwd=1) + 
+  geom_tiplab(color=colors[2],hjust=1, fontface='bold', offset=0.02, align = TRUE) +
+  geom_treescale(x=0, y=39, color = colors[2], linesize=2) 
+d1 <- rownames_to_column(dat$antibiotics) %>% melt(id.vars='rowname') %>% mutate(`Antibiotic resistance`=value)
 
-tree4 <- facet_widths(p1, c(2,1))
-test_enrichment(dat)
-
+d2 <- melt(patient) %>% 
+  filter(value!=0) %>% 
+  mutate(N=value, variable=as.factor(variable))
+d3 <- melt(persistance) %>% filter(value!=0) %>% mutate(N=value)
+p1 <- 
+  p + geom_facet(panel='Lee et al\nDerivative', data=d2, geom=geom_point, 
+             mapping=aes(x = as.numeric(variable), size=N), color=colors[2]) +
+    geom_facet(panel='Timepoint 3\nDerivative', data=d3, geom=geom_point, 
+             mapping=aes(x = as.numeric(variable), size=N), color=colors[2]) +
+  geom_facet(panel='Antibiotic\nresistance profile', data=d1, geom=geom_tile, 
+               mapping=aes(x = as.numeric(variable),  fill = `Antibiotic resistance`), color='white', lwd=2) + 
+  scale_fill_manual(values=colors[c(1,5,2,6,4)],na.value='white',guide=F) +
+  theme(legend.position = 'right', strip.background =element_rect(fill=NA, color=NA), 
+        strip.text = element_text(size=10, face='bold'))
+        
+tree4 <- facet_widths(p1, c(2,0.5,0.5,1))
 tree4
 ```
+
+
 ### Put four trees at the same scale
-```{r fig.height=10, fig.width=14}
+```{r fig.height=10, fig.width=20}
 p1 <- cowplot::plot_grid(tree1, tree3, ncol=1, rel_heights = c(0.75,1))
 p2 <- cowplot::plot_grid(tree4, tree2, ncol=1, rel_heights = c(1,0.2))
 cowplot::plot_grid(p1, p2, nrow=1)
-ggsave('../plots/fig5_phylogenetic_trees.svg', height=10, width=14)
+ggsave('../plots/fig5_phylogenetic_trees.svg', height=10, width=20)
 ```
 
 
-### Overview tree
-```{r fig.height=15, fig.width=10}
-full_mat <- read.table('../tables/genome_mash_dist.dat')/4
-idx <- 
-  str_detect(row.names(full_mat), 'Staphylococcus_aureus') |
-  str_detect(row.names(full_mat), 'Acinetobacter_baumannii') | 
-  str_detect(row.names(full_mat), 'Staphylococcus_epidermidis') |
-  str_detect(row.names(full_mat), 'Elizabethkingia_anophelis') 
-full_mat <- full_mat[idx, idx]
+<!-- ### Overview tree -->
+<!-- ```{r fig.height=15, fig.width=10} -->
+<!-- full_mat <- read.table('../tables/genome_mash_dist.dat')/4 -->
+<!-- idx <-  -->
+<!--   str_detect(row.names(full_mat), 'Staphylococcus_aureus') | -->
+<!--   str_detect(row.names(full_mat), 'Acinetobacter_baumannii') |  -->
+<!--   str_detect(row.names(full_mat), 'Staphylococcus_epidermidis') | -->
+<!--   str_detect(row.names(full_mat), 'Elizabethkingia_anophelis')  -->
+<!-- full_mat <- full_mat[idx, idx] -->
 
-meta <- read.table('../output_tables/merged_assembly_metadata.tsv', head=TRUE, sep='\t') %>% 
-  select(Genome_ID, Species, Nanopore_ID) %>% unite(id, Species, Nanopore_ID, remove = FALSE)
-## remove duplicates
-idx <- rownames(full_mat) %in% meta$id
-full_mat <- full_mat[idx, idx]
-rownames(full_mat) <- colnames(full_mat) <- meta$Genome_ID[match(rownames(full_mat), meta$id)]
+<!-- meta <- read.table('../output_tables/merged_assembly_metadata.tsv', head=TRUE, sep='\t') %>%  -->
+<!--   select(Genome_ID, Species, Nanopore_ID) %>% unite(id, Species, Nanopore_ID, remove = FALSE) -->
+<!-- ## remove duplicates -->
+<!-- idx <- rownames(full_mat) %in% meta$id -->
+<!-- full_mat <- full_mat[idx, idx] -->
+<!-- rownames(full_mat) <- colnames(full_mat) <- meta$Genome_ID[match(rownames(full_mat), meta$id)] -->
 
-aux <- function(species){ ## function with side effect to fill in the mummer distance
-  dist.ab <- get_tree_data(species, get.dist = TRUE)
-  sel <- str_subset(rownames(dist.ab) ,'s_')
-  full_mat[sel, sel] <- dist.ab[sel, sel]
-  return(sel)
-}
-## fill mash matrix with mummer distance
-se <- aux('Staphylococcus_epidermidis')
-sa <- aux('Staphylococcus_aureus')
-ab <- aux('Acinetobacter_baumannii')
-ea <- aux('Elizabethkingia_anophelis')
+<!-- aux <- function(species){ ## function with side effect to fill in the mummer distance -->
+<!--   dist.ab <- get_tree_data(species, get.dist = TRUE) -->
+<!--   sel <- str_subset(rownames(dist.ab) ,'s_') -->
+<!--   full_mat[sel, sel] <- dist.ab[sel, sel] -->
+<!--   return(sel) -->
+<!-- } -->
+<!-- ## fill mash matrix with mummer distance -->
+<!-- se <- aux('Staphylococcus_epidermidis') -->
+<!-- sa <- aux('Staphylococcus_aureus') -->
+<!-- ab <- aux('Acinetobacter_baumannii') -->
+<!-- ea <- aux('Elizabethkingia_anophelis') -->
 
-clustering <- hclust(as.dist(full_mat), method='single')
-#anno <- meta[match(rownames(full_mat), meta$genomeID), ]
-tree <- groupOTU(as.phylo(clustering), list(ea=ea, se=se, sa=sa, ab=ab))
+<!-- clustering <- hclust(as.dist(full_mat), method='single') -->
+<!-- #anno <- meta[match(rownames(full_mat), meta$genomeID), ] -->
+<!-- tree <- groupOTU(as.phylo(clustering), list(ea=ea, se=se, sa=sa, ab=ab)) -->
 
-## helper to identify internal clade for shading
-# ggtree(tree, aes(color=group) , lwd=1.5) + 
-#   geom_text2(aes(subset=!isTip, label=node)) 
+<!-- ## helper to identify internal clade for shading -->
+<!-- # ggtree(tree, aes(color=group) , lwd=1.5) +  -->
+<!-- #   geom_text2(aes(subset=!isTip, label=node))  -->
 
-p <- 
-  ggtree(tree, aes(color=group) , lwd=1.5) + 
-  scale_color_manual(values=c("black", colors[c(4,1,3,2)])) +
-  geom_hilight(node=538, alpha=0.2, fill = colors[2]) +
-  geom_hilight(node=535, alpha=0.2, fill = colors[4]) +
-  geom_hilight(node=533, alpha=0.2, fill = colors[1]) +
-  geom_hilight(node=537, alpha=0.2, fill = colors[3]) +
-  theme(legend.position = 'left')
-  ##flip(p, 533, 534) %>% flip(535,536) %>% flip(539, 540)
-p
-ggsave("../plots/fig5_cladrogram.svg", height=15, width=10)
-```
+<!-- p <-  -->
+<!--   ggtree(tree, aes(color=group) , lwd=1.5) +  -->
+<!--   scale_color_manual(values=c("black", colors[c(4,1,3,2)])) + -->
+<!--   geom_hilight(node=538, alpha=0.2, fill = colors[2]) + -->
+<!--   geom_hilight(node=535, alpha=0.2, fill = colors[4]) + -->
+<!--   geom_hilight(node=533, alpha=0.2, fill = colors[1]) + -->
+<!--   geom_hilight(node=537, alpha=0.2, fill = colors[3]) + -->
+<!--   theme(legend.position = 'left') -->
+<!--   ##flip(p, 533, 534) %>% flip(535,536) %>% flip(539, 540) -->
+<!-- p -->
+<!-- ggsave("../plots/fig5_cladrogram.svg", height=15, width=10) -->
+<!-- ``` -->
 
 
 ### Session informaton

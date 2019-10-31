@@ -42,14 +42,14 @@ species.list <- species.list[c(2, 3, 4)]
 
 aggregate_dat <- function(species){
   dat <- read.table(paste0('../tables/', species, '_opera_ms_mummer_dist.dat'), head=F) %>% 
-    select(V1, V2, coverage=V7, identity=V10)
+    select(V1, V2, coverage=V3, identity=V10)
   
   tp.info <- filter(meta, Species==species) %>% 
     select(Nanopore_ID, timept, strain, Cubicle_room, Sample_type, Room_type, bed_number) %>% 
     unite("location", Room_type, Cubicle_room, Sample_type, bed_number)
   
   tmp <- 
-    filter(dat, coverage>90, identity>99.99) %>% 
+    filter(dat, coverage>80, identity>99.99) %>% 
     merge(tp.info, by.x=1, by.y=1) %>%  ## add information for the first genome
     merge(tp.info, by.x=2, by.y=1)      ## add information for the second genome 
 

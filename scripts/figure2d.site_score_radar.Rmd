@@ -297,6 +297,7 @@ ggradar(plot.dat[,], values.radar = c(0,0.5,1), grid.min=0, grid.max=1,  grid.li
         group.line.width=1, group.point.size=8,
         grid.label.size=0, gridline.min.colour='black', gridline.max.colour='black',
         axis.label.size =0,
+        group.colours = pal_npg(c("nrc"))(10)[c(5,7,2,3,10,4,1)],
         background.circle.colour='white')
 
 ggsave("../plots/fig2d_site_score_radar.svg",  height=8, width=15) 
