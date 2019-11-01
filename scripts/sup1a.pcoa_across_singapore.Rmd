@@ -44,8 +44,13 @@ meta_fil <-
                         "playground",
                         "seat",
                         "table",
-                        "exercise_hand_grip")) %>% 
-  select(uuid, site)
+                        "exercise_hand_grip")) 
+
+select( library_id = uuid, meta_fil, metasub_name, city, surface_material, site=surface, setting) %>% 
+  write.table('../output_tables/metasub_99samples_metadata.tsv', quote=F, row.names = F, sep='\t')
+
+meta_fil <- 
+  select(meta_fil, uuid, site) 
 
 # remove mock and control samples, filter for time point 1 only
 meta_hosp_fil <-

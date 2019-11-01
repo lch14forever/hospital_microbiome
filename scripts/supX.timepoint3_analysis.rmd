@@ -1,0 +1,259 @@
+---
+title: "Analysis of time point 3"
+output:
+  html_document:
+    df_print: paged
+---
+
+### Preparation
+
+Load generic libraries
+```{r message=FALSE, warning=FALSE}
+source('configuration.r')
+```
+
+Load specific libraries
+```{r message=FALSE, warning=FALSE}
+library(vegan)
+library(magrittr)
+library(forcats)
+library(foreach)
+library(ggpubr)
+```
+
+Preprocess metadata
+```{r}
+meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2) %>%   
+  mutate(Sample_type=str_replace(Sample_type, '_', ' ')) %>% 
+  mutate(Sample_type=str_replace(Sample_type, 'Door handle-interior', 'Door Handle'))
+meta$Sample_type <- fct_relevel(factor(meta$Sample_type), 'Sink Trap')
+##meta <- meta[which(meta$timept !=3), ]
+```
+
+### Site scores analysis
+
+Site specific score
+```{r fig.height=4, fig.width=12}
+dat <- read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
+
+#set threshold for absence/presence
+dat[dat < 0.5] <- 0
+dat[dat >= 0.5] <- 1
+dat <- dat[rowSums(dat)>0, ]
+
+meta.fil <- meta %>% 
+  select(Library, Room_type, Sample_type, Cubicle_room, bed_number, timept)
+fil <- filter(meta.fil, Room_type != 'GIS' & timept %in% c(1,2,3))
+dat.fil <- dat[, as.character(fil$Library)]
+#calculate jaccard distance
+dist.mat <- as.matrix(vegdist(t(dat.fil), method="jaccard"))
+
+find_min_dist <- function(id){
+  s <- filter(fil, Library==id)
+  room_type <- s$Room_type
+  room_num <- s$Cubicle_room
+  sample_type <- s$Sample_type
+  tp <- s$timept
+  ss <- filter(fil, Library!=id, Room_type==room_type, Cubicle_room==room_num, Sample_type!=sample_type, timept==tp) %>% pull(Library) 
+  
+  min(dist.mat[as.character(s$Library), as.character(ss)])
+}
+
+ss.score <- mutate(fil, ss.score=sapply(fil$Library, find_min_dist)) %>% 
+  select(-Library) %>% 
+  pivot_wider(names_from = timept, values_from=ss.score) %>% 
+  select(everything(), Tp1=`1`, Tp2=`2`, Tp3=`3`) #%>% 
+  #group_by(Sample_type) %>% 
+  #summarise(Tp1=median(Tp1, na.rm = T), Tp2=median(Tp2, na.rm = T), Tp3=median(Tp3, na.rm = T))
+
+p1 <- ggplot(ss.score, aes(x=Tp1, y=Tp2, color=Sample_type)) + 
+  geom_abline(slope = 1, intercept = 0, lwd=3, color='grey', lty=2) + 
+  geom_point(size=3) + 
+  scale_color_manual(values=c(pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)], 'grey')) 
+
+p2 <- ggplot(ss.score, aes(x=Tp2, y=Tp3, color=Sample_type)) + 
+  geom_abline(slope = 1, intercept = 0, lwd=3, color='grey', lty=2) + 
+  geom_point(size=3) + 
+  scale_color_manual(values=c(pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)], 'grey')) 
+
+l <- cowplot::get_legend(p1)
+
+cowplot::plot_grid(p1 + theme(legend.position='none'), 
+                   p2 + theme(legend.position='none'), 
+                   l, nrow=1, rel_widths = c(1,1,0.8))
+
+cor.test(ss.score$Tp1, ss.score$Tp2)
+cor.test(ss.score$Tp1, ss.score$Tp2, method='spearman')
+cor.test(ss.score$Tp2, ss.score$Tp3)
+cor.test(ss.score$Tp2, ss.score$Tp3, method='spearman')
+```
+
+
+Human influence score
+```{r fig.height=4, fig.width=12}
+dat.read_counts <- read.table('../tables/illumina.read_counts.tsv')
+colnames(dat.read_counts) <- c('LIBID','READS_TRIM','READS_DECONT')
+dat.read_counts$READS_DECONT <- dat.read_counts$READS_DECONT/dat.read_counts$READS_TRIM
+
+df.m <- merge(meta, dat.read_counts, by.x='Library',by.y='LIBID', all=TRUE) 
+
+hi.score <- subset(df.m, !is.na(Cubicle_room) & timept %in% c(1,2,3)) %>%
+  mutate(HUMAN_READS=(1-READS_DECONT)) %>% 
+  select(Cubicle_room, Sample_type, Room_type, bed_number, timept, HUMAN_READS) %>% 
+  unite(location, c(Cubicle_room, Sample_type, Room_type, bed_number), remove = F) %>%
+  pivot_wider(names_from = timept, values_from = HUMAN_READS) %>% 
+  select(everything(), Tp1=`1`, Tp2=`2`, Tp3=`3`)
+
+p1 <- ggplot(hi.score, aes(x=Tp1, y=Tp2, color=Sample_type)) + 
+  geom_abline(slope = 1, intercept = 0, lwd=3, color='grey', lty=2) + 
+  geom_point(size=3) + 
+  scale_y_log10() + 
+  scale_x_log10() +
+  scale_color_manual(values=c(pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)], 'grey')) 
+
+p2 <- ggplot(hi.score, aes(x=Tp2, y=Tp3, color=Sample_type)) + 
+  geom_abline(slope = 1, intercept = 0, lwd=3, color='grey', lty=2) + 
+  geom_point(size=3) + 
+  scale_y_log10() +
+  scale_x_log10() + 
+  scale_color_manual(values=c(pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)], 'grey')) 
+l <- cowplot::get_legend(p1)
+
+cowplot::plot_grid(p1 + theme(legend.position='none'), 
+                   p2 + theme(legend.position='none'), 
+                   l, nrow=1, rel_widths = c(1,1,0.8))
+
+cor.test(hi.score$Tp1, hi.score$Tp2)
+cor.test(hi.score$Tp1, hi.score$Tp2, method='spearman')
+cor.test(hi.score$Tp2, hi.score$Tp3)
+cor.test(hi.score$Tp2, hi.score$Tp3, method='spearman')
+```
+
+Turn over score
+```{r fig.height=4, fig.width=8}
+dat <- read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
+
+#set threshold for absence/presence
+dat[dat < 0.1] <- 0
+dat[dat >= 0.5] <- 1
+dat[(dat != 1 & dat !=0) ]=NA
+dat=dat[-grep('unclass',rownames(dat)),]
+
+df.m <- merge(meta, dat.read_counts, by.x='Library',by.y='LIBID', all=TRUE) 
+
+to.score.meta <- 
+  subset(df.m, !is.na(Cubicle_room) & timept %in% c(1,2,3)) %>% 
+  select(Sample_ID, Cubicle_room, Sample_type, Room_type, bed_number, timept, Library) %>% 
+  pivot_wider(names_from = timept, values_from = Library) %>% 
+  select(everything(), Tp1=`1`, Tp2=`2`, Tp3=`3`) %>% 
+  filter(!is.na(Tp1) & !is.na(Tp2) & !is.na(Tp3))
+
+to.score <- foreach(r=1:nrow(to.score.meta), .combine = rbind) %do% {
+  tmp <- to.score.meta[r, ]
+  tmp$`Tp1,2` <- sum(dat[, tmp$Tp1] != dat[, tmp$Tp2], na.rm=TRUE)/
+    sum(rowSums(dat[, c(tmp$Tp1, tmp$Tp2)], na.rm = TRUE) > 0) ## background: 1-1, 1-NA, NA-1, 1-0, 0-1 (0-NA, NA-0, 0-0, NA-NA not included)
+  tmp$`Tp2,3` <- sum(dat[, tmp$Tp2] != dat[, tmp$Tp3], na.rm=TRUE)/
+    sum(rowSums(dat[, c(tmp$Tp2, tmp$Tp3)], na.rm = TRUE) > 0) ## background: 1-1, 1-NA, NA-1, 1-0, 0-1 (0-NA, NA-0, 0-0, NA-NA not included)
+  tmp
+}
+
+ggplot(to.score, aes(x=`Tp1,2`, y=`Tp2,3`, color=Sample_type)) + 
+  geom_abline(slope = 1, intercept = 0, lwd=3, color='grey', lty=2) + 
+  geom_point(size=3) + 
+  scale_color_manual(values=c(pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)], 'grey')) 
+
+
+cor.test(to.score$`Tp1,2`, to.score$`Tp2,3`)
+cor.test(to.score$`Tp1,2`, to.score$`Tp2,3`, method='spearman')
+```
+
+
+### Stability
+```{r fig.height=5, fig.width=9}
+dat <- read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
+dat[dat < 0.1] <- 0
+dat <- dat[rowSums(dat)>0, ]
+
+meta.fil <- meta %>% select(Sample_ID, Library, Room_type, Sample_type, Cubicle_room, timept) 
+  
+fil <- filter(meta.fil, Room_type != 'GIS' & timept %in% c(1,2,3)) 
+dat.fil <- dat[, as.character(fil$Library)]
+
+## do MDS
+dist.mat <- as.matrix(vegdist(t(dat.fil)))
+cmds <- cmdscale(dist.mat, k=3, eig=TRUE)
+eigen <- cmds$eig / sum(cmds$eig) * 100
+
+dat.merged <- (merge(cmds$points, meta.fil, by.x=0, by.y="Library", all.x=TRUE)) %>% 
+  mutate(Type=ifelse(Sample_type %in% c("Aerator", "Sink Trap"), 'CTB', 'CTA'))
+```
+
+
+```{r fig.height=6, fig.width=8}
+get.dist.between.tp <- function(tp1, tp2, shuf=FALSE) {
+  from <- dat.merged %>% filter(timept==tp1) %>% arrange(Sample_ID) %>%
+    select(Sample_ID, Library_ID=Row.names) 
+  to <- dat.merged %>% filter(timept==tp2) %>% arrange(Sample_ID)%>%
+    select(Sample_ID, Library_ID=Row.names, Sample_type, Room_type, Cubicle_room, Type) 
+  res <- merge(from, to, by='Sample_ID')
+  if(shuf){
+    res <- group_by(res, Sample_type) %>% 
+      mutate(Library_ID.y=sample(Library_ID.y)) %>% ungroup() %>% data.frame()
+  }
+  res$bray <- foreach(r=1:nrow(res), .combine=c) %do% {
+    dist.mat[res[r, 2], res[r, 3]]
+  }
+  select(res, -2, -3)
+}
+set.seed(0)
+plot.dat <- rbind(
+  mutate(get.dist.between.tp(1,2), lab='TP1,2', grp='Experiment'),
+  mutate(get.dist.between.tp(1,2, TRUE), lab='TP1,2 Shuffled', grp='Shuffled'),
+  mutate(get.dist.between.tp(2,3), lab='TP2,3', grp='Experiment'),
+  mutate(get.dist.between.tp(2,3, TRUE), lab='TP2,3 Shuffled', grp='Shuffled')
+)
+
+#mutate(plot.dat, Type=ifelse(Sample_type %in% c("Aerator", "Sink Trap"), 'CTB', 'CTA')) %>% 
+ggplot(plot.dat, aes(x=lab, y=bray, fill=grp)) + 
+  geom_boxplot(lwd=2) + 
+  facet_wrap(~Type) + 
+  ylim(c(0, 1.5)) + 
+  scale_fill_aaas(guide=F) + 
+  labs(y='Bray-Curtis distance', x=NULL) + 
+  theme(axis.text.x = element_text(angle=40, hjust=1)) + 
+  stat_compare_means(comparisons = list(c("TP1,2", "TP1,2 Shuffled"), c("TP2,3", "TP2,3 Shuffled")), 
+                     label="p.signif", size=13,
+                     method.args = list(alternative = "less")) 
+```
+
+Long term stability 
+
+```{r fig.height=6, fig.width=8}
+## for each sample in tp1, get the distance to the paired sample in tp2/3, get the min distance to the closest sample in the opposite CT type in tp2/3
+
+tp1 <- filter(dat.merged, timept==1) %>% select(id=Row.names, Sample_ID, Type)
+tp2 <- filter(dat.merged, timept==2) %>% select(id=Row.names, Sample_ID, Type)
+pairing.dat <- merge(tp1, tp2, by=c(2,3))
+
+plot.dat <- foreach(r=1:nrow(pairing.dat), .combine = rbind) %do% {
+    dat <- pairing.dat[r, ]
+    dat$`to same type` <-  min(dist.mat[dat[, 3], filter(tp2, Type==dat$Type) %>% pull(id)])
+    dat$`to opposite type` <- min(dist.mat[dat[, 3], filter(tp2, Type!=dat$Type) %>% pull(id)])
+    dat
+}
+
+
+melt(plot.dat) %>% 
+  ggplot(aes(x=variable, y=value, fill=variable)) + 
+  geom_boxplot(lwd=1) + 
+  geom_line(aes(group=Sample_ID), color=rgb(0.5,0.5,0.5,0.2)) +
+  facet_wrap(~Type) +
+  scale_fill_aaas(guide=F) +
+  labs(x=NULL, y='Bray-Curtis distance') +
+  ylim(c(0, 1.5) )+
+  theme(axis.text.x = element_text(angle=40, hjust=1)) +
+  stat_compare_means(comparisons = list(c("to same type", "to opposite type")),
+                     paired=TRUE,
+                     label="p.signif", size=13,
+                     method.args = list(alternative = "less")) 
+```

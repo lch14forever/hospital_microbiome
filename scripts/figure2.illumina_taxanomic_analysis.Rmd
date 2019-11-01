@@ -20,6 +20,7 @@ library(RColorBrewer)
 library(foreach)
 library(forcats)
 library(magrittr)
+library(ggpubr)
 ```
 
 Preprocess data
@@ -58,6 +59,36 @@ ggplot(dat.merged, aes(x=V1, y=V2, col=Sample_type), lwd=2) +
   theme(legend.title = element_blank()) 
 ggsave('../plots/f2a_mds_genus.svg', width =9, height = 5)
 ```
+
+### Analysis with the handling controls
+
+```{r fig.height=6, fig.width=4}
+handling.controls <- filter(meta.fil, Sample_type=='Handling_Control') %>% pull(Library)
+dat.fil.control <- cbind(dat[, handling.controls], dat.fil)
+dist.mat <- as.matrix(vegdist(t(dat.fil.control)))
+
+g <- c(rep('Handling control', length(handling.controls)), ifelse(with(fil, Sample_type == "Aerator" | Sample_type == "Sink_Trap"), 'CTB', 'CTA'))
+
+## HC vs HC
+tmp <- dist.mat[g == 'Handling control', g == 'Handling control']
+d1 <- data.frame(bray=tmp[lower.tri(tmp)], cat='within control')
+## HC vs CTA
+tmp <- dist.mat[g == 'Handling control', g == 'CTA']
+d2 <- data.frame(bray=c(tmp), cat='control vs. CTA')
+## HC vs CTB
+tmp <- dist.mat[g == 'Handling control', g == 'CTB']
+d3 <- data.frame(bray=c(tmp), cat='control vs. CTB')
+
+rbind(d1, d2, d3) %>% 
+  ggplot(aes(x=cat, y=bray, col=cat)) + 
+  geom_boxplot(lwd=1) + 
+  theme(axis.text.x = element_text(angle=40, hjust=1)) + 
+  labs(x=NULL, y='Bray-Curtis distance') + 
+  scale_color_manual(values=c('grey', 'darkgreen', 'red'), guide=F) +
+  stat_compare_means(comparisons = list(c("within control", "control vs. CTA"), c("within control", "control vs. CTB")), 
+                     label = "p.signif")
+```
+
 
 
 ### Differential abundance taxa between wet and dry
