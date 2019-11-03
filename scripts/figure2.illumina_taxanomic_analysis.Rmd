@@ -63,29 +63,49 @@ ggsave('../plots/f2a_mds_genus.svg', width =9, height = 5)
 ### Analysis with the handling controls
 
 ```{r fig.height=6, fig.width=4}
-handling.controls <- filter(meta.fil, Sample_type=='Handling_Control') %>% pull(Library)
-dat.fil.control <- cbind(dat[, handling.controls], dat.fil)
+handling.controls <- filter(meta.fil, Sample_type=='Handling_Control') %>% pull(Library) %>% as.character()
+fil.tp1_tp2 <- filter(meta.fil, Room_type != 'GIS' & timept %in% c(1,2))
+dat.tp1_tp2 <- dat[,  fil.tp1_tp2$Library]
+
+qubit <- read.table('../metadata/metagenomics_qubit.txt',head=T,check.names = F, sep='\t', stringsAsFactors = F) %>% 
+  mutate(cat=cut(`DNA Amt`, c(0.5, 1,3, Inf))) %>% 
+  filter(`Library ID` %in% fil.tp1_tp2$Library)
+
+dat.fil.control <- cbind(dat[, handling.controls], dat.tp1_tp2)
 dist.mat <- as.matrix(vegdist(t(dat.fil.control)))
 
-g <- c(rep('Handling control', length(handling.controls)), ifelse(with(fil, Sample_type == "Aerator" | Sample_type == "Sink_Trap"), 'CTB', 'CTA'))
+g <- c(rep('Handling control', length(handling.controls)), ifelse(with(fil.tp1_tp2, Sample_type == "Aerator" | Sample_type == "Sink_Trap"), 'CTB', 'CTA'))
 
 ## HC vs HC
 tmp <- dist.mat[g == 'Handling control', g == 'Handling control']
-d1 <- data.frame(bray=tmp[lower.tri(tmp)], cat='within control')
-## HC vs CTA
-tmp <- dist.mat[g == 'Handling control', g == 'CTA']
-d2 <- data.frame(bray=c(tmp), cat='control vs. CTA')
-## HC vs CTB
-tmp <- dist.mat[g == 'Handling control', g == 'CTB']
-d3 <- data.frame(bray=c(tmp), cat='control vs. CTB')
+d1 <- data.frame(bray=tmp[lower.tri(tmp)], cat='Control')
+## (0.5, 1]
+tmp <- filter(qubit, cat=="(0.5,1]") %>% pull(`Library ID`)
+d2 <- data.frame(bray=c(dist.mat[tmp, g=='Handling control']), cat='(0.5,1]')
+## (1,3]
+tmp <- filter(qubit, cat=="(1,3]") %>% pull(`Library ID`) 
+d3 <- data.frame(bray=c(dist.mat[tmp, g=='Handling control']), cat='(1,3]')
+## (3,Inf]
+tmp <- filter(qubit, cat=="(3,Inf]") %>% pull(`Library ID`)
+d4 <- data.frame(bray=c(dist.mat[tmp, g=='Handling control']), cat='>3')
 
-rbind(d1, d2, d3) %>% 
-  ggplot(aes(x=cat, y=bray, col=cat)) + 
+# ## HC vs CTA
+# tmp <- dist.mat[g == 'Handling control', g == 'CTA']
+# d2 <- data.frame(bray=c(tmp), cat='control vs. CTA')
+# ## HC vs CTB
+# tmp <- dist.mat[g == 'Handling control', g == 'CTB']
+# d3 <- data.frame(bray=c(tmp), cat='control vs. CTB')
+
+rbind(d1, d2, d3, d4) %>% 
+  ggplot(aes(x=cat, y=bray, fill=cat)) + 
   geom_boxplot(lwd=1) + 
   theme(axis.text.x = element_text(angle=40, hjust=1)) + 
-  labs(x=NULL, y='Bray-Curtis distance') + 
-  scale_color_manual(values=c('grey', 'darkgreen', 'red'), guide=F) +
-  stat_compare_means(comparisons = list(c("within control", "control vs. CTA"), c("within control", "control vs. CTB")), 
+  scale_y_continuous(breaks=c(0, 0.25, 0.5, 0.75, 1), limits=c(0,1.3)) + 
+  scale_fill_aaas(guide=F) + 
+  labs(x='DNA amount', y='Bray-Curtis distance') + 
+  stat_compare_means(comparisons = list(c("Control", "(0.5,1]"), 
+                                        c("Control", "(1,3]"),
+                                        c("Control", ">3")), 
                      label = "p.signif")
 ```
 
