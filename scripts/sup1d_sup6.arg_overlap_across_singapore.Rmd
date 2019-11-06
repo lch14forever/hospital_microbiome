@@ -19,6 +19,7 @@ Load libraries
 library(readr)
 library(reshape2)
 library(UpSetR)
+library(ggpubr)
 ```
 
 Set seed
@@ -77,6 +78,29 @@ meta_merged <-
   merge(meta_fil, meta_gis, all = TRUE) %>% 
   merge(meta_hosp_fil, all = TRUE) %>% 
   select(sample, location, timept)
+```
+
+CTA vs. CTB
+```{r fig.height=5, fig.width=5}
+
+filter(meta_hosp, timept %in% c(1,2,3)) %>% 
+  select(Library, Sample_ID, Sample_type, timept) %>% 
+  mutate(CT=ifelse(Sample_type == "Aerator" | Sample_type == "Sink_Trap", 'CTB', 'CTA')) %>% 
+  merge(dat_gis_hosp, by=1) %>% 
+  distinct(Sample_ID, timept, CT, Anti) %>% 
+  count(Sample_ID, CT, Anti) %>% 
+  ## filter(n>3) ## make sure there is no entry occurred more than 3 times
+  mutate(persist=n>2) %>% 
+  group_by(Sample_ID, CT) %>% 
+  summarise(prop=sum(persist)/n()) %>% 
+  ggplot(aes(x=CT, y=prop, fill=CT)) +
+  geom_boxplot(lwd=1.5) +
+  labs(y="Fraction of ARG detected\n in all 3 time points", x=NULL) + 
+  stat_compare_means(size=10, label='p.signif', label.x=1.4) + 
+  scale_fill_manual(values=c('darkgreen', 'red'), guide=F)
+
+ggsave('../plots/sup7a.arg_persistance_vs_ct.png', height = 5, width = 5)
+
 ```
 
 Process subsamples
@@ -296,203 +320,10 @@ upset_main <- upset(mat, empty.intersections = NULL, scale.intersections = "iden
 
 upset_main
 
+ggsave('../plots/sup7c.arg_upset.png', height = 9, width = 12)
 #graph2ppt(file = "figures/upset_main", width = 12, height = 9)
 ```
 
-Process subsamples for CTA only
-```{r message=FALSE, warning=FALSE}
-subsample_cta <- 77
-
-cta_samples <- list()
-for (n in 1:subsample_cta) {
-  cta_samples[n] <- list(sample_n(meta_hosp_fil %>% filter(location == "CTA"), 77))
-}
-
-genes_cta <- lapply(cta_samples, function(samples) {
-  merge(samples, dat, by.x='sample', by.y='Lib') %>% 
-    group_by(location, Anti, timept) %>%
-    summarise(n = 1) %>% 
-    ungroup() %>% 
-    select(-location)
-})
-
-mats_cta <- lapply(genes_cta, function(gene) {
-  df <- data.frame(acast(gene, Anti ~ timept)) %>% 
-    replace(is.na(.), 0) %>% 
-    rename("T1" = "X1", "T2" = "X2", "T3" = "X3")
-  return(df)
-})
-
-intersections_cta <- list()
-for (n in 1:subsample_cta) {
-  df <- data.frame(i_1 = NA,
-                   i_2 = NA,
-                   i_1_2 = NA,
-                   i_3 = NA,
-                   i_1_3 = NA,
-                   i_2_3 = NA,
-                   i_1_2_3 = NA)
-  
-  df$i_1 = (mats_cta[[n]] %>% 
-                   filter(T1 == 1 & T2 == 0 & T3 == 0) %>% 
-                   tally())$n
-  df$i_2 = (mats_cta[[n]] %>% 
-              filter(T1 == 0 & T2 == 1 & T3 == 0) %>% 
-                    tally())$n
-  df$i_1_2 = (mats_cta[[n]] %>% 
-                filter(T1 == 1 & T2 == 1 & T3 == 0) %>% 
-                           tally())$n
-  df$i_3 = (mats_cta[[n]] %>% 
-              filter(T1 == 0 & T2 == 0 & T3 == 1) %>% 
-                tally())$n
-  df$i_1_3 = (mats_cta[[n]] %>% 
-                filter(T1 == 1 & T2 == 0 & T3 == 1) %>% 
-                       tally())$n
-  df$i_2_3 = (mats_cta[[n]] %>% 
-                filter(T1 == 0 & T2 == 1 & T3 == 1) %>% 
-                        tally())$n
-  df$i_1_2_3 = (mats_cta[[n]] %>% 
-                  filter(T1 == 1 & T2 == 1 & T3 == 1) %>% 
-                  tally())$n
-  
-  intersections_cta[n] <- list(df)
-}
-```
-
-Create matrix using CTA subsamples
-```{r message=FALSE, warning=FALSE}
-intersection_cta_means <- do.call("rbind", intersections_cta) %>% 
-  summarise_all(mean) %>% 
-  round()
-
-intersection_cta_sd <- do.call("rbind", intersections_cta) %>% 
-  summarise_all(sd)
-
-mat_CTA <- data.frame("T1" = NA, "T2" = NA, "T3" = NA) %>% 
-  drop_na()
-
-for (n in 0:intersection_cta_means$i_1) {
-  if(n < intersection_cta_means$i_1) {
-    mat_CTA <- add_row(mat_CTA, T1 = 1)
-  }
-}
-for (n in 0:intersection_cta_means$i_2) {
-  if(n < intersection_cta_means$i_2) {
-    mat_CTA <- add_row(mat_CTA, T2 = 1)
-  }
-}
-for (n in 0:intersection_cta_means$i_1_2) {
-  if(n < intersection_cta_means$i_1_2) {
-    mat_CTA <- add_row(mat_CTA, T1 = 1, T2 = 1)
-  }
-}
-for (n in 0:intersection_cta_means$i_3) {
-  if(n < intersection_cta_means$i_3) {
-    mat_CTA <- add_row(mat_CTA, T3 = 1)
-  }
-}
-for (n in 0:intersection_cta_means$i_1_3) {
-  if(n < intersection_cta_means$i_1_3) {
-    mat_CTA <- add_row(mat_CTA, T1 = 1, T3 = 1)
-  }
-}
-for (n in 0:intersection_cta_means$i_2_3) {
-  if(n < intersection_cta_means$i_2_3) {
-    mat_CTA <- add_row(mat_CTA, T2 = 1, T3 = 1)
-  }
-}
-for (n in 0:intersection_cta_means$i_1_2_3) {
-  if(n < intersection_cta_means$i_1_2_3) {
-    mat_CTA <- add_row(mat_CTA, T1 = 1, T2 = 1, T3 = 1)
-  }
-}
-
-mat_CTA <-
-  mat_CTA %>%
-  replace(is.na(.), 0) %>% 
-  rename("Time point 1" = "T1", "Time point 2" = "T2", "Time point 3" = "T3")
-```
-
-Get CTB matrix
-```{r message=FALSE, warning=FALSE}
-ctb_samples <-
-  meta_hosp_fil %>% 
-  filter(location == "CTB") %>% 
-  sample_n(77)
-
-genes_ctb <- merge(ctb_samples, dat, by.x='sample', by.y='Lib') %>% 
-  group_by(location, Anti, timept) %>% 
-  summarise(n = 1)
-
-genes_timept_CTB <-
-  genes_ctb %>% 
-  ungroup() %>% 
-  select(-location)
-
-mat_CTB <- data.frame(acast(genes_timept_CTB, Anti ~ timept)) %>% 
-  replace(is.na(.), 0) %>% 
-  rename("Time point 1" = "X1", "Time point 2" = "X2", "Time point 3" = "X3")
-```
-
-Generate hospital figures
-```{r message=FALSE, warning=FALSE}
-upset_CTA <- upset(mat_CTA, point.size = 3.5, line.size = 2, 
-                   sets = c("Time point 3", "Time point 2", "Time point 1"),
-                   mainbar.y.label = "ARG Intersections", sets.x.label = "# ARG", 
-                   text.scale = c(3, 3, 2.5, 2.5, 3, 3),
-                   order.by = "freq", keep.order = TRUE,
-                   main.bar.color = "#00A087",
-                   matrix.color = "#00A087",
-                   sets.bar.color = "#00A087")
-upset_CTA
-
-#graph2ppt(file = "figures/upset_CTA", width = 12, height = 9)
-
-
-
-upset_CTB <- upset(mat_CTB, point.size = 3.5, line.size = 2, 
-                   mainbar.y.label = "ARG Intersections", sets.x.label = "# ARG", 
-                   text.scale = c(3, 3, 2.5, 2.5, 3, 3), order.by = "freq",
-                   main.bar.color = "#E64B35",
-                   matrix.color = "#E64B35",
-                   sets.bar.color = "#E64B35")
-upset_CTB
-
-#graph2ppt(file = "figures/upset_CTB", width = 12, height = 9)
-```
-
-Generate figure for matched samples
-```{r message=FALSE, warning=FALSE}
-matched_samples <- read_lines("../output_tables/matched_samples.txt")
-
-meta_matched <-
-  meta_merged %>% 
-  filter(sample %in% matched_samples)
-
-dat_matched <-
-  dat %>% 
-  filter(Lib %in% matched_samples)
-
-genes_matched <- merge(meta_matched, dat_matched, by.x='sample', by.y='Lib') %>% 
-  mutate(Anti_type=str_replace(Anti, '.*_', '')) %>%
-  group_by(location, Anti_type, Anti) %>%
-  summarise(n = 1) %>% 
-  ungroup() %>% 
-  mutate(location = str_replace(location, "Office Dry", "Office")) %>% 
-  mutate(location = str_replace(location, "CT(A|B)", "Hospital"))
-
-mat_matched <- data.frame(acast(genes_matched, Anti ~ location)) %>% 
-  replace(is.na(.), 0) %>% 
-  replace(. == 2, 1)
-
-upset_matched <- upset(mat_matched, point.size = 3.5, line.size = 2, 
-                   mainbar.y.label = "ARG Intersections", sets.x.label = "# ARG", 
-                   text.scale = c(3, 3, 2.5, 2.5, 3, 3),
-                   order.by = "freq")
-upset_matched
-
-#graph2ppt(file = "figures/upset_matched", width = 12, height = 9)
-```
 
 Session information
 

@@ -20,6 +20,7 @@ library(foreach)
 library(forcats)
 ```
 
+## Timepoint 1 vs. 2
 
 Read metadata
 
@@ -132,7 +133,43 @@ test.dat$p.value <- sapply(1:nrow(test.dat), function(x)
 test.dat
 ```
 
-Session information
+## Timepoint 2 vs. 3
+```{r}  
+species <- species.list[1]
+
+plot.dat <- foreach(species=species.list, .combine = rbind) %do% {
+  dat <- read.table(paste0('../tables/', species, '_opera_ms_mummer_dist.dat'), head=F) %>% 
+      select(V1, V2, coverage=V3, identity=V10)
+
+  anno <- filter(meta, Species==species) %>% 
+    select(Nanopore_ID, strain)  
+  
+  ## timepoint 3 marked as "barcode" by qcat
+  filter(dat, str_detect(V1, '_barcode') & str_detect(V2, '_BC') | str_detect(V2, '_barcode') & str_detect(V1, '_BC')) %>%
+    filter(coverage>80, identity>99.99) %>% 
+    mutate(derivative=identity>99.99, transfer=identity>99.999) %>% 
+    mutate(species=species) %>% 
+    merge(anno, by=1) %>% 
+    select(V2, derivative:strain) %>% 
+    distinct() %>% 
+    melt(id.vars=c("V2", "species", "strain")) %>% 
+    filter(value) %>% 
+    count(species, strain, variable, name="N") %>% 
+    merge(select(antibiotics,-n), by=c('species', 'strain'))
+}
+
+## Test on time point 3
+test.dat <-
+  group_by(plot.dat, species, variable) %>% 
+  summarise(total=sum(N), MDR_obs=sum(MDR*N)) %>% 
+  merge(mdr_prop) 
+
+test.dat$p.value <- sapply(1:nrow(test.dat), function(x) 
+  binom.test(test.dat$MDR_obs[x], test.dat$total[x], test.dat$MDR_prop[x])$p.value )
+test.dat
+```
+
+## Session information
 ```{r}
 sessionInfo()
 ```

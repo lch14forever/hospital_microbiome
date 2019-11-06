@@ -1586,6 +1586,8 @@ $(document).ready(function () {
 <p>Load plot specific libraries</p>
 <pre class="r"><code>library(foreach)
 library(forcats)</code></pre>
+<div id="timepoint-1-vs.2" class="section level2">
+<h2>Timepoint 1 vs. 2</h2>
 <p>Read metadata</p>
 <pre class="r"><code>meta &lt;- read.table('../output_tables/strain_cluster_summary.tsv', sep='\t', head=TRUE)
 
@@ -1695,7 +1697,52 @@ test.dat</code></pre>
 {"columns":[{"label":["species"],"name":[1],"type":["chr"],"align":["left"]},{"label":["variable"],"name":[2],"type":["fctr"],"align":["left"]},{"label":["total"],"name":[3],"type":["int"],"align":["right"]},{"label":["MDR_obs"],"name":[4],"type":["int"],"align":["right"]},{"label":["MDR_prop_background"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p.value"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"Acinetobacter_baumannii","2":"derivative","3":"32","4":"32","5":"0.3333333","6":"5.396595e-16"},{"1":"Acinetobacter_baumannii","2":"transfer","3":"26","4":"26","5":"0.3333333","6":"3.934118e-13"},{"1":"Staphylococcus_aureus","2":"derivative","3":"670","4":"670","5":"0.3000000","6":"0.000000e+00"},{"1":"Staphylococcus_aureus","2":"transfer","3":"17","4":"17","5":"0.3000000","6":"1.291402e-09"},{"1":"Staphylococcus_epidermidis","2":"derivative","3":"194","4":"192","5":"0.2307692","6":"5.969662e-119"},{"1":"Staphylococcus_epidermidis","2":"transfer","3":"9","4":"9","5":"0.2307692","6":"1.856099e-06"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
-<p>Session information</p>
+</div>
+<div id="timepoint-2-vs.3" class="section level2">
+<h2>Timepoint 2 vs. 3</h2>
+<pre class="r"><code>species &lt;- species.list[1]
+
+plot.dat &lt;- foreach(species=species.list, .combine = rbind) %do% {
+  dat &lt;- read.table(paste0('../tables/', species, '_opera_ms_mummer_dist.dat'), head=F) %&gt;% 
+      select(V1, V2, coverage=V3, identity=V10)
+
+  anno &lt;- filter(meta, Species==species) %&gt;% 
+    select(Nanopore_ID, strain)  
+  
+  ## timepoint 3 marked as &quot;barcode&quot; by qcat
+  filter(dat, str_detect(V1, '_barcode') &amp; str_detect(V2, '_BC') | str_detect(V2, '_barcode') &amp; str_detect(V1, '_BC')) %&gt;%
+    filter(coverage&gt;80, identity&gt;99.99) %&gt;% 
+    mutate(derivative=identity&gt;99.99, transfer=identity&gt;99.999) %&gt;% 
+    mutate(species=species) %&gt;% 
+    merge(anno, by=1) %&gt;% 
+    select(V2, derivative:strain) %&gt;% 
+    distinct() %&gt;% 
+    melt(id.vars=c(&quot;V2&quot;, &quot;species&quot;, &quot;strain&quot;)) %&gt;% 
+    filter(value) %&gt;% 
+    count(species, strain, variable, name=&quot;N&quot;) %&gt;% 
+    merge(select(antibiotics,-n), by=c('species', 'strain'))
+}</code></pre>
+<pre><code>## Warning: Factor `strain` contains implicit NA, consider using
+## `forcats::fct_explicit_na`</code></pre>
+<pre><code>## Warning: Factor `variable` contains implicit NA, consider using
+## `forcats::fct_explicit_na`</code></pre>
+<pre class="r"><code>## Test on time point 3
+test.dat &lt;-
+  group_by(plot.dat, species, variable) %&gt;% 
+  summarise(total=sum(N), MDR_obs=sum(MDR*N)) %&gt;% 
+  merge(mdr_prop) 
+
+test.dat$p.value &lt;- sapply(1:nrow(test.dat), function(x) 
+  binom.test(test.dat$MDR_obs[x], test.dat$total[x], test.dat$MDR_prop[x])$p.value )
+test.dat</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["species"],"name":[1],"type":["chr"],"align":["left"]},{"label":["variable"],"name":[2],"type":["fctr"],"align":["left"]},{"label":["total"],"name":[3],"type":["int"],"align":["right"]},{"label":["MDR_obs"],"name":[4],"type":["int"],"align":["right"]},{"label":["MDR_prop_background"],"name":[5],"type":["dbl"],"align":["right"]},{"label":["p.value"],"name":[6],"type":["dbl"],"align":["right"]}],"data":[{"1":"Staphylococcus_aureus","2":"derivative","3":"9","4":"9","5":"0.3000000","6":"0.000019683"},{"1":"Staphylococcus_epidermidis","2":"derivative","3":"6","4":"4","5":"0.2307692","6":"0.028343570"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session information</h2>
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>## R version 3.5.1 (2018-07-02)
 ## Platform: x86_64-apple-darwin15.6.0 (64-bit)
@@ -1728,6 +1775,7 @@ test.dat</code></pre>
 ## [29] backports_1.1.5  scales_1.0.0     htmltools_0.3.6  assertthat_0.2.1
 ## [33] colorspace_1.4-1 stringi_1.4.3    lazyeval_0.2.2   munsell_0.5.0   
 ## [37] crayon_1.3.4</code></pre>
+</div>
 
 
 

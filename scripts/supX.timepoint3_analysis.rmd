@@ -69,11 +69,13 @@ ss.score <- mutate(fil, ss.score=sapply(fil$Library, find_min_dist)) %>%
 p1 <- ggplot(ss.score, aes(x=Tp1, y=Tp2, color=Sample_type)) + 
   geom_abline(slope = 1, intercept = 0, lwd=3, color='grey', lty=2) + 
   geom_point(size=3) + 
+  labs(x='Timepoint 1', y='Timepoint 2') + 
   scale_color_manual(values=c(pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)], 'grey')) 
 
 p2 <- ggplot(ss.score, aes(x=Tp2, y=Tp3, color=Sample_type)) + 
   geom_abline(slope = 1, intercept = 0, lwd=3, color='grey', lty=2) + 
   geom_point(size=3) + 
+  labs(x='Timepoint 2', y='Timepoint 3') + 
   scale_color_manual(values=c(pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)], 'grey')) 
 
 l <- cowplot::get_legend(p1)
@@ -81,6 +83,7 @@ l <- cowplot::get_legend(p1)
 cowplot::plot_grid(p1 + theme(legend.position='none'), 
                    p2 + theme(legend.position='none'), 
                    l, nrow=1, rel_widths = c(1,1,0.8))
+ggsave('../plots/sup4a.site_specificity.png', height = 4, width = 12)
 
 cor.test(ss.score$Tp1, ss.score$Tp2)
 cor.test(ss.score$Tp1, ss.score$Tp2, method='spearman')
@@ -109,6 +112,7 @@ p1 <- ggplot(hi.score, aes(x=Tp1, y=Tp2, color=Sample_type)) +
   geom_point(size=3) + 
   scale_y_log10() + 
   scale_x_log10() +
+  labs(x='Timepoint 1', y='Timepoint 2') + 
   scale_color_manual(values=c(pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)], 'grey')) 
 
 p2 <- ggplot(hi.score, aes(x=Tp2, y=Tp3, color=Sample_type)) + 
@@ -116,12 +120,14 @@ p2 <- ggplot(hi.score, aes(x=Tp2, y=Tp3, color=Sample_type)) +
   geom_point(size=3) + 
   scale_y_log10() +
   scale_x_log10() + 
+  labs(x='Timepoint 2', y='Timepoint 3') + 
   scale_color_manual(values=c(pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)], 'grey')) 
 l <- cowplot::get_legend(p1)
 
 cowplot::plot_grid(p1 + theme(legend.position='none'), 
                    p2 + theme(legend.position='none'), 
                    l, nrow=1, rel_widths = c(1,1,0.8))
+ggsave('../plots/sup4a.human_influence.png', height = 4, width = 12)
 
 cor.test(hi.score$Tp1, hi.score$Tp2)
 cor.test(hi.score$Tp1, hi.score$Tp2, method='spearman')
@@ -160,7 +166,9 @@ to.score <- foreach(r=1:nrow(to.score.meta), .combine = rbind) %do% {
 ggplot(to.score, aes(x=`Tp1,2`, y=`Tp2,3`, color=Sample_type)) + 
   geom_abline(slope = 1, intercept = 0, lwd=3, color='grey', lty=2) + 
   geom_point(size=3) + 
+  labs(x='Timepoint 1-2', y='Timepoint 2-3') + 
   scale_color_manual(values=c(pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)], 'grey')) 
+ggsave('../plots/sup4a.turn_over.png', height = 4, width = 7)
 
 
 cor.test(to.score$`Tp1,2`, to.score$`Tp2,3`)
@@ -255,4 +263,6 @@ mutate(plot.dat, Type=str_c(Type, ' timepoint 3')) %>% melt %>%
                      paired=TRUE,
                      label="p.signif", size=13,
                      method.args = list(alternative = "less")) 
+
+ggsave('../plots/sup3b.strain_persistance.png', height = 6, width = 8)
 ```

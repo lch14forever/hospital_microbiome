@@ -86,6 +86,10 @@ ggplot(dat, aes(x = location, y = value)) +
                      label = "p.signif",
                      label.y = c(0.25, 0.7),
                      bracket.size = 0)
+
+group_by(dat, location) %>% 
+  summarise(median=median(value)) %>% 
+  mutate(ratio=.$median[1]/median)
 ```
 
 Generate figure for matched samples

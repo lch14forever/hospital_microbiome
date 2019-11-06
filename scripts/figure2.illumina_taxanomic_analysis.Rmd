@@ -62,13 +62,13 @@ ggsave('../plots/f2a_mds_genus.svg', width =9, height = 5)
 
 ### Analysis with the handling controls
 
-```{r fig.height=6, fig.width=4}
+```{r fig.height=6, fig.width=8}
 handling.controls <- filter(meta.fil, Sample_type=='Handling_Control') %>% pull(Library) %>% as.character()
 fil.tp1_tp2 <- filter(meta.fil, Room_type != 'GIS' & timept %in% c(1,2))
 dat.tp1_tp2 <- dat[,  fil.tp1_tp2$Library]
 
 qubit <- read.table('../metadata/metagenomics_qubit.txt',head=T,check.names = F, sep='\t', stringsAsFactors = F) %>% 
-  mutate(cat=cut(`DNA Amt`, c(0.5, 1,3, Inf))) %>% 
+  mutate(cat=cut(`DNA Amt`, c(0.5, 1,3,Inf))) %>% 
   filter(`Library ID` %in% fil.tp1_tp2$Library)
 
 dat.fil.control <- cbind(dat[, handling.controls], dat.tp1_tp2)
@@ -79,15 +79,13 @@ g <- c(rep('Handling control', length(handling.controls)), ifelse(with(fil.tp1_t
 ## HC vs HC
 tmp <- dist.mat[g == 'Handling control', g == 'Handling control']
 d1 <- data.frame(bray=tmp[lower.tri(tmp)], cat='Control')
-## (0.5, 1]
-tmp <- filter(qubit, cat=="(0.5,1]") %>% pull(`Library ID`)
-d2 <- data.frame(bray=c(dist.mat[tmp, g=='Handling control']), cat='(0.5,1]')
-## (1,3]
-tmp <- filter(qubit, cat=="(1,3]") %>% pull(`Library ID`) 
-d3 <- data.frame(bray=c(dist.mat[tmp, g=='Handling control']), cat='(1,3]')
-## (3,Inf]
-tmp <- filter(qubit, cat=="(3,Inf]") %>% pull(`Library ID`)
-d4 <- data.frame(bray=c(dist.mat[tmp, g=='Handling control']), cat='>3')
+
+d2 <- foreach(c=levels(qubit$cat), .combine = rbind) %do% {
+  tmp <- filter(qubit, cat==c) %>% pull(`Library ID`)
+  d <- data.frame(bray=c(dist.mat[tmp, g=='Handling control']), cat=c, stringsAsFactors = F)
+  d
+}
+
 
 # ## HC vs CTA
 # tmp <- dist.mat[g == 'Handling control', g == 'CTA']
@@ -96,17 +94,22 @@ d4 <- data.frame(bray=c(dist.mat[tmp, g=='Handling control']), cat='>3')
 # tmp <- dist.mat[g == 'Handling control', g == 'CTB']
 # d3 <- data.frame(bray=c(tmp), cat='control vs. CTB')
 
-rbind(d1, d2, d3, d4) %>% 
-  ggplot(aes(x=cat, y=bray, fill=cat)) + 
+plot.dat <- rbind(d1, d2)
+  
+ggplot(plot.dat, aes(x=cat, y=bray, fill=cat)) + 
+  #geom_bar(data=rbind( data.frame(cat='Control', n=4), count(qubit, cat)), aes(x=cat, y=n/200), alpha=0.5, stat='identity') + 
   geom_boxplot(lwd=1) + 
-  theme(axis.text.x = element_text(angle=40, hjust=1)) + 
-  scale_y_continuous(breaks=c(0, 0.25, 0.5, 0.75, 1), limits=c(0,1.3)) + 
+  theme(axis.text.x = element_text(angle=40, hjust=1), axis.title.y.right = element_text(margin=margin(0,0,0,15))) + 
+  scale_y_continuous(breaks=c(0, 0.25, 0.5, 0.75, 1), limits=c(0,1.5)) +#, sec.axis = sec_axis(~.*200, name = "Number of samples")) + 
   scale_fill_aaas(guide=F) + 
-  labs(x='DNA amount', y='Bray-Curtis distance') + 
+  labs(x='DNA amount (ng)', y='Bray-Curtis distance') + 
   stat_compare_means(comparisons = list(c("Control", "(0.5,1]"), 
                                         c("Control", "(1,3]"),
-                                        c("Control", ">3")), 
+                                        c("Control", "(3,Inf]")
+                                        ),
                      label = "p.signif")
+
+ggsave('../plots/supnote1a_handling_control_vs_samples.png', width =5, height = 5)
 ```
 
 
