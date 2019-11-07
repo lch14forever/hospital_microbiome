@@ -105,28 +105,33 @@ print(paste0('Test for 99.99% overlapping with time point 3: ', p2))
 
 
 Plot the tree
-```{r fig.height=6, fig.width=8, message=FALSE}
-p <- ggtree(dat$tree, color=colors[3], lwd=1) + 
-  #geom_tippoint(size=4, color=colors[3]) +
-  geom_tiplab(color=colors[3],hjust=1, fontface='bold', offset=0.05, align = TRUE) +
-  geom_treescale(x=0, y=15, color = colors[3], linesize=2) 
-
+```{r fig.height=6, fig.width=6, message=FALSE}
 d1 <- rownames_to_column(dat$antibiotics) %>% melt(id.vars='rowname') %>% mutate(`Antibiotic resistance`=value)
-d2 <- melt(patient) %>% mutate(N=value)
+d2 <- melt(patient) %>% mutate(N=value) 
 d3 <- melt(persistance) %>% mutate(N=value)
 
+p <- ggtree(dat$tree, lwd=1, aes(color='1', shape=is.na(N))) %<+% select(d2, strain, N) + 
+  geom_tippoint(size=4) +
+  geom_tiplab(hjust=1, fontface='bold', offset=0.05, align = TRUE) +
+  geom_treescale(x=0, y=15, color = colors[3], linesize=2) + 
+  scale_shape_manual(values=c(19, 1),name="Patient overlap", labels=c("Yes", "No")) + 
+  scale_color_manual(values=c(colors[3]),  guide=F)
+
 p1 <- p + 
-  geom_facet(panel='Htun et al\nDerivative', data=d2, geom=geom_point, 
-             mapping=aes(x = as.numeric(variable), size=N), color=colors[3]) +
-  geom_facet(panel='Timepoint 3\nDerivative', data=d3, geom=geom_point, 
-             mapping=aes(x = as.numeric(variable), size=N), color=colors[3]) +
   geom_facet(panel='Antibiotic\nresistance profile', data=d1, geom=geom_tile, 
                mapping=aes(x = as.numeric(variable),  fill = `Antibiotic resistance`), color='white', lwd=2) + 
-  scale_fill_manual(values=colors[c(1,5,2,6,4)],na.value='white') +
+  #geom_facet(panel='Htun et al\nDerivative', data=d2, geom=geom_point, 
+  #           mapping=aes(x = as.numeric(variable), size=N), color=colors[3]) +
+  # geom_facet(panel='Timepoint 3\nDerivative', data=d3, geom=geom_point, 
+  #            mapping=aes(x = as.numeric(variable), size=N), color=colors[3]) +
+  scale_fill_manual(values=colors[c(1,5,2,6,4)], na.translate=FALSE) +
   theme(legend.position = 'right', strip.background =element_rect(fill=NA, color=NA), 
         strip.text = element_text(size=10, face='bold'))
+
+legend <- cowplot::get_legend(p1)
+p1 <- p1 + theme(legend.position = 'none')
         
-tree1 <- facet_widths(p1, c(2,0.5,0.5,1))
+tree1 <- facet_widths(p1, c(2,1))
 tree1
 ```
 
@@ -162,12 +167,7 @@ arrange(dat$overlaps %>% filter(str_detect(V2, 'ADD')), desc(identity))
 
 
 Plot the tree
-```{r fig.height=2, fig.width=11, message=FALSE}
-p <- ggtree(dat$tree, color=colors[1], lwd=1) + 
-  #geom_tippoint(size=4, color=colors[3]) +
-  geom_tiplab(color=colors[1],hjust=1, fontface='bold', offset=0.4, align = TRUE) +
-  geom_treescale(x=0, y=3.4, color = colors[1], linesize=2) 
-
+```{r fig.height=2.5, fig.width=6, message=FALSE}
 d1 <- rownames_to_column(dat$antibiotics) %>% melt(id.vars='rowname') %>% mutate(`Antibiotic resistance`=value)
 d2 <- filter(patient, anno=='Teo et al') %>% melt() %>% 
   filter(value!=0) %>% 
@@ -177,27 +177,33 @@ d3 <- filter(patient, anno!='Teo et al') %>% melt() %>%
   filter(value!=0) %>% 
   unite('variable', c(anno, variable)) %>% 
   mutate(N=value, variable=as.factor(variable))
-
 d4 <- melt(persistance) %>% mutate(N=value)
 
-p1 <- 
-  p + geom_facet(panel='Teo et al\nDerivative', data=d2, geom=geom_point, 
-             mapping=aes(x = as.numeric(variable), size=N), color=colors[1]) +
-  geom_facet(panel='This study\nDerivative', data=subset(d3, variable=='This study_99.99%'), geom=geom_point, 
-             mapping=aes(x = as.numeric(variable), size=N), color=colors[1]) +
-  geom_facet(panel='This study\nTransfer', data=subset(d3, variable=='This study_99.999%'), geom=geom_point, 
-             mapping=aes(x = as.numeric(variable), size=N), color=colors[1])  + 
-  geom_facet(panel='Timepoint 3\nDerivative', data=subset(d4, variable=='99.99%'), geom=geom_point, 
-             mapping=aes(x = as.numeric(variable), size=N), color=colors[1]) +
-  geom_facet(panel='Timepoint 3\nTransfer', data=subset(d4, variable=='99.999%'), geom=geom_point, 
-             mapping=aes(x = as.numeric(variable), size=N), color=colors[1]) +
+p <- ggtree(dat$tree, color=colors[1], lwd=1, aes(shape=is.na(N))) %<+% select(d3, strain, N)+
+  geom_tippoint(size=4, color=colors[1]) +
+  geom_tiplab(color=colors[1],hjust=1, fontface='bold', offset=0.4, align = TRUE) +
+  geom_treescale(x=0, y=3.5, color = colors[1], linesize=2)  + 
+  scale_shape_manual(values=c(19,1), guide=F)
+
+p1 <- p + 
+  #geom_facet(panel='Teo et al\nDerivative', data=d2, geom=geom_point, 
+  #            mapping=aes(x = as.numeric(variable), size=N), color=colors[1]) +
+  # geom_facet(panel='This study\nDerivative', data=subset(d3, variable=='This study_99.99%'), geom=geom_point, 
+  #            mapping=aes(x = as.numeric(variable), size=N), color=colors[1]) +
+  # geom_facet(panel='This study\nTransfer', data=subset(d3, variable=='This study_99.999%'), geom=geom_point, 
+  #            mapping=aes(x = as.numeric(variable), size=N), color=colors[1])  + 
+  # geom_facet(panel='Timepoint 3\nDerivative', data=subset(d4, variable=='99.99%'), geom=geom_point, 
+  #            mapping=aes(x = as.numeric(variable), size=N), color=colors[1]) +
+  # geom_facet(panel='Timepoint 3\nTransfer', data=subset(d4, variable=='99.999%'), geom=geom_point, 
+  #            mapping=aes(x = as.numeric(variable), size=N), color=colors[1]) +
   geom_facet(panel='Antibiotic\nresistance profile', data=d1, geom=geom_tile, 
                mapping=aes(x = as.numeric(variable),  fill = `Antibiotic resistance`), color='white', lwd=2) + 
   scale_fill_manual(values=colors[c(1,5,2,6,4)],na.value='white',guide=F) +
   theme(legend.position = 'right', strip.background =element_rect(fill=NA, color=NA), 
-        strip.text = element_text(size=10, face='bold'))
-        
-tree2 <- facet_widths(p1, c(2,0.5,0.5,0.5,0.5,0.5,1))
+        strip.text = element_text(size=10, face='bold')) +
+  ylim(0,5) 
+
+tree2 <- facet_widths(p1, c(2,1))
 tree2
 ```
 
@@ -249,14 +255,8 @@ print(paste0('Test for 99.99% overlapping with patient in Nasser et al: ', p2))
 
 Plot the tree
 
-```{r fig.height=6, fig.width=12, message=FALSE}
-p <- ggtree(dat$tree, color=colors[4], lwd=1) + 
-  #geom_tippoint(size=4, color=colors[3]) +
-  geom_tiplab(color=colors[4],hjust=1, fontface='bold', offset=0.02, align = TRUE) +
-  geom_treescale(x=0, y=15, color = colors[4], linesize=2) 
-
+```{r fig.height=9, fig.width=8, message=FALSE}
 d1 <- rownames_to_column(dat$antibiotics) %>% melt(id.vars='rowname') %>% mutate(`Antibiotic resistance`=value)
-
 d2 <- filter(patient, anno=='Nasser et al') %>% melt() %>% 
   filter(value!=0) %>% 
   unite('variable', c(anno, variable)) %>% 
@@ -266,18 +266,24 @@ d3 <- filter(patient, anno!='Nasser et al') %>% melt() %>%
   unite('variable', c(anno, variable)) %>% 
   mutate(N=value, variable=as.factor(variable))
 
-p1 <- 
-  p + geom_facet(panel='Nasser et al\nDerivative', data=d2, geom=geom_point, 
-             mapping=aes(x = as.numeric(variable), size=N), color=colors[4]) +  
-  geom_facet(panel='This study\nDerivative', data=d3, geom=geom_point, 
-             mapping=aes(x = as.numeric(variable), size=N), color=colors[4]) +
+p <- ggtree(dat$tree, color=colors[4], lwd=1, aes(shape=is.na(N))) %<+% select(d3, strain, N) + 
+  geom_tippoint(size=4, color=colors[4]) +
+  geom_tiplab(color=colors[4],hjust=1, fontface='bold', offset=0.06, align = TRUE) +
+  geom_treescale(x=0, y=15, color = colors[4], linesize=2) + 
+  scale_shape_manual(values=c(19,1), guide=F)
+
+p1 <- p + 
+  # geom_facet(panel='Nasser et al\nDerivative', data=d2, geom=geom_point, 
+  #            mapping=aes(x = as.numeric(variable), size=N), color=colors[4]) +  
+  # geom_facet(panel='This study\nDerivative', data=d3, geom=geom_point, 
+  #            mapping=aes(x = as.numeric(variable), size=N), color=colors[4]) +
   geom_facet(panel='Antibiotic\nresistance profile', data=d1, geom=geom_tile, 
                mapping=aes(x = as.numeric(variable),  fill = `Antibiotic resistance`), color='white', lwd=2) + 
   scale_fill_manual(values=colors[c(1,5,2,6,4)],na.value='white',guide=F) +
   theme(legend.position = 'right', strip.background =element_rect(fill=NA, color=NA), 
         strip.text = element_text(size=10, face='bold'))
         
-tree3 <- facet_widths(p1, c(2,0.5,0.5,0.5,1))
+tree3 <- facet_widths(p1, c(2,1))
 tree3
 ```
 
@@ -333,38 +339,40 @@ print(paste0('Test for 99.99% overlapping with patient: ', p1))
 print(paste0('Test for 99.99% overlapping with time point 3: ', p2))
 ```
 
-```{r fig.height=10, fig.width=8, message=FALSE}
-p <- ggtree(dat$tree, color=colors[2], lwd=1) + 
-  geom_tiplab(color=colors[2],hjust=1, fontface='bold', offset=0.02, align = TRUE) +
-  geom_treescale(x=0, y=39, color = colors[2], linesize=2) 
+```{r fig.height=10, fig.width=7, message=FALSE}
 d1 <- rownames_to_column(dat$antibiotics) %>% melt(id.vars='rowname') %>% mutate(`Antibiotic resistance`=value)
-
 d2 <- melt(patient) %>% 
   filter(value!=0) %>% 
   mutate(N=value, variable=as.factor(variable))
 d3 <- melt(persistance) %>% filter(value!=0) %>% mutate(N=value)
-p1 <- 
-  p + geom_facet(panel='Lee et al\nDerivative', data=d2, geom=geom_point, 
-             mapping=aes(x = as.numeric(variable), size=N), color=colors[2]) +
-    geom_facet(panel='Timepoint 3\nDerivative', data=d3, geom=geom_point, 
-             mapping=aes(x = as.numeric(variable), size=N), color=colors[2]) +
+
+p <- ggtree(dat$tree, color=colors[2], lwd=1, aes(shape=is.na(N))) %<+% select(d2, strain, N) + 
+  geom_tippoint(size=4, color=colors[2]) +
+  geom_tiplab(color=colors[2],hjust=1, fontface='bold', offset=0.04, align = TRUE) +
+  geom_treescale(x=0, y=39, color = colors[2], linesize=2) + 
+  scale_shape_manual(values=c(19,1), guide=F)
+
+p1 <- p + 
+  # geom_facet(panel='Lee et al\nDerivative', data=d2, geom=geom_point, 
+  #            mapping=aes(x = as.numeric(variable), size=N), color=colors[2]) +
+  # geom_facet(panel='Timepoint 3\nDerivative', data=d3, geom=geom_point, 
+  #            mapping=aes(x = as.numeric(variable), size=N), color=colors[2]) +
   geom_facet(panel='Antibiotic\nresistance profile', data=d1, geom=geom_tile, 
                mapping=aes(x = as.numeric(variable),  fill = `Antibiotic resistance`), color='white', lwd=2) + 
   scale_fill_manual(values=colors[c(1,5,2,6,4)],na.value='white',guide=F) +
   theme(legend.position = 'right', strip.background =element_rect(fill=NA, color=NA), 
         strip.text = element_text(size=10, face='bold'))
         
-tree4 <- facet_widths(p1, c(2,0.5,0.5,1))
+tree4 <- facet_widths(p1, c(2,1))
 tree4
 ```
 
 
 ### Put four trees at the same scale
-```{r fig.height=10, fig.width=20}
-p1 <- cowplot::plot_grid(tree1, tree3, ncol=1, rel_heights = c(0.75,1))
-p2 <- cowplot::plot_grid(tree4, tree2, ncol=1, rel_heights = c(1,0.2))
-cowplot::plot_grid(p1, p2, nrow=1)
-ggsave('../plots/fig5_phylogenetic_trees.svg', height=10, width=20)
+```{r fig.height=12, fig.width=13}
+p1 <- cowplot::plot_grid(tree2, tree1, tree3, ncol=1, rel_heights = c(0.35,0.9,1))
+cowplot::plot_grid(p1, tree4, legend, nrow=1, rel_widths = c(1,1,0.2))
+ggsave('../plots/fig5_phylogenetic_trees.svg', height=12, width=13)
 ```
 
 

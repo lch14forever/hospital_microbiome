@@ -19,13 +19,31 @@ library(ggpubr)
 library(RColorBrewer)
 ```
 
+Direct transfer strain clustering (99.999%)
+```{r}
+dist.dat <- read.table(paste0("../tables/Staphylococcus_aureus_opera_ms_mummer_heatmap_gsnp.dat"))
+
+idx <- str_detect(rownames(dist.dat), 's') 
+dist.dat <- dist.dat[idx, idx]
+  
+## clustering
+cluster.full <- hclust(as.dist(dist.dat), method='single')
+clusters <- cutree(cluster.full, h=1e-2)
+## filter patient data
+clusters <- clusters[str_detect(names(clusters), 's_')]
+  
+direct_transfer <- data.frame(direct_transfer=clusters)
+```
+
 Data processing
 
 ```{r}
 species <- 'Staphylococcus_aureus'
 strains <- read.table('../output_tables/strain_cluster_summary.tsv', head=TRUE) %>% 
-    filter(Species==species)
-  ## virulence factor
+    filter(Species==species) %>% 
+    merge(direct_transfer, by.x=1, by.y=0, all.x=TRUE)
+
+## virulence factor
 vf <- read.table('../tables/nanopore.virulence_gene_annot.dat', head=TRUE, stringsAsFactors = FALSE) %>% 
   filter(Species==species) %>% 
   mutate(Classification=
@@ -47,62 +65,44 @@ dat <- rbind(vf, disinfectant) %>%
   #select(-n)
   
 dat.merged <- merge(
-  unite(strains, id, Species, Nanopore_ID)  %>% select(Row.names, clusters, id),
+  unite(strains, id, Species, Nanopore_ID)  %>% select(Row.names, clusters, id, direct_transfer),
   unite(dat, id, Species, Library), 
   by='id') 
 
-tmp <- group_by(dat.merged, clusters, ID, Classification) %>% 
+anno.vf <- 
+  filter(dat.merged, !is.na(Classification)) %>% 
+  filter(Classification!='Biocide resistance') %>%
+  group_by(clusters, direct_transfer, ID) %>% 
   summarise(n = max(n)) %>% ungroup() 
-mutate(tmp, clusters=paste0("s", clusters)) %>% 
-  spread(clusters, n, fill=0) %>% 
-  filter(!is.na(Classification)) -> anno.vf
 
 group_by(strains, clusters, Antibiotics) %>% 
   count %>% mutate(n=(n>0)*1) %>% ungroup() %>% 
   spread(Antibiotics,n, fill=0) %>% select(-BHI) %>% 
   mutate(multi=rowSums(.[,-1])) %>% 
-  mutate(patient=(clusters %in% c(1,2,3,4,6,14,21))*1) %>% 
+  mutate(patient=(clusters %in% c(1,2,3,4,20))*1) %>% 
   arrange(patient, multi, AMP, CHLOR, KAN, STREP, TET) %>% 
-  mutate(multi=(multi>2)*1) %>% 
-  mutate(clusters=paste0('s', clusters)) -> anno.antibiotics
-anno.antibiotics.factor <- mutate_all(anno.antibiotics, as.character) %>% 
-  select(everything(), "Multi_resistant"=multi, "Patient_overlapping"=patient) %>% 
-  data.frame(row.names = 1) 
-
-mat <- unite(anno.vf, ID, c(Classification, ID), sep=':') %>% 
-  arrange(ID) %>% 
-  column_to_rownames("ID") %>% 
-  as.matrix()
-
-ann_colors = list(
-  TET = c('0'="grey", '1'="darkgreen"),
-  STREP =c('0'="grey", '1'="darkgreen"),
-  KAN = c('0'="grey", '1'="darkgreen"),
-  CHLOR = c('0'="grey", '1'="darkgreen"),
-  BHI = c('0'="grey", '1'="darkgreen"),
-  AMP = c('0'="grey", '1'="darkgreen"),
-  "Multi_resistant"  = c('0'="grey", '1'="orange"),
-  "Patient_overlapping" = c('0'="grey", '1'="orange")
-)
+  mutate(multi=(multi>2)*1) -> anno.antibiotics
 ```
 
 
 
 Number of virulence genes
 ```{r fig.height=6, fig.width=5}
-sel <- which(rownames(mat)=="Biocide resistance:qacA")
 
-## virulence factor test
-dat.summary <- merge(data.frame(virulence=colSums(mat[-sel, ])), 
-      data.frame(anno.antibiotics[,c(1,7,8)], row.names=1),
-      by =0) 
+dat.summary <- group_by(anno.vf, clusters, direct_transfer) %>% 
+  summarise(virulence=sum(n)) %>% 
+  merge(anno.antibiotics, by=1, all.x = TRUE) 
 
-ggplot(dat.summary, aes(x=patient=='1' & multi=='1', y=virulence)) + 
-  geom_boxplot() + geom_jitter() + 
-  stat_compare_means(method.args = list(alternative = "less") , label.y=150, size=5) + 
-  labs(x='Is in patient and multi-resistant?', y='Total virulence gene copy')
+wilcox.test(filter(dat.summary, clusters %in% c(2,3)) %>% pull(virulence), filter(dat.summary, !clusters %in% c(2,3)) %>% pull(virulence), alternative = 'greater')
 
 
+```
+
+Biocide resistance genes
+```{r}
+filter(dat.merged, Classification=='Biocide resistance') %>%
+  group_by(clusters, direct_transfer, ID) %>% 
+  summarise(n = max(n)) %>% ungroup() 
 ```
 
 ```{r}
