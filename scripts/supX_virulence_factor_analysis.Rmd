@@ -93,8 +93,11 @@ dat.summary <- group_by(anno.vf, clusters, direct_transfer) %>%
   summarise(virulence=sum(n)) %>% 
   merge(anno.antibiotics, by=1, all.x = TRUE) 
 
-wilcox.test(filter(dat.summary, clusters %in% c(2,3)) %>% pull(virulence), filter(dat.summary, !clusters %in% c(2,3)) %>% pull(virulence), alternative = 'greater')
+g1 <- filter(dat.summary, clusters %in% c(2,3)) %>% pull(virulence)
+g2 <- filter(dat.summary, !clusters %in% c(2,3)) %>% pull(virulence)
+wilcox.test(g1, g2, alternative = 'greater')
 
+median(g1)/median(g2)
 
 ```
 
