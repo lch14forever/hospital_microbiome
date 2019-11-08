@@ -20,6 +20,19 @@ library(phytools)
 library(magrittr)
 ```
 
+Draw a species tree using 16S 
+```{r}
+tr <- midpoint.root(read.tree('../tables/trees/16s.tree'))
+tr$tip.label <-  c("E. anophelis", "S. aureus", "S. epidermidis", "A. baumannii")
+
+ggtree(tr, lwd=2, layout='circular') + 
+  geom_tippoint(size=6, shape=18)  + 
+  geom_treescale(linesize=2, offset=0.1, width=0.02, y=4, fontsize = 0)  #+
+##geom_tiplab()
+
+ggsave('../plots/fig5_16S.svg', width = 5, height = 5)
+```
+
 Function to plot tree
 ```{r}
 strains.all <- read.table('../output_tables/strain_cluster_summary.tsv', head=TRUE, stringsAsFactors = FALSE)
@@ -51,8 +64,9 @@ get_tree_data <- function(species, diff_threshold=0.0001){
     ## get tree
     tree.strains <- read.tree(paste0('../tables/trees/', species, '.parsnp.tree'))
     tree.strains$tip.label %<>% str_replace_all(c(".trimmed.fasta"="", "nanopore.cons.cluster_"="s", ".ref"=""))
-    
-    list(tree=tree.strains, overlaps=overlaps, antibiotics=profile.antibiotics)
+    ## get size of nodes
+    anno <- count(strain.dat, strain)
+    list(tree=tree.strains, overlaps=overlaps, antibiotics=profile.antibiotics, anno=anno)
 }
 ```
 
@@ -110,12 +124,11 @@ d1 <- rownames_to_column(dat$antibiotics) %>% melt(id.vars='rowname') %>% mutate
 d2 <- melt(patient) %>% mutate(N=value) 
 d3 <- melt(persistance) %>% mutate(N=value)
 
-p <- ggtree(dat$tree, lwd=1, aes(color='1', shape=is.na(N))) %<+% select(d2, strain, N) + 
-  geom_tippoint(size=4) +
-  geom_tiplab(hjust=1, fontface='bold', offset=0.05, align = TRUE) +
+p <- ggtree(dat$tree, lwd=1, color=colors[3]) %<+% select(d2, strain, N) %<+% dat$anno + 
+  geom_tippoint(aes(size=n,color=is.na(N))) +
+  geom_tiplab(hjust=1, fontface='bold', offset=0.08, align = TRUE, color=colors[3]) +
   geom_treescale(x=0, y=15, color = colors[3], linesize=2) + 
-  scale_shape_manual(values=c(19, 1),name="Patient overlap", labels=c("Yes", "No")) + 
-  scale_color_manual(values=c(colors[3]),  guide=F)
+  scale_color_manual(values=c('black', 'grey'),name="Patient overlap", labels=c("Yes", "No"))
 
 p1 <- p + 
   geom_facet(panel='Antibiotic\nresistance profile', data=d1, geom=geom_tile, 
@@ -125,9 +138,11 @@ p1 <- p +
   # geom_facet(panel='Timepoint 3\nDerivative', data=d3, geom=geom_point, 
   #            mapping=aes(x = as.numeric(variable), size=N), color=colors[3]) +
   scale_fill_manual(values=colors[c(1,5,2,6,4)], na.translate=FALSE) +
+  scale_size_continuous(limits = c(1,150), trans='sqrt', breaks =c(1,10,20,50,100,150) ) +
   theme(legend.position = 'right', strip.background =element_rect(fill=NA, color=NA), 
         strip.text = element_text(size=10, face='bold'))
 
+p1
 legend <- cowplot::get_legend(p1)
 p1 <- p1 + theme(legend.position = 'none')
         
@@ -179,11 +194,12 @@ d3 <- filter(patient, anno!='Teo et al') %>% melt() %>%
   mutate(N=value, variable=as.factor(variable))
 d4 <- melt(persistance) %>% mutate(N=value)
 
-p <- ggtree(dat$tree, color=colors[1], lwd=1, aes(shape=is.na(N))) %<+% select(d3, strain, N)+
-  geom_tippoint(size=4, color=colors[1]) +
+
+p <- ggtree(dat$tree, color=colors[1], lwd=1) %<+% select(d3, strain, N) %<+% dat$anno +
+  geom_tippoint(aes(size=n, color=is.na(N))) +
   geom_tiplab(color=colors[1],hjust=1, fontface='bold', offset=0.4, align = TRUE) +
   geom_treescale(x=0, y=3.5, color = colors[1], linesize=2)  + 
-  scale_shape_manual(values=c(19,1), guide=F)
+  scale_color_manual(values=c('black', 'grey'),name="Patient overlap", labels=c("Yes", "No"))
 
 p1 <- p + 
   #geom_facet(panel='Teo et al\nDerivative', data=d2, geom=geom_point, 
@@ -199,7 +215,8 @@ p1 <- p +
   geom_facet(panel='Antibiotic\nresistance profile', data=d1, geom=geom_tile, 
                mapping=aes(x = as.numeric(variable),  fill = `Antibiotic resistance`), color='white', lwd=2) + 
   scale_fill_manual(values=colors[c(1,5,2,6,4)],na.value='white',guide=F) +
-  theme(legend.position = 'right', strip.background =element_rect(fill=NA, color=NA), 
+  scale_size_continuous(limits = c(1,150), trans='sqrt', breaks =c(1,10,20,50,100,150) ) +
+  theme(legend.position = 'none', strip.background =element_rect(fill=NA, color=NA), 
         strip.text = element_text(size=10, face='bold')) +
   ylim(0,5) 
 
@@ -266,11 +283,11 @@ d3 <- filter(patient, anno!='Nasser et al') %>% melt() %>%
   unite('variable', c(anno, variable)) %>% 
   mutate(N=value, variable=as.factor(variable))
 
-p <- ggtree(dat$tree, color=colors[4], lwd=1, aes(shape=is.na(N))) %<+% select(d3, strain, N) + 
-  geom_tippoint(size=4, color=colors[4]) +
+p <- ggtree(dat$tree, color=colors[4], lwd=1) %<+% select(d3, strain, N) %<+% dat$anno +
+  geom_tippoint(aes(size=n, color=is.na(N))) +
   geom_tiplab(color=colors[4],hjust=1, fontface='bold', offset=0.06, align = TRUE) +
-  geom_treescale(x=0, y=15, color = colors[4], linesize=2) + 
-  scale_shape_manual(values=c(19,1), guide=F)
+  geom_treescale(x=0, y=18, color = colors[4], linesize=2)  + 
+  scale_color_manual(values=c('black', 'grey'),name="Patient overlap", labels=c("Yes", "No"))
 
 p1 <- p + 
   # geom_facet(panel='Nasser et al\nDerivative', data=d2, geom=geom_point, 
@@ -280,7 +297,8 @@ p1 <- p +
   geom_facet(panel='Antibiotic\nresistance profile', data=d1, geom=geom_tile, 
                mapping=aes(x = as.numeric(variable),  fill = `Antibiotic resistance`), color='white', lwd=2) + 
   scale_fill_manual(values=colors[c(1,5,2,6,4)],na.value='white',guide=F) +
-  theme(legend.position = 'right', strip.background =element_rect(fill=NA, color=NA), 
+  scale_size_continuous(limits = c(1,150), trans='sqrt', breaks =c(1,10,20,50,100,150) ) +
+  theme(legend.position = 'none', strip.background =element_rect(fill=NA, color=NA), 
         strip.text = element_text(size=10, face='bold'))
         
 tree3 <- facet_widths(p1, c(2,1))
@@ -346,12 +364,12 @@ d2 <- melt(patient) %>%
   mutate(N=value, variable=as.factor(variable))
 d3 <- melt(persistance) %>% filter(value!=0) %>% mutate(N=value)
 
-p <- ggtree(dat$tree, color=colors[2], lwd=1, aes(shape=is.na(N))) %<+% select(d2, strain, N) + 
-  geom_tippoint(size=4, color=colors[2]) +
+p <- ggtree(dat$tree, color=colors[2], lwd=1) %<+% select(d2, strain, N) %<+% dat$anno + 
+  geom_tippoint(aes(size=n, color=is.na(N))) +
   geom_tiplab(color=colors[2],hjust=1, fontface='bold', offset=0.04, align = TRUE) +
   geom_treescale(x=0, y=39, color = colors[2], linesize=2) + 
-  scale_shape_manual(values=c(19,1), guide=F)
-
+  scale_color_manual(values=c('black', 'grey'),name="Patient overlap", labels=c("Yes", "No"))
+  
 p1 <- p + 
   # geom_facet(panel='Lee et al\nDerivative', data=d2, geom=geom_point, 
   #            mapping=aes(x = as.numeric(variable), size=N), color=colors[2]) +
@@ -360,7 +378,8 @@ p1 <- p +
   geom_facet(panel='Antibiotic\nresistance profile', data=d1, geom=geom_tile, 
                mapping=aes(x = as.numeric(variable),  fill = `Antibiotic resistance`), color='white', lwd=2) + 
   scale_fill_manual(values=colors[c(1,5,2,6,4)],na.value='white',guide=F) +
-  theme(legend.position = 'right', strip.background =element_rect(fill=NA, color=NA), 
+  scale_size_continuous(limits = c(1,150), trans='sqrt', breaks =c(1,10,20,50,100,150) ) +
+  theme(legend.position = 'none', strip.background =element_rect(fill=NA, color=NA), 
         strip.text = element_text(size=10, face='bold'))
         
 tree4 <- facet_widths(p1, c(2,1))
