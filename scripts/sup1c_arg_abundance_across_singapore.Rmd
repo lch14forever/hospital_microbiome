@@ -53,7 +53,7 @@ meta_merged <-
 ```
 
 Process data and generate figure
-```{r fig.height=6, fig.width=8, message=FALSE, warning=FALSE}
+```{r fig.height=5, fig.width=6}
 kraken_hosp <- read_tsv("../tables/metasub_singapore/kraken_read_counts_hospital.dat")
 kraken_metasub <- read_tsv("../tables/metasub_singapore/kraken_read_counts_metasub.dat")
 srst_hosp <- read_tsv("../tables/metasub_singapore/srst_read_counts_hospital.dat")
@@ -72,20 +72,12 @@ cols <- c("Hospital" = "#E64B35", "MetaSUB" = "#3C5488", "Office" = "#FFCC00")
 
 ggplot(dat, aes(x = location, y = value)) +
   geom_boxplot(aes(fill = location)) +
-  scale_fill_manual(values = cols) +
-  scale_y_log10(breaks = c(0, 0.001, 0.01, 0.1, 1, 10), labels = c(0, 0.001, 0.01, 0.1, 1, 10)) +
-  labs(x = "Site", y = "Normalized ARG Abundance") +
-  guides(fill = guide_legend(title = "Site")) +
-  theme(axis.text = element_text(size = 14),
-        axis.text.x = element_text(angle = 45, hjust = 1)) +
-  stat_compare_means(comparisons = list(c("Hospital", "MetaSUB"),
-                                        c("Hospital", "Office")),
-                     label = "p.format") +
-  stat_compare_means(comparisons = list(c("Hospital", "MetaSUB"),
-                                        c("Hospital", "Office")),
-                     label = "p.signif",
-                     label.y = c(0.25, 0.7),
-                     bracket.size = 0)
+  scale_fill_manual(values = cols, guide=FALSE) +
+  scale_y_log10(limits=c(3e-4,2), breaks = c(0, 0.001, 0.01, 0.1, 1), labels = c(0, 0.001, 0.01, 0.1, 1)) +
+  labs(x=NULL, y = "Normalized ARG Abundance") +
+  theme(axis.text = element_text(size = 15))
+  
+ggsave('../plots/sup7b.arg_abundances.png', height = 5, width = 6)
 
 group_by(dat, location) %>% 
   summarise(median=median(value)) %>% 
