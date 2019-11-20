@@ -16,6 +16,7 @@ Load specific libraries
 ```{r message=FALSE, warning=FALSE}
 library(readr)
 library(vegan)
+library(ggpubr)
 ```
 
 Process and merge metadata
@@ -60,11 +61,13 @@ meta_hosp_fil <-
   filter(!str_detect(Room_type, "Control")) %>% 
   filter(is.na(timept) | timept == 1) %>% 
   rename("uuid" = "Library") %>% 
-  mutate(site = if_else(Room_type == "GIS", "Office", "Hospital")) %>%
-  select(uuid, site)
+  mutate(site = if_else(Room_type == "GIS", "Office", "Hospital")) %>% 
+  mutate(site_ct = if_else(Sample_type %in% c('Sink_Trap', 'Aerator'), 'CTB', 'CTA')) %>%
+  select(uuid, site, site_ct)
 
 meta_merged <-
   merge(meta_fil, meta_hosp_fil, all = TRUE) %>% 
+  mutate(site_ct = if_else(is.na(site_ct), 'MetaSUB', site_ct)) %>% 
   column_to_rownames("uuid")
 ```
 
@@ -83,19 +86,76 @@ dist_mat <- vegdist(t(dat_merged_fil))
 cmds <- cmdscale(dist_mat, k = 3, eig = TRUE)
 eigen <- cmds$eig / sum(cmds$eig) * 100
 
-dat_merged_all <- (merge(cmds$points, meta_merged, by.x=0, by.y=0, all = TRUE))
+dat_merged_all <- (merge(cmds$points, meta_merged, by.x=0, by.y=0, all = TRUE)) %>%
+  unite(col="lab", site, site_ct)
 
-cols <- c("Hospital" = "#E64B35", "MetaSUB" = "#3C5488", "Office" = "#FFCC00")
 
-ggplot(dat_merged_all, aes(x = V1, y = V2, fill = site, label = Row.names), lwd=2) +
+ggplot(dat_merged_all, aes(x = V1, y = V2, fill = lab, label = Row.names), lwd=2) +
   geom_density_2d(aes(x = V1, y = V2), inherit.aes = FALSE, col = 'grey', lwd=1) + 
-  geom_point(size = 3, shape = 21) +
+  geom_point(data=subset(dat_merged_all, lab=='MetaSUB_MetaSUB'), size = 3, shape=21, alpha=0.6) +
+  geom_point(data=subset(dat_merged_all, str_detect(lab, 'Hospital')), size = 3, shape=21, alpha=0.6) +
+  geom_point(data=subset(dat_merged_all, str_detect(lab, 'Office')), size = 3, shape=21, alpha=0.6) +
   labs(x=paste0('PCoA1 (',round(eigen[1], 1),'%)'),
        y=paste0('PCoA2 (',round(eigen[2], 1),'%)')) +
-  scale_fill_manual(values = cols) +
+  scale_fill_manual(values=c('darkgreen', 'green', 'blue', 'red', 'pink')) + 
   theme(legend.title = element_blank(), legend.background = element_blank(),
         legend.key = element_blank(), legend.text = element_text(size = 12))
 
+ggsave('../plots/sup2.pcoa_across_singapore.png', height = 6, width = 8)
+
+```
+
+
+CTX hospital vs. office
+```{r fig.height=6, fig.width=8}
+dist.mat <- as.matrix(dist_mat)
+diag(dist.mat) <- NA
+dist.cta <- dist.mat[
+  rownames_to_column(meta_merged) %>% 
+    filter( site_ct=='CTA', site=='Office') %>% pull(1),
+  rownames_to_column(meta_merged) %>% 
+    filter( site_ct=='CTA', site=='Hospital') %>% pull(1)
+] %>% c %>% data.frame(bray=., type='CTA vs. CTA-like')
+dist.cta.office <- dist.mat[
+  rownames_to_column(meta_merged) %>% 
+    filter( site_ct=='CTA', site=='Office') %>% pull(1),
+  rownames_to_column(meta_merged) %>% 
+    filter( site_ct=='CTA', site=='Office') %>% pull(1)
+] %>% c %>% data.frame(bray=., type='CTA-like vs. CTA-like') %>% 
+  filter(!is.na(bray))
+g1 <- 
+  rbind(dist.cta, dist.cta.office) %>% 
+    ggplot(aes(x=type, y=bray, fill=type)) + 
+    geom_boxplot(lwd=1.5) +
+    scale_y_continuous(limits=c(0,1.2), breaks=c(0,0.5,1)) + 
+    labs(x=NULL, y='Bray-Curtis distance') +
+    scale_fill_aaas(guide=F) + 
+    theme(axis.text.x = element_text(angle=40, hjust=1)) + 
+    stat_compare_means(comparisons = list(c("CTA vs. CTA-like", "CTA-like vs. CTA-like")), label = "p.signif", size=15)
+dist.ctb <- dist.mat[
+  rownames_to_column(meta_merged) %>% 
+    filter( site_ct=='CTB', site=='Office') %>% pull(1),
+  rownames_to_column(meta_merged) %>% 
+    filter( site_ct=='CTB', site=='Hospital') %>% pull(1)
+] %>% c %>% data.frame(bray=., type='CTB vs. CTB-like')
+dist.ctb.office <- dist.mat[
+  rownames_to_column(meta_merged) %>% 
+    filter( site_ct=='CTB', site=='Office') %>% pull(1),
+  rownames_to_column(meta_merged) %>% 
+    filter( site_ct=='CTB', site=='Office') %>% pull(1)
+] %>% c %>% data.frame(bray=., type='CTB-like vs. CTB-like')%>% 
+  filter(!is.na(bray))
+g2 <- 
+  rbind(dist.ctb, dist.ctb.office) %>% 
+    ggplot(aes(x=type, y=bray, fill=type)) + 
+    geom_boxplot(lwd=1.5) +
+    scale_y_continuous(limits=c(0,1.2), breaks=c(0,0.5,1)) + 
+    labs(x=NULL, y='Bray-Curtis distance') +
+    scale_fill_aaas(guide=F) + 
+    theme(axis.text.x = element_text(angle=40, hjust=1)) + 
+    stat_compare_means(comparisons = list(c("CTB vs. CTB-like", "CTB-like vs. CTB-like")), label = "p.signif", size=15)
+cowplot::plot_grid(g1, g2)
+ggsave('../plots/sup2.CT_across_singapore.png', height = 6, width = 8)
 ```
 
 Generate figure for all time points

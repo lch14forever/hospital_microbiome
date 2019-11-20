@@ -18,6 +18,7 @@ library(foreach)
 library(ggtree)
 library(phytools)
 library(magrittr)
+library(readr)
 ```
 
 Draw a species tree using 16S 
@@ -311,10 +312,13 @@ Overlapping analysis
 ```{r}
 dat <- get_tree_data('Staphylococcus_epidermidis')
 
+se.meta <- read_tsv('../metadata/mrse_metadata.txt')
+
 ## patient overlapping profile
 patient <- 
   filter(dat$overlaps, str_detect(V2, 'ADD')) %>% 
   filter(!str_detect(V2, 'SAMEA3712712|SAMEA3712767')) %>% ## removed because they were mutant
+  filter(V2 %in% se.meta$pipeline) %>% 
   group_by(strain, V2) %>% summarise(identity=max(identity)) %>% ungroup() %>% 
   group_by(strain) %>% 
   summarise('99.99%'=n(), '99.999%'=sum(identity>99.999)) %>% ungroup() %>% 
