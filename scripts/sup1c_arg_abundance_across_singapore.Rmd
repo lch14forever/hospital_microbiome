@@ -102,12 +102,14 @@ ggplot(dat_matched, aes(x = location, y = value)) +
   scale_y_log10() +
   labs(x = "Site", y = "Normalized ARG Abundance") +
   guides(fill = guide_legend(title = "Site")) +
-  stat_compare_means(comparisons = list(c("Hospital", "Office"))) +
-  stat_compare_means(comparisons = list(c("Hospital", "Office")),
-                     label = "p.signif",
-                     label.y = -1.65,
-                     bracket.size = 0)
+  stat_compare_means(comparisons = list(c("Hospital", "Office")), label="p.signif")# +
+#  stat_compare_means(comparisons = list(c("Hospital", "Office")),
+#                     label = "p.signif",
+#                     label.y = -1.65,
+#                     bracket.size = 0)
 ```
+
+
 
 Session information
 ```{r}

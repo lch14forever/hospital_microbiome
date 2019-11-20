@@ -324,6 +324,37 @@ ggsave('../plots/sup7c.arg_upset.png', height = 9, width = 12)
 #graph2ppt(file = "figures/upset_main", width = 12, height = 9)
 ```
 
+Generate figure for matched samples
+```{r message=FALSE, warning=FALSE}
+matched_samples <- read_lines("../output_tables/matched_samples.txt")
+
+meta_matched <-
+  meta_merged %>% 
+  filter(sample %in% matched_samples)
+
+dat_matched <-
+  dat %>% 
+  filter(Lib %in% matched_samples)
+
+genes_matched <- merge(meta_matched, dat_matched, by.x='sample', by.y='Lib') %>% 
+  mutate(Anti_type=str_replace(Anti, '.*_', '')) %>%
+  group_by(location, Anti_type, Anti) %>%
+  summarise(n = 1) %>% 
+  ungroup() %>% 
+  mutate(location = str_replace(location, "Office Dry", "Office")) %>% 
+  mutate(location = str_replace(location, "CT(A|B)", "Hospital"))
+
+mat_matched <- data.frame(acast(genes_matched, Anti ~ location)) %>% 
+  replace(is.na(.), 0) %>% 
+  replace(. == 2, 1)
+
+upset_matched <- upset(mat_matched, point.size = 3.5, line.size = 2, 
+                   mainbar.y.label = "ARG Intersections", sets.x.label = "# ARG", 
+                   text.scale = c(3, 3, 2.5, 2.5, 3, 3),
+                   order.by = "freq")
+upset_matched
+# graph2ppt(file = "figures/upset_matched", width = 12, height = 9)
+```
 
 Session information
 
