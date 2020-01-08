@@ -28,7 +28,7 @@ Preprocess data
 meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2)
 ##meta <- meta[which(meta$timept !=3), ]
 
-dat <- read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
+dat <- read.table('../output_tables/metagenomics.metaphlan2.table.filtered.g', head=TRUE, row.names=1)
 dat[dat < 0.1] <- 0
 dat <- dat[rowSums(dat)>0, ]
 
@@ -51,7 +51,7 @@ PCoA1 and PCoA2
 ```{r fig.height=5, fig.width=9}
 ## PCoA
 ggplot(dat.merged, aes(x=V1, y=V2, col=Sample_type), lwd=2) +
-  geom_density_2d(aes(x=V1, y=V2), inherit.aes = FALSE, col='grey', lwd=1) + 
+  geom_density_2d(aes(x=V1, y=V2), h=0.25, inherit.aes = FALSE, col='grey', lwd=1) + 
 	geom_point(size=4.5) +
 	labs(x=paste0('MDS1 (',round(eigen[1], 1),'%)'),
        y=paste0('MDS2 (',round(eigen[2], 1),'%)')) +
@@ -63,15 +63,18 @@ ggsave('../plots/f2a_mds_genus.svg', width =9, height = 5)
 ### Analysis with the handling controls
 
 ```{r fig.height=6, fig.width=8}
+dat.ori <- read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
+dat.ori[dat.ori < 0.1] <- 0
+dat.ori <- dat.ori[rowSums(dat.ori)>0, ]
 handling.controls <- filter(meta.fil, Sample_type=='Handling_Control') %>% pull(Library) %>% as.character()
 fil.tp1_tp2 <- filter(meta.fil, Room_type != 'GIS' & timept %in% c(1,2))
-dat.tp1_tp2 <- dat[,  fil.tp1_tp2$Library]
+dat.tp1_tp2 <- dat.ori[,  fil.tp1_tp2$Library]
 
 qubit <- read.table('../metadata/metagenomics_qubit.txt',head=T,check.names = F, sep='\t', stringsAsFactors = F) %>% 
   mutate(cat=cut(`DNA Amt`, c(0.5, 1,3,Inf))) %>% 
   filter(`Library ID` %in% fil.tp1_tp2$Library)
 
-dat.fil.control <- cbind(dat[, handling.controls], dat.tp1_tp2)
+dat.fil.control <- cbind(dat.ori[, handling.controls], dat.tp1_tp2)
 dist.mat <- as.matrix(vegdist(t(dat.fil.control)))
 
 g <- c(rep('Handling control', length(handling.controls)), ifelse(with(fil.tp1_tp2, Sample_type == "Aerator" | Sample_type == "Sink_Trap"), 'CTB', 'CTA'))
@@ -179,7 +182,7 @@ dev.off()
 Species level
 
 ```{r fig.height=5, fig.width=10, message=FALSE, warning=FALSE}
-dat.species <- read.table('../tables/metagenomics.metaphlan2.table.s', head=TRUE, row.names=1)
+dat.species <- read.table('../output_tables/metagenomics.metaphlan2.table.filtered.s', head=TRUE, row.names=1)
 dat.species[dat.species < 0.1] <- 0
 dat.species <- dat.species[rowSums(dat.species)>0, ] 
 rownames(dat.species) %<>% str_replace_all(c("s__"="", "_noname"="", "_"=" "))
@@ -236,11 +239,11 @@ p2 <- ggplot(data = data2dryP, aes(x=Species,y=value,fill=group, grp=group)) +
 p3 <- ggplot(data = data2wet, aes(x=Species,y=value,fill=group, grp=group)) +
 	geom_boxplot(width=1,outlier.shape=NA, lwd=1) +
   scale_fill_manual(values=pal_npg(c("nrc"))(10)[c(7,1)]) + 
-  coord_cartesian(ylim=c(0,30)) +
+  coord_cartesian(ylim=c(0,8)) +
   labs(y=NULL, x=NULL) +
 	theme(axis.text.x = element_text(angle=40, hjust=1, size=10), legend.position = 'none')
 
-cowplot::plot_grid(p1, p2, p3, nrow=1, rel_widths=c(10,4.5,8),align ='h')
+cowplot::plot_grid(p1, p2, p3, nrow=1, rel_widths=c(10,4.5,6),align ='h')
 ggsave('../plots/fig2bii_dry_wet_species_comparison.svg', height = 7, width = 10)
 ```
 
