@@ -22,9 +22,12 @@ Process and merge data
 ```{r message=FALSE, warning=FALSE}
 meta <- read_csv("../tables/metasub_singapore/complete_metadata.csv")
 dat <- read_tsv("../tables/metasub_singapore/s.metaphlan2.profile_merged.tsv")
+## remove potential contaminants
+dat <- filter(dat, !Index %in% read.table('../output_tables/contaminant_candidates.txt', stringsAsFactors = F)[,1])
+dat[,-1] <- apply(dat[,-1],2,function(x)x/sum(x))*100
 
 meta_hosp <- read_tsv("../metadata/illumina_metadata.txt")
-dat_hosp <- read_tsv("../tables/metagenomics.metaphlan2.table.s")
+dat_hosp <- read_tsv("../output_tables/metagenomics.metaphlan2.table.filtered.s")
 
 # remove samples with missing metadata
 missing_dat <- filter(meta, is.na(meta$metasub_name))$uuid
@@ -55,7 +58,7 @@ meta_hosp_fil <-
   select(uuid, location)
 
 dat_merged <-
-  merge(dat, dat_hosp, by = "Index", all = TRUE) %>%
+  merge(dat, dat_hosp, by = 1, all = TRUE) %>%
   column_to_rownames("Index") %>% 
   replace(is.na(.), 0)
 
@@ -113,7 +116,7 @@ df_merged <-
   merge(df_mean, df_median) %>% 
   rename("species" = "variable") %>% 
   mutate(species = (str_remove(species, "s__"))) %>% 
-  mutate(species = (str_replace_all(species, "_", " "))) %>% 
+  mutate(species = (str_replace_all(species, "[a-z]+_", ". "))) %>% 
   arrange(species)
 
 # Filter species to plot
@@ -136,8 +139,8 @@ df$species <- factor(df$species, levels = rev(unique(df$species)))
 cols <- c("CTA" = "#3C5488", "CTB" = "#E64B35", "MetaSUB" = "#B09C85", "Office" = "#FFCC00")
 
 ggplot(df, aes(x = value + 0.001, y = species)) +
-  geom_beeswarm(aes(fill = location), shape = 21, size = 3, groupOnX = F, cex = 2) +
-  labs(x = "Abundance", y = "Species", fill = "Site") +
+  geom_beeswarm(aes(fill = location), shape = 21, size = 4, groupOnX = F, cex = 4, alpha=0.8) +
+  labs(x = "Abundance", y = NULL, fill = "Site") +
   scale_x_log10(breaks = c(0.001, 0.01, 0.1, 1, 10), labels = c(0, 0.01, 0.1, 1, 10)) +
   scale_fill_manual(values = cols) +
   guides(fill = guide_legend(override.aes = list(size = 5, shape = 22)), shape = F) +
@@ -147,6 +150,7 @@ ggplot(df, aes(x = value + 0.001, y = species)) +
         legend.title = element_text(size = 14),
         legend.text = element_text(size = 12)) +
   facet_wrap(~key)
+ggsave('../plots/sup7d.hai_across_singapore.png', height = 4, width = 8)
 ```
 
 Sesssion information

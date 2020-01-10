@@ -43,7 +43,7 @@ plot.dat <- group_by(metadata, Sample_type) %>%
 
 Helper function to plot
 ```{r}
-plot.heatmap <- function(anti_type, col='PuBu', cluster_rows=TRUE, cluster_cols=TRUE, log_mat=TRUE){
+plot.heatmap <- function(anti_type, col='PuBu', cluster_rows=TRUE, cluster_cols=TRUE, log_mat=TRUE, title=NA){
   plot.dat.w <- filter(plot.dat,Anti_type==anti_type) %>% 
     select(-Anti_type,-n.x,-n.y) %>% 
     spread(Sample_type, prev, fill=0) %>% 
@@ -53,11 +53,12 @@ plot.heatmap <- function(anti_type, col='PuBu', cluster_rows=TRUE, cluster_cols=
              fontsize = 12, fontsize_row = 10, fontsize_col = 10,
            border_color="black",cluster_rows = cluster_rows, cluster_cols = cluster_cols, silent=TRUE)
   }else{
-    pheatmap(log10(plot.dat.w*100+1),color=(colorRampPalette(brewer.pal(9, col))(1000)), main=anti_type,
-           legend_breaks = log10(c(0,1, 2, 5, 10, 20, 50, 100, 120)+1),
-           legend_labels = as.character(c(0, 1, 2, 5, 10, 20, 50, 100, 120)),
-            fontsize = 12, fontsize_row = 10, fontsize_col = 10,
-           border_color="black",cluster_rows = cluster_rows, cluster_cols = cluster_cols, silent=TRUE)
+    pheatmap(log10(plot.dat.w*100+1),color=(colorRampPalette(brewer.pal(9, col))(1000))[1:round(1000*max(log10(plot.dat.w*100+1))/log10(101))],
+             main=title,
+             legend_breaks = log10(c(0,1, 2, 5, 10, 20, 50, 100, 120)+1),
+             legend_labels = as.character(c(0, 1, 2, 5, 10, 20, 50, 100, 120)),
+             fontsize = 12, fontsize_row = 10, fontsize_col = 10,
+             border_color="black",cluster_rows = cluster_rows, cluster_cols = cluster_cols, silent=TRUE)
   }
 }
 ```
@@ -65,17 +66,17 @@ plot.heatmap <- function(anti_type, col='PuBu', cluster_rows=TRUE, cluster_cols=
 Run plot
 ```{r fig.height=6, fig.width=4}
 #Fig 1e
-m1 <- plot.heatmap("Bla", 'Reds', TRUE, TRUE)
+m1 <- plot.heatmap("Bla", 'Reds')
 #Suppl 2
-s1 <- plot.heatmap("AGly")
-s2 <- plot.heatmap("Tet", 'Greens')
-s3 <- plot.heatmap("Phe", 'Purples')
-s4 <- plot.heatmap("MLS", 'RdPu')
-s5 <- plot.heatmap("Sul", 'YlGn')
-s6 <- plot.heatmap("Gly",'Blues')
-s7 <- plot.heatmap("Rif", 'Greys', cluster_rows = F, cluster_cols = F, log_mat = F)
-s8 <- plot.heatmap("Tmt", 'Oranges')
-s9 <- plot.heatmap("Flq", 'GnBu')
+s1 <- plot.heatmap("AGly", 'Spectral', title = 'Aminoglycosides')
+s2 <- plot.heatmap("Tet", 'Spectral', title = 'Tetracyclines')
+s3 <- plot.heatmap("Phe", 'Spectral', title = 'Phenicols')
+s4 <- plot.heatmap("MLS", 'Spectral', title = 'Macrolide-Lincosamide-\nStreptogramin')
+s5 <- plot.heatmap("Sul", 'Spectral', title = 'Sulfonamides')
+s6 <- plot.heatmap("Gly",'Spectral', title = 'Glycopeptides')
+s7 <- plot.heatmap("Rif", 'Spectral', cluster_rows = F, cluster_cols = F, title = 'Rifampicin')
+s8 <- plot.heatmap("Tmt", 'Spectral', title = 'Trimethoprim')
+s9 <- plot.heatmap("Flq", 'Spectral', title = 'Fluoroquinolones')
 ```
 
 Main
@@ -95,7 +96,7 @@ cowplot::plot_grid(
   ncol=1,
   rel_heights = c(4,0.5,2,0.5)
 )
-ggsave('../plots/sup7_antibiotics_profile.pdf', height = 10, width = 13)
+ggsave('../plots/sup6_antibiotics_profile.pdf', height = 10, width = 13)
 ```
 
 ### Session informaton

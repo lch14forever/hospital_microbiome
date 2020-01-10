@@ -30,7 +30,8 @@ Read and process illumina data
 ```{r}
 meta.illumina <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2)
 df.metaphlan <- 
-  read.table('../tables/metagenomics.metaphlan2.table.s', head=TRUE, stringsAsFactors=FALSE) %>% 
+  read.table('../output_tables/metagenomics.metaphlan2.table.filtered.s', head=TRUE, stringsAsFactors=FALSE) %>% 
+    rownames_to_column('Index') %>% 
     mutate(Index=str_replace(Index, 's__', '')) %>%
     melt %>% 
     unite('lab', Index, variable, sep='#', remove=FALSE) 

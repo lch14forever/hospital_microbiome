@@ -5,8 +5,6 @@ output:
     df_print: paged
 ---
 
-### Supplementary Figure 2
-
 Load generic libraries
 ```{r}
 source('configuration.r')
@@ -23,7 +21,7 @@ library(reshape2)
 ```{r fig.height=8, fig.width=10}
 meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2)
 
-dat <- read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
+dat <- read.table('../output_tables/metagenomics.metaphlan2.table.filtered.g', head=TRUE, row.names=1)
 dat[dat < 0.1] <- 0
 dat <- dat[rowSums(dat)>0, ]
 meta.filled <- meta %>% select(Library,Room_type, Sample_type, Cubicle_room, timept)
@@ -46,7 +44,13 @@ melt(diversity) %>%
   theme(axis.text.x = element_text(angle=40, vjust=1, hjust=1), legend.title=element_blank()) + 
   scale_fill_manual(values=pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)]) + 
   facet_wrap(~variable, nrow=2, scale='free_y')
-ggsave('../plots/sup3.metagenomics_diversity.svg', height = 8, width=10)
+ggsave('../plots/sup1.metagenomics_diversity.svg', height = 8, width=10)
+```
+
+Test for significante
+```{r}
+sel <- diversity$Sample_type %in% c('Aerator', 'Sink_Trap')
+wilcox.test(diversity$Shannon[sel], diversity$Shannon[!sel])
 ```
 
 ```{r}

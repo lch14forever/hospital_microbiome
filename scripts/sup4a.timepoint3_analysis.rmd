@@ -34,7 +34,7 @@ meta$Sample_type <- fct_relevel(factor(meta$Sample_type), 'Sink Trap')
 
 Site specific score
 ```{r fig.height=4, fig.width=12}
-dat <- read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
+dat <- read.table('../output_tables/metagenomics.metaphlan2.table.filtered.g', head=TRUE, row.names=1)
 
 #set threshold for absence/presence
 dat[dat < 0.5] <- 0
@@ -137,7 +137,7 @@ cor.test(hi.score$Tp2, hi.score$Tp3, method='spearman')
 
 Turn over score
 ```{r fig.height=4, fig.width=8}
-dat <- read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
+dat <- read.table('../output_tables/metagenomics.metaphlan2.table.filtered.g', head=TRUE, row.names=1)
 
 #set threshold for absence/presence
 dat[dat < 0.1] <- 0
@@ -178,7 +178,7 @@ cor.test(to.score$`Tp1,2`, to.score$`Tp2,3`, method='spearman')
 
 ### Stability
 ```{r fig.height=5, fig.width=9}
-dat <- read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
+dat <- read.table('../output_tables/metagenomics.metaphlan2.table.filtered.g', head=TRUE, row.names=1)
 dat[dat < 0.1] <- 0
 dat <- dat[rowSums(dat)>0, ]
 

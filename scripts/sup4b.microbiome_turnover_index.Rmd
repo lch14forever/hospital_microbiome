@@ -25,7 +25,7 @@ Compute TI
 ```{r}
 #read
 meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2, stringsAsFactors = F)
-dat <- dat.bk <-  read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
+dat <- dat.bk <-  read.table('../output_tables/metagenomics.metaphlan2.table.filtered.g', head=TRUE, row.names=1)
 
 #set threshold for absence/presence
 dat[dat < 0.1] <- 0
@@ -167,7 +167,7 @@ Compute TI
 ```{r}
 #read
 meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2, stringsAsFactors = F)
-dat <- dat.bk <- read.table('../tables/metagenomics.metaphlan2.table.s', head=TRUE, row.names=1)
+dat <- dat.bk <- read.table('../output_tables/metagenomics.metaphlan2.table.filtered.s', head=TRUE, row.names=1)
 
 #set threshold for absence/presence, remove phages
 dat[dat < 0.1] <- 0

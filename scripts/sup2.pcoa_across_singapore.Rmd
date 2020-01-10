@@ -25,9 +25,28 @@ meta <- read_csv("../tables/metasub_singapore/complete_metadata.csv")
 dat <- read_tsv("../tables/metasub_singapore/g.metaphlan2.profile_merged.tsv") %>% 
   column_to_rownames("Index")
 
-meta_hosp <- read_tsv("../metadata//illumina_metadata.txt")
-dat_hosp <- read_tsv("../tables/metagenomics.metaphlan2.table.g") %>% 
+## remove potential contaminants
+species.removed <- read.table('../output_tables/contaminant_candidates.txt', stringsAsFactors = F)[,1]
+
+dat.s <- read_tsv("../tables/metasub_singapore/s.metaphlan2.profile_merged.tsv") %>% 
   column_to_rownames("Index")
+
+genera.affected <- 
+  dat.s[rownames(dat.s) %in% species.removed, ] %>% 
+  mutate(g=row.names(.)) %>% 
+  mutate(g=paste0('g__', ((species.removed) %>% str_split_fixed('_',4))[,3]) %>% str_replace("g__Propionibacterium", "g__Siphoviridae_noname")) %>% 
+  group_by(g) %>% 
+  summarise_all(sum) %>% 
+  column_to_rownames('g')
+
+dat[rownames(dat) %in% rownames(genera.affected), colnames(genera.affected)] <- 
+  dat[rownames(dat) %in% rownames(genera.affected), colnames(genera.affected)] - genera.affected
+dat[dat<0] <- 0 ## correct numerical error
+dat <- apply(dat, 2, function(x) x/sum(x)) * 100 ## rescale to sum to 100%
+
+meta_hosp <- read_tsv("../metadata//illumina_metadata.txt")
+dat_hosp <- read_tsv("../output_tables/metagenomics.metaphlan2.table.filtered.g") %>% 
+  column_to_rownames("X1")
 
 # remove samples with missing metadata
 missing_dat <- filter(meta, is.na(meta$metasub_name))$uuid
@@ -89,6 +108,9 @@ eigen <- cmds$eig / sum(cmds$eig) * 100
 dat_merged_all <- (merge(cmds$points, meta_merged, by.x=0, by.y=0, all = TRUE)) %>%
   unite(col="lab", site, site_ct)
 
+## metasub samples with bradyrhizobium
+dat_merged_all <- mutate(dat_merged_all, Bradyrhizobium=Row.names %in% colnames(dat)[dat['g__Bradyrhizobium', ]>1])
+
 
 ggplot(dat_merged_all, aes(x = V1, y = V2, fill = lab, label = Row.names), lwd=2) +
   geom_density_2d(aes(x = V1, y = V2), inherit.aes = FALSE, col = 'grey', lwd=1) + 
@@ -97,7 +119,7 @@ ggplot(dat_merged_all, aes(x = V1, y = V2, fill = lab, label = Row.names), lwd=2
   geom_point(data=subset(dat_merged_all, str_detect(lab, 'Office')), size = 3, shape=21, alpha=0.6) +
   labs(x=paste0('PCoA1 (',round(eigen[1], 1),'%)'),
        y=paste0('PCoA2 (',round(eigen[2], 1),'%)')) +
-  scale_fill_manual(values=c('darkgreen', 'green', 'blue', 'red', 'pink')) + 
+  scale_fill_manual(values=c('darkgreen', 'green', 'blue', 'red', 'pink'), labels=c("CTA", "CTB", "MetaSUB", "CTA-like", "CTB-like")) + 
   theme(legend.title = element_blank(), legend.background = element_blank(),
         legend.key = element_blank(), legend.text = element_text(size = 12))
 
@@ -115,45 +137,45 @@ dist.cta <- dist.mat[
     filter( site_ct=='CTA', site=='Office') %>% pull(1),
   rownames_to_column(meta_merged) %>% 
     filter( site_ct=='CTA', site=='Hospital') %>% pull(1)
-] %>% c %>% data.frame(bray=., type='CTA vs. CTA-like')
+] %>% c %>% data.frame(bray=., type='CTA')
 dist.cta.office <- dist.mat[
   rownames_to_column(meta_merged) %>% 
     filter( site_ct=='CTA', site=='Office') %>% pull(1),
   rownames_to_column(meta_merged) %>% 
     filter( site_ct=='CTA', site=='Office') %>% pull(1)
-] %>% c %>% data.frame(bray=., type='CTA-like vs. CTA-like') %>% 
+] %>% c %>% data.frame(bray=., type='CTA-like') %>% 
   filter(!is.na(bray))
 g1 <- 
   rbind(dist.cta, dist.cta.office) %>% 
     ggplot(aes(x=type, y=bray, fill=type)) + 
     geom_boxplot(lwd=1.5) +
     scale_y_continuous(limits=c(0,1.2), breaks=c(0,0.5,1)) + 
-    labs(x=NULL, y='Bray-Curtis distance') +
+    labs(x=NULL, y='Bray-Curtis Dissimilarity\n(versus CTA-like)') +
     scale_fill_aaas(guide=F) + 
     theme(axis.text.x = element_text(angle=40, hjust=1)) + 
-    stat_compare_means(comparisons = list(c("CTA vs. CTA-like", "CTA-like vs. CTA-like")), label = "p.signif", size=15)
+    stat_compare_means(comparisons = list(c("CTA", "CTA-like")), label = "p.signif", size=15)
 dist.ctb <- dist.mat[
   rownames_to_column(meta_merged) %>% 
     filter( site_ct=='CTB', site=='Office') %>% pull(1),
   rownames_to_column(meta_merged) %>% 
     filter( site_ct=='CTB', site=='Hospital') %>% pull(1)
-] %>% c %>% data.frame(bray=., type='CTB vs. CTB-like')
+] %>% c %>% data.frame(bray=., type='CTB')
 dist.ctb.office <- dist.mat[
   rownames_to_column(meta_merged) %>% 
     filter( site_ct=='CTB', site=='Office') %>% pull(1),
   rownames_to_column(meta_merged) %>% 
     filter( site_ct=='CTB', site=='Office') %>% pull(1)
-] %>% c %>% data.frame(bray=., type='CTB-like vs. CTB-like')%>% 
+] %>% c %>% data.frame(bray=., type='CTB-like')%>% 
   filter(!is.na(bray))
 g2 <- 
   rbind(dist.ctb, dist.ctb.office) %>% 
     ggplot(aes(x=type, y=bray, fill=type)) + 
     geom_boxplot(lwd=1.5) +
     scale_y_continuous(limits=c(0,1.2), breaks=c(0,0.5,1)) + 
-    labs(x=NULL, y='Bray-Curtis distance') +
+    labs(x=NULL, y='Bray-Curtis Dissimilarity\n(versus CTB-like)') +
     scale_fill_aaas(guide=F) + 
     theme(axis.text.x = element_text(angle=40, hjust=1)) + 
-    stat_compare_means(comparisons = list(c("CTB vs. CTB-like", "CTB-like vs. CTB-like")), label = "p.signif", size=15)
+    stat_compare_means(comparisons = list(c("CTB", "CTB-like")), label = "p.signif", size=15)
 cowplot::plot_grid(g1, g2)
 ggsave('../plots/sup2.CT_across_singapore.png', height = 6, width = 8)
 ```
@@ -180,14 +202,14 @@ dat_merged_fil <- dat_merged_fil[rowSums(dat_merged_fil) > 0, ]
 
 dist_mat_all <- vegdist(t(dat_merged_fil))
 
-# ## scratch
-# cmds <- cmdscale(dist_mat_all, k = 3, eig = TRUE)
-# eigen <- cmds$eig / sum(cmds$eig) * 100
-# 
-# dat_merged_all <- (merge(cmds$points, meta_merged_all, by.x=0, by.y=0, all = TRUE))
-# 
-# ggplot(dat_merged_all, aes(x=V1, y=V2, fill=site, label=Row.names)) +
-#   geom_point(shape=21)
+## scratch
+cmds <- cmdscale(dist_mat_all, k = 3, eig = TRUE)
+eigen <- cmds$eig / sum(cmds$eig) * 100
+
+dat_merged_all <- (merge(cmds$points, meta_merged_all, by.x=0, by.y=0, all = TRUE))
+
+ggplot(dat_merged_all, aes(x=V1, y=V2, fill=site, label=Row.names)) +
+  geom_point(shape=21)
 ```
 
 Get matched samples

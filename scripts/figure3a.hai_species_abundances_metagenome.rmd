@@ -21,7 +21,7 @@ library(RColorBrewer)
 
 ```{r fig.height=5, fig.width=4}
 meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names = 2)
-dat <- read.table('../tables/metagenomics.metaphlan2.table.s', head=TRUE, row.names=1)
+dat <- read.table('../output_tables/metagenomics.metaphlan2.table.filtered.s', head=TRUE, row.names=1)
 dat[dat < 0.1] <- 0
 dat <- dat[rowSums(dat)>0, ]
 

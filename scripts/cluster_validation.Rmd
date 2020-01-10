@@ -1,0 +1,80 @@
+---
+title: "Cluster validation"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Load generic libraries
+```{r message=FALSE, warning=FALSE}
+source('configuration.r')
+```
+
+Load plot specific libraries
+```{r message=FALSE, warning=FALSE}
+library(foreach)
+library(readr)
+library(ggbeeswarm)
+```
+
+
+Load and define data
+
+```{r}
+strains <- read_tsv('../output_tables/strain_cluster_summary.tsv')
+opera_ms_threshold = 0.0001
+canu_threshold = 0.001
+
+## Helper function
+distances_within_cluster <- function(species){
+  species.dat <- filter(strains, Species==species)
+  
+  full.mat <- read.table(unique(species.dat$input_distance_matrix))
+  
+  dist.dat <- foreach(c=unique(species.dat$clusters), .combine=rbind) %do% {
+    tmp <- filter(species.dat, clusters==c)
+    dist.mat <- full.mat[tmp$Row.names, tmp$Row.names]
+    if(length(dist.mat)==1){
+      ## singleton
+      data.frame(dist=NA, cluster=c, species=species)
+    }else{
+      data.frame(dist=apply(dist.mat,1,mean), cluster=c, species=species)
+    }
+  }
+  dist.dat
+}
+```
+
+```{r fig.height=10, fig.width=20}
+species.list.opera <- c('Elizabethkingia_anophelis', 'Staphylococcus_epidermidis', 'Staphylococcus_aureus', 'Acinetobacter_baumannii')
+species.list.canu <- c('Pseudomonas_aeruginosa', 'Enterococcus_faecium', 'Enterococcus_faecalis', 'Klebsiella_pneumoniae')
+
+distances.opera <- foreach(s=species.list.opera, .combine = rbind) %do% {
+  distances_within_cluster(s)
+}
+
+p1 <- filter(distances.opera, dist<0.00075) %>% ## s_4510 and s_4747 shared 79% of the genome, and are 99.88% identical
+  ggplot(aes(x=species, y=dist)) + 
+  geom_quasirandom() + 
+  geom_hline(yintercept = opera_ms_threshold) + 
+  labs(x=NULL, y='Distances within cluster') + 
+  facet_wrap(~species, scales='free', nrow=1)
+
+distances.canu <- foreach(s=species.list.canu, .combine = rbind) %do% {
+  distances_within_cluster(s)
+}
+
+p2 <- filter(distances.canu) %>% 
+  ggplot(aes(x=species, y=dist)) + 
+  geom_quasirandom() + 
+  geom_hline(yintercept = canu_threshold) + 
+  labs(x=NULL, y='Distances within cluster') + 
+  facet_wrap(~species, scales='free', nrow=1)
+
+cowplot::plot_grid(p1, p2, nrow=2)
+```

@@ -219,11 +219,17 @@ for (n in 1:subsample_main) {
 
 Create matrix using subsamples
 ```{r message=FALSE, warning=FALSE}
-intersection_means <- do.call("rbind", intersections) %>% 
+tmp <- do.call(rbind, intersections)
+g1 <- str_detect(colnames(tmp), 'ct')
+g2 <- str_detect(colnames(tmp), 'office|metasub')
+
+wilcox.test(rowSums(tmp[,g1]), rowSums(tmp[,g2]))
+
+intersection_means <- tmp %>% 
   summarise_all(mean) %>% 
   round()
 
-intersection_sd <- do.call("rbind", intersections) %>% 
+intersection_sd <- tmp %>% 
   summarise_all(sd)
 
 mat <- data.frame(CTA = NA, CTB = NA, MetaSUB = NA, Office = NA) %>% 

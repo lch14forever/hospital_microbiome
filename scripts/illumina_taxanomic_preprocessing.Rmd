@@ -17,58 +17,47 @@ source('configuration.r')
 Load specific libraries
 ```{r message=FALSE, warning=FALSE}
 library(readr)
-```
-
-### Genus level analysis
-
-```{r}
-meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2)
-
-dat <- read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
-dat[dat < 0.1] <- 0
-dat <- dat[rowSums(dat)>0, ]
-```
-
-Remove taxa that are detected (>=20 samples) in only one batch (time point 1 & 2 or time point 3)
-
-```{r}
-batch1 <- dat[, filter(meta, timept %in% c(1, 2)) %>% pull(Library) ]
-batch2 <- dat[, filter(meta, timept %in% c(3)) %>% pull(Library) ]
-
-fil1 <- rowSums(batch1>0) < 20 & rowSums(batch2>0) >= 20
-fil2 <- rowSums(batch1>0) >= 20 & rowSums(batch2>0) < 20
-
-dat.fil <- dat[!(fil1 | fil2), ] 
-
-## remaining proportion
-boxplot(colSums(dat.fil))
-```
-
-Renormalize to 100%
-
-```{r}
-dat.fil <- apply(dat.fil, 2, function(x) x/sum(x)) * 100
-write.table(dat.fil, '../output_tables/metagenomics.metaphlan2.table.filtered.g', sep='\t', row.names = TRUE, col.names = NA, quote=F)
+library(stringr)
+library(gghighlight)
+library(ggrepel)
 ```
 
 ### Species level analysis
 
 ```{r}
+meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2)
 dat.s <- read.table('../tables/metagenomics.metaphlan2.table.s', head=TRUE, row.names=1)
 dat.s[dat.s < 0.1] <- 0
 dat.s <- dat.s[rowSums(dat.s)>0, ]
 ```
 
-Remove taxa that are detected (>=20 samples) in only one batch (time point 1 & 2 or time point 3)
+Remove taxa that are common in batch 1 and not detected in batch 2
 
-```{r}
+```{r fig.height=8, fig.width=10}
 batch1 <- dat.s[, filter(meta, timept %in% c(1, 2)) %>% pull(Library) ]
 batch2 <- dat.s[, filter(meta, timept %in% c(3)) %>% pull(Library) ]
 
-fil1 <- rowSums(batch1>0) < 20 & rowSums(batch2>0) >= 20
-fil2 <- rowSums(batch1>0) >= 20 & rowSums(batch2>0) < 20
+tmp <- cbind(
+  (rowSums(batch1 > 0)/ncol(batch1)) %>% data.frame,
+  (rowSums(batch2 > 0)/ncol(batch2)) %>% data.frame
+) 
+colnames(tmp) <- c('batch1', 'batch2')
+tmp <- rownames_to_column(tmp, 'species') %>% 
+  mutate(ratio=batch1/(batch2))
+#head(tmp)
 
-dat.fil <- dat.s[!(fil1 | fil2), ] 
+ggplot(tmp, aes(x=batch1, y=batch2, label=species)) + 
+  geom_point()  + 
+  gghighlight(ratio>4 & batch1>1/4) +
+  geom_text_repel() +
+  labs(x='Prevalence in batch 1', y='Prevalence in batch 2')
+```
+
+```{r}
+species.removed <- filter(tmp,ratio>4 & batch1>1/4) %>% pull(species)
+write.table(species.removed, '../output_tables/contaminant_candidates.txt', quote=F, row.names = F, col.names = F)
+
+dat.fil <- dat.s[!rownames(dat.s) %in% species.removed, ] 
 
 ## remaining proportion
 boxplot(colSums(dat.fil))
@@ -82,3 +71,34 @@ dat.fil <- apply(dat.fil, 2, function(x) x/sum(x)) * 100
 write.table(dat.fil, '../output_tables/metagenomics.metaphlan2.table.filtered.s', sep='\t', row.names = TRUE, col.names = NA, quote=F)
 ```
 
+### Genus level analysis
+
+```{r}
+dat.g <- read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
+```
+
+Remove genera detected above
+
+```{r}
+genera.affected <- dat.s[rownames(dat.s) %in% species.removed, ] %>% 
+  mutate(g=row.names(.)) %>% 
+  mutate(g=paste0('g__', ((species.removed) %>% str_split_fixed('_',4))[,3]) %>% str_replace("g__Propionibacterium", "g__Siphoviridae_noname")) %>% 
+  group_by(g) %>% 
+  summarise_all(sum) %>% 
+  column_to_rownames('g')
+
+dat.fil <- dat.g
+dat.fil[rownames(dat.fil) %in% rownames(genera.affected), colnames(genera.affected)] <- dat.fil[rownames(dat.fil) %in% rownames(genera.affected), colnames(genera.affected)] - genera.affected
+
+dat.fil[dat.fil < 0.1] <- 0
+dat.fil <- dat.fil[rowSums(dat.fil)>0, ]
+## remaining proportion
+boxplot(colSums(dat.fil))
+```
+
+Renormalize to 100%
+
+```{r}
+dat.fil <- apply(dat.fil, 2, function(x) x/sum(x)) * 100
+write.table(dat.fil, '../output_tables/metagenomics.metaphlan2.table.filtered.g', sep='\t', row.names = TRUE, col.names = NA, quote=F)
+```

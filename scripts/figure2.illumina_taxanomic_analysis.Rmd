@@ -51,7 +51,7 @@ PCoA1 and PCoA2
 ```{r fig.height=5, fig.width=9}
 ## PCoA
 ggplot(dat.merged, aes(x=V1, y=V2, col=Sample_type), lwd=2) +
-  geom_density_2d(aes(x=V1, y=V2), h=0.25, inherit.aes = FALSE, col='grey', lwd=1) + 
+  geom_density_2d(aes(x=V1, y=V2),  inherit.aes = FALSE, col='grey', lwd=1) + 
 	geom_point(size=4.5) +
 	labs(x=paste0('MDS1 (',round(eigen[1], 1),'%)'),
        y=paste0('MDS2 (',round(eigen[2], 1),'%)')) +
@@ -225,7 +225,7 @@ data2wet <- melt(data2wet,id=c("Species")) %>% merge(anno)
 ### Enrich in dry
 p1 <- ggplot(data = data2dry, aes(x=Species,y=value,fill=group, grp=group)) +
 	geom_boxplot(width=1,outlier.shape=NA, lwd=1) +
-  coord_cartesian(ylim=c(0,6)) +
+  coord_cartesian(ylim=c(0,8)) +
   scale_fill_manual(values=pal_npg(c("nrc"))(10)[c(7,1)]) + 
   labs(y=NULL, x=NULL) +
 	theme(axis.text.x = element_text(angle=40, hjust=1, size=10), legend.position = 'left', legend.title = element_blank()) 
@@ -239,11 +239,11 @@ p2 <- ggplot(data = data2dryP, aes(x=Species,y=value,fill=group, grp=group)) +
 p3 <- ggplot(data = data2wet, aes(x=Species,y=value,fill=group, grp=group)) +
 	geom_boxplot(width=1,outlier.shape=NA, lwd=1) +
   scale_fill_manual(values=pal_npg(c("nrc"))(10)[c(7,1)]) + 
-  coord_cartesian(ylim=c(0,8)) +
+  coord_cartesian(ylim=c(0,50)) +
   labs(y=NULL, x=NULL) +
 	theme(axis.text.x = element_text(angle=40, hjust=1, size=10), legend.position = 'none')
 
-cowplot::plot_grid(p1, p2, p3, nrow=1, rel_widths=c(10,4.5,6),align ='h')
+cowplot::plot_grid(p1, p2, p3, nrow=1, rel_widths=c(12,5, 8),align ='h')
 ggsave('../plots/fig2bii_dry_wet_species_comparison.svg', height = 7, width = 10)
 ```
 

@@ -1,0 +1,7 @@
+s__Bradyrhizobium_sp_BTAi1
+s__Bradyrhizobium_sp_DFCI_1
+s__Cupriavidus_unclassified
+s__Curvibacter_lanceolatus
+s__Propionibacterium_phage_P100D
+s__Propionibacterium_phage_P101A
+s__Rhodopseudomonas_palustris

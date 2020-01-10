@@ -20,7 +20,7 @@ library(vegan)
 MDS plot
 ```{r fig.height=10, fig.width=20}
 meta <- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2)
-dat <- read.table('../tables/metagenomics.metaphlan2.table.g', head=TRUE, row.names=1)
+dat <- read.table('../output_tables/metagenomics.metaphlan2.table.filtered.g', head=TRUE, row.names=1)
 dat[dat < 0.1] <- 0
 dat <- dat[rowSums(dat)>0, ]
 
