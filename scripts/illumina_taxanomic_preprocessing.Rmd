@@ -20,6 +20,8 @@ library(readr)
 library(stringr)
 library(gghighlight)
 library(ggrepel)
+library(magrittr)
+library(ComplexHeatmap)
 ```
 
 ### Species level analysis
@@ -31,7 +33,7 @@ dat.s[dat.s < 0.1] <- 0
 dat.s <- dat.s[rowSums(dat.s)>0, ]
 ```
 
-Remove taxa that are common in batch 1 and not detected in batch 2
+Detect taxa that are common in batch 1 and not detected in batch 2
 
 ```{r fig.height=8, fig.width=10}
 batch1 <- dat.s[, filter(meta, timept %in% c(1, 2)) %>% pull(Library) ]
@@ -43,18 +45,37 @@ tmp <- cbind(
 ) 
 colnames(tmp) <- c('batch1', 'batch2')
 tmp <- rownames_to_column(tmp, 'species') %>% 
-  mutate(ratio=batch1/(batch2))
+  mutate(ratio=batch1/(batch2)) 
 #head(tmp)
 
-ggplot(tmp, aes(x=batch1, y=batch2, label=species)) + 
-  geom_point()  + 
-  gghighlight(ratio>4 & batch1>1/4) +
-  geom_text_repel() +
+mutate(tmp, species=str_replace_all(species, c('s__'='', '_'=' '))) %>% 
+  ggplot(aes(x=batch1, y=batch2, label=species)) + 
+  geom_point(col='black')  + 
+  gghighlight(ratio>3 & batch1>0.22) +
+  geom_vline(xintercept = 1/4, color='blue', lty=2) + 
+  geom_abline(slope = 1/4, intercept = 0, color='blue', lty=2) + 
+  geom_point(data=subset(tmp, ratio>4 & batch1>1/4), aes(x=batch1, y=batch2), col='red', inherit.aes = F, size=3) + 
+  geom_text_repel(col='black', fontface='italic') + 
   labs(x='Prevalence in batch 1', y='Prevalence in batch 2')
 ```
 
-```{r}
+Check if the borderline species were correlated with the potential contaminants
+```{r }
+species.candidates <-  filter(tmp,ratio>3 & batch1>0.22) %>% pull(species)
 species.removed <- filter(tmp,ratio>4 & batch1>1/4) %>% pull(species)
+
+mat <- cor(t(batch1[species.candidates,]), method='spearman')[species.removed, ] 
+
+rownames(mat) %<>% str_replace_all(c('s__'='', '_'=' ')) %>% str_replace('[a-z]+ ', '. ')
+colnames(mat) %<>% str_replace_all(c('s__'='', '_'=' ')) %>% str_replace('[a-z]+ ', '. ')
+
+Heatmap(mat, 
+        heatmap_legend_param = list(title='', legend_height=unit(5, "cm"), labels_gp=gpar(fontsize=15)), 
+        row_names_gp=gpar(fontface = "bold.italic"), column_names_gp = gpar(fontface = "bold.italic")) %>% 
+  draw(heatmap_legend_side = "left")
+```
+
+```{r}
 write.table(species.removed, '../output_tables/contaminant_candidates.txt', quote=F, row.names = F, col.names = F)
 
 dat.fil <- dat.s[!rownames(dat.s) %in% species.removed, ] 

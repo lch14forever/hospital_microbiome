@@ -236,7 +236,7 @@ ggplot(plot.dat, aes(x=lab, y=bray, fill=grp)) +
 
 Long term stability 
 
-```{r fig.height=6, fig.width=8}
+```{r fig.height=5, fig.width=9}
 ## for each sample in tp1, get the distance to the paired sample in tp2/3, get the min distance to the closest sample in the opposite CT type in tp2/3
 
 tp1 <- filter(dat.merged, timept==1) %>% select(id=Row.names, Sample_ID, Type)
@@ -245,24 +245,24 @@ pairing.dat <- merge(tp1, tp2, by=c(2,3))
 
 plot.dat <- foreach(r=1:nrow(pairing.dat), .combine = rbind) %do% {
     dat <- pairing.dat[r, ]
-    dat$`same CT timepoint 1` <-  min(dist.mat[dat[, 3], filter(tp2, Type==dat$Type) %>% pull(id)])
-    dat$`other CT timepoint 1` <- min(dist.mat[dat[, 3], filter(tp2, Type!=dat$Type) %>% pull(id)])
+    dat$`Same\nCommunity` <-  min(dist.mat[dat[, 3], filter(tp2, Type==dat$Type) %>% pull(id)])
+    dat$`Different\nCommunity` <- min(dist.mat[dat[, 3], filter(tp2, Type!=dat$Type) %>% pull(id)])
     dat
 }
 
-mutate(plot.dat, Type=str_c(Type, ' timepoint 3')) %>% melt %>% 
+mutate(plot.dat) %>% melt %>% 
   ggplot(aes(x=variable, y=value, fill=variable)) + 
   geom_boxplot(lwd=1) + 
   geom_line(aes(group=Sample_ID), color=rgb(0.5,0.5,0.5,0.2)) +
   facet_wrap(~Type) +
   scale_fill_aaas(guide=F) +
   scale_y_continuous(breaks=c(0, 0.25, 0.5, 0.75, 1), limits=c(0,1.2)) + 
-  labs(x=NULL, y='Bray-Curtis distance') +
-  theme(axis.text.x = element_text(angle=40, hjust=1), ) +
-  stat_compare_means(comparisons = list(c("same CT timepoint 1", "other CT timepoint 1")),
+  labs(x=NULL, y='Bray-Curtis Dissimilarity\n(timepoint 3 versus 1)') +
+  theme(strip.background = element_blank() ) +
+  stat_compare_means(comparisons = list(c("Same\nCommunity", "Different\nCommunity")),
                      paired=TRUE,
                      label="p.signif", size=13,
                      method.args = list(alternative = "less")) 
 
-ggsave('../plots/sup3b.strain_persistance.png', height = 6, width = 8)
+ggsave('../plots/sup3b.strain_persistance.png', height = 5, width = 9)
 ```

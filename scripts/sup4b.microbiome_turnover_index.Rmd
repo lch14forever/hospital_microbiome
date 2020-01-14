@@ -151,7 +151,7 @@ tmp <- rowSums(dat.bk[, tp3] >= 0.5) > 0
 Merge <- Merge[rownames(Merge) %in% names(tmp[tmp]), ]
 rownames(Merge) %<>% str_replace_all(c('g__'='', '_noname'='', 'Propionibacterium'='Cutibacterium'))
 
-p.g <- Heatmap(Merge, col=colorRampPalette(brewer.pal(9,'Reds'))(10),
+p.g <- Heatmap(Merge, col=colorRampPalette(brewer.pal(9,'Blues'))(10),
         rect_gp = gpar(col = "black", lty = 1, lwd = 1),
         heatmap_legend_param = list(title='', legend_height=unit(7, "cm"), labels_gp=gpar(fontsize=15), title_gp=gpar(fontsize=20,fontface="bold")),
         row_dend_width = unit(25, "mm"),
