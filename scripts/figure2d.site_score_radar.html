@@ -1728,7 +1728,15 @@ d1 &lt;- data.frame(&quot;Site Specificity&quot;=
   median(z_doorhand),
   median(z_pulse),
   median(z_sinktrap)), check.names = F
-)</code></pre>
+)
+
+wilcox.test(c(z_aerator, z_sinktrap), c(z_bedlock, z_bedrail, z_cardtable, z_doorhand, z_pulse))</code></pre>
+<pre><code>## 
+##  Wilcoxon rank sum test with continuity correction
+## 
+## data:  c(z_aerator, z_sinktrap) and c(z_bedlock, z_bedrail, z_cardtable, z_doorhand, z_pulse)
+## W = 3628, p-value = 1.654e-13
+## alternative hypothesis: true location shift is not equal to 0</code></pre>
 <p>Site turnover score calculation</p>
 <pre class="r"><code>#read
 meta &lt;- read.table('../metadata/illumina_metadata.txt', head=TRUE, row.names=2)
@@ -1821,14 +1829,22 @@ TurnoverIndex&lt;-function(x){
   TIndex
 }
 
-d2 &lt;- rbind(data.frame(TOI=TurnoverIndex(grouped_ids_A),group=&quot;A&quot;),
+tmp &lt;- rbind(data.frame(TOI=TurnoverIndex(grouped_ids_A),group=&quot;A&quot;),
   data.frame(TOI=TurnoverIndex(grouped_ids_BR),group=&quot;BR&quot;),
   data.frame(TOI=TurnoverIndex(grouped_ids_BL),group=&quot;BL&quot;),
   data.frame(TOI=TurnoverIndex(grouped_ids_CT),group=&quot;CT&quot;),
   data.frame(TOI=TurnoverIndex(grouped_ids_DH),group=&quot;DH&quot;),
   data.frame(TOI=TurnoverIndex(grouped_ids_PO),group=&quot;PO&quot;),
-  data.frame(TOI=TurnoverIndex(grouped_ids_ST),group=&quot;ST&quot;)) %&gt;% 
-  group_by(group) %&gt;% summarise(&quot;Turn Over&quot;=median(TOI))</code></pre>
+  data.frame(TOI=TurnoverIndex(grouped_ids_ST),group=&quot;ST&quot;))
+
+wilcox.test(tmp[tmp$group %in% c(&quot;A&quot;, &quot;ST&quot;),1], tmp[!tmp$group %in% c(&quot;A&quot;, &quot;ST&quot;),1])</code></pre>
+<pre><code>## 
+##  Wilcoxon rank sum test with continuity correction
+## 
+## data:  tmp[tmp$group %in% c(&quot;A&quot;, &quot;ST&quot;), 1] and tmp[!tmp$group %in% c(&quot;A&quot;, &quot;ST&quot;), 1]
+## W = 911, p-value = 3.523e-05
+## alternative hypothesis: true location shift is not equal to 0</code></pre>
+<pre class="r"><code>d2 &lt;- group_by(tmp, group) %&gt;% summarise(&quot;Turn Over&quot;=median(TOI))</code></pre>
 <p>Human influence score (fraction of human reads)</p>
 <pre class="r"><code>dat &lt;- read.table('../tables/illumina.read_counts.tsv')
 colnames(dat) &lt;- c('LIBID','READS_TRIM','READS_DECONT')
@@ -1836,10 +1852,18 @@ dat$READS_DECONT &lt;- dat$READS_DECONT/dat$READS_TRIM
 
 df.m &lt;- merge(meta, dat, by.x='Library',by.y='LIBID', all=TRUE) 
 
-d3 &lt;- subset(df.m, !is.na(Cubicle_room) &amp; timept %in% c(1,2)) %&gt;%
+tmp &lt;- subset(df.m, !is.na(Cubicle_room) &amp; timept %in% c(1,2)) %&gt;%
   mutate(HUMAN_READS=(1-READS_DECONT)) %&gt;%
-  select(Sample_type, HUMAN_READS) %&gt;% 
-  group_by(Sample_type) %&gt;% 
+  select(Sample_type, HUMAN_READS) 
+
+wilcox.test(tmp[tmp$Sample_type %in% c('Aerator', 'Sink_Trap'),2], tmp[!tmp$Sample_type %in% c('Aerator', 'Sink_Trap'),2])</code></pre>
+<pre><code>## 
+##  Wilcoxon rank sum test with continuity correction
+## 
+## data:  tmp[tmp$Sample_type %in% c(&quot;Aerator&quot;, &quot;Sink_Trap&quot;), 2] and tmp[!tmp$Sample_type %in% c(&quot;Aerator&quot;, &quot;Sink_Trap&quot;), 2]
+## W = 1851, p-value &lt; 2.2e-16
+## alternative hypothesis: true location shift is not equal to 0</code></pre>
+<pre class="r"><code>d3 &lt;- group_by(tmp, Sample_type) %&gt;% 
   summarise(&quot;Human influence&quot;=median(HUMAN_READS))</code></pre>
 <p>Radar plot</p>
 <pre class="r"><code>dat &lt;- cbind(d1, d2[,2], d3) %&gt;% data.frame(row.names = 3, check.names = F)

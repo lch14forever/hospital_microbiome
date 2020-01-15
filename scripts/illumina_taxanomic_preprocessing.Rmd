@@ -50,21 +50,22 @@ tmp <- rownames_to_column(tmp, 'species') %>%
 
 mutate(tmp, species=str_replace_all(species, c('s__'='', '_'=' '))) %>% 
   ggplot(aes(x=batch1, y=batch2, label=species)) + 
-  geom_point(col='black')  + 
-  gghighlight(ratio>3 & batch1>0.22) +
+  geom_point(col='red', size=3)  + 
+  gghighlight(ratio>4 & batch1>1/4) +
   geom_vline(xintercept = 1/4, color='blue', lty=2) + 
   geom_abline(slope = 1/4, intercept = 0, color='blue', lty=2) + 
-  geom_point(data=subset(tmp, ratio>4 & batch1>1/4), aes(x=batch1, y=batch2), col='red', inherit.aes = F, size=3) + 
-  geom_text_repel(col='black', fontface='italic') + 
+  geom_text_repel(col='black', fontface='italic',size=5) + 
   labs(x='Prevalence in batch 1', y='Prevalence in batch 2')
 ```
 
 Check if the borderline species were correlated with the potential contaminants
-```{r }
+```{r fig.height=12, fig.width=12}
 species.candidates <-  filter(tmp,ratio>3 & batch1>0.22) %>% pull(species)
 species.removed <- filter(tmp,ratio>4 & batch1>1/4) %>% pull(species)
 
 mat <- cor(t(batch1[species.candidates,]), method='spearman')[species.removed, ] 
+
+mat <- cor(t(batch1[tmp$batch1>0.25,]), method='spearman')
 
 rownames(mat) %<>% str_replace_all(c('s__'='', '_'=' ')) %>% str_replace('[a-z]+ ', '. ')
 colnames(mat) %<>% str_replace_all(c('s__'='', '_'=' ')) %>% str_replace('[a-z]+ ', '. ')

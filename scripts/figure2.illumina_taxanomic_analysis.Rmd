@@ -397,22 +397,22 @@ rbind(
   data.frame(dist=diff_rooms, lab='Across wards (T1)')
 ) %>% 
   ggplot(aes(x=lab, y=dist, fill=lab)) + 
-  geom_boxplot(lwd=1, outlier.colour = NA) + 
+  geom_boxplot(lwd=1) + 
   scale_fill_npg(guide=F) + 
   labs(x=NULL, y=NULL) +
   scale_y_continuous(limits=c(0,1)) +
   theme(axis.text.x = element_text(angle=45, hjust=1))
-ggsave('../plots/sup4a_distance_spatial_temporal.svg', height = 8, width = 4)
+ggsave('../plots/sup3a_distance_spatial_temporal.svg', height = 8, width = 4)
 ## ad hoc analysis
 #median(same_bed) 
 #median(timepoint_mat)
 #median(same_room)
 #median(diff_rooms)
 
-#wilcox.test(same_bed,timepoint_mat)
-#wilcox.test(same_bed,same_room)
-#wilcox.test(same_bed,diff_rooms)
-#wilcox.test(same_room,diff_rooms)
+wilcox.test(same_bed,timepoint_mat)
+wilcox.test(same_bed,same_room)
+wilcox.test(same_bed,diff_rooms)
+wilcox.test(same_room, timepoint_mat)
 ```
 
 ### Species differentially abundant in dry environments

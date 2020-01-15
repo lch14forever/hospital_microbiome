@@ -2272,7 +2272,7 @@ s_3172	N253_barcode06	Enterobacter_cloacae	4378875	4335390	NONE	HIGH_QUAL	Canu	M
 s_3188	N253_barcode07	Enterobacter_hormaechei	4857191	4808969	NONE	HIGH_QUAL	Canu	MEE012	HMR016	16A2	AMP	HMBR100	Ward_3	Bed_Rail	NA	NA	3	Standard_wards	4
 s_253	N253_barcode08	Acinetobacter_baumannii	3899500	3814914	NONE	HIGH_QUAL	OPERA-MS	MEE012	HMR016	16C1	CHLOR	HMBR100	Ward_3	Bed_Rail	NA	NA	3	Standard_wards	4
 s_3173	N253_barcode08	Enterobacter_cloacae	4020321	2459703	NONE	MEDIUM_QUAL	Canu	MEE012	HMR016	16C1	CHLOR	HMBR100	Ward_3	Bed_Rail	NA	NA	3	Standard_wards	4
-s_254	N253_barcode09	Acinetobacter_baumannii	3865981	3811551	NONE	HIGH_QUAL	OPERA-MS	MEE012	HMR016	16C2	CLOR	HMBR100	Ward_3	Bed_Rail	NA	NA	3	Standard_wards	4
+s_254	N253_barcode09	Acinetobacter_baumannii	3865981	3811551	NONE	HIGH_QUAL	OPERA-MS	MEE012	HMR016	16C2	CHLOR	HMBR100	Ward_3	Bed_Rail	NA	NA	3	Standard_wards	4
 s_6631	N253_barcode10	Staphylococcus_haemolyticus	2633253	2607049	NONE	HIGH_QUAL	Canu	MEE012	HMR016	16K1	KAN	HMBR100	Ward_3	Bed_Rail	NA	NA	3	Standard_wards	4
 s_5387	N253_barcode10	Staphylococcus_epidermidis	2352795	83188	NONE	HIGH_QUAL	OPERA-MS	MEE012	HMR016	16K1	KAN	HMBR100	Ward_3	Bed_Rail	NA	NA	3	Standard_wards	4
 s_6632	N253_barcode11	Staphylococcus_haemolyticus	2699425	2645436	NONE	HIGH_QUAL	Canu	MEE012	HMR016	16K2	KAN	HMBR100	Ward_3	Bed_Rail	NA	NA	3	Standard_wards	4

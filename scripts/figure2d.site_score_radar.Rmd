@@ -160,6 +160,8 @@ d1 <- data.frame("Site Specificity"=
   median(z_pulse),
   median(z_sinktrap)), check.names = F
 )
+
+wilcox.test(c(z_aerator, z_sinktrap), c(z_bedlock, z_bedrail, z_cardtable, z_doorhand, z_pulse))
 ```
 
 
@@ -256,14 +258,17 @@ TurnoverIndex<-function(x){
   TIndex
 }
 
-d2 <- rbind(data.frame(TOI=TurnoverIndex(grouped_ids_A),group="A"),
+tmp <- rbind(data.frame(TOI=TurnoverIndex(grouped_ids_A),group="A"),
   data.frame(TOI=TurnoverIndex(grouped_ids_BR),group="BR"),
   data.frame(TOI=TurnoverIndex(grouped_ids_BL),group="BL"),
   data.frame(TOI=TurnoverIndex(grouped_ids_CT),group="CT"),
   data.frame(TOI=TurnoverIndex(grouped_ids_DH),group="DH"),
   data.frame(TOI=TurnoverIndex(grouped_ids_PO),group="PO"),
-  data.frame(TOI=TurnoverIndex(grouped_ids_ST),group="ST")) %>% 
-  group_by(group) %>% summarise("Turn Over"=median(TOI))
+  data.frame(TOI=TurnoverIndex(grouped_ids_ST),group="ST"))
+
+wilcox.test(tmp[tmp$group %in% c("A", "ST"),1], tmp[!tmp$group %in% c("A", "ST"),1])
+
+d2 <- group_by(tmp, group) %>% summarise("Turn Over"=median(TOI))
 ```
 
 Human influence score (fraction of human reads)
@@ -274,10 +279,13 @@ dat$READS_DECONT <- dat$READS_DECONT/dat$READS_TRIM
 
 df.m <- merge(meta, dat, by.x='Library',by.y='LIBID', all=TRUE) 
 
-d3 <- subset(df.m, !is.na(Cubicle_room) & timept %in% c(1,2)) %>%
+tmp <- subset(df.m, !is.na(Cubicle_room) & timept %in% c(1,2)) %>%
   mutate(HUMAN_READS=(1-READS_DECONT)) %>%
-  select(Sample_type, HUMAN_READS) %>% 
-  group_by(Sample_type) %>% 
+  select(Sample_type, HUMAN_READS) 
+
+wilcox.test(tmp[tmp$Sample_type %in% c('Aerator', 'Sink_Trap'),2], tmp[!tmp$Sample_type %in% c('Aerator', 'Sink_Trap'),2])
+
+d3 <- group_by(tmp, Sample_type) %>% 
   summarise("Human influence"=median(HUMAN_READS))
 ```
 
