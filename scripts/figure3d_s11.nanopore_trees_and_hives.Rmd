@@ -74,7 +74,8 @@ get.clusters <- function(x, algo, diff_threshold, dist_type){
 }
 
 ## function to plot tree
-plot.tree <- function(x, color, offset=0.01, title=NULL, scale_offset_x=0.005, scale_offset_y=0, algo, diff_threshold, dist_type){
+plot.tree <- function(x, color, offset=0.01, title=NULL, scale_offset_x=0.005, scale_offset_y=0, scale_offset_text=0.01, 
+                      scale_width=0.002, algo, diff_threshold, dist_type){
   merged <- get.clusters(x, algo, diff_threshold, dist_type)
   tree.strains <- read.tree(paste0('../tables/trees/', x, ".parsnp.tree"))
   tree.strains$tip.label %<>% str_replace_all(c(".trimmed.fasta"="", "nanopore.cons.cluster_"="s", ".ref"=""))
@@ -85,13 +86,13 @@ plot.tree <- function(x, color, offset=0.01, title=NULL, scale_offset_x=0.005, s
   antibiotics[antibiotics > 0] <- 'D'
   
   p <- 
-    ggtree(midpoint.root(tree.strains), layout="fan", open.angle=45, lwd=1) +
+    ggtree(midpoint.root(tree.strains), layout="fan", open.angle=60, lwd=1) +
     geom_tippoint(size=3, shape=19, col=color) + 
     geom_tiplab2(size=5, offset=offset/3) +
-    geom_treescale(x=scale_offset_x, y=scale_offset_y, linesize=0.8, offset=0.1) 
+    geom_treescale(x=scale_offset_x, y=scale_offset_y, linesize=0.8, offset=scale_offset_text, width=scale_width) 
   
   p <- gheatmap(p, offset=offset, antibiotics, color='black', colnames_offset_y = 0.3,##colnames_offset_x=10,
-                colnames_angle = 60, hjust =1, font.size=6.5) + scale_fill_manual(values=c('white', color)) + 
+                colnames_angle = 70, hjust =1, font.size=6.5) + scale_fill_manual(values=c('white', color)) + 
     theme(legend.position ='none', plot.title = element_text(size = 40, face = "bold.italic")) + 
     ggtitle(title)
   return(p)
@@ -119,16 +120,15 @@ write.table(dat.all.species,
 ```
 
 Generate tree plots
-```{r message=FALSE, warning=FALSE}
-g1 <- plot.tree('Elizabethkingia_anophelis', colors[1], 1, 'Elizabethkingia anophelis', 1, 0, 'opera_ms', opera_ms_threshold, dist_type)
-g2 <- plot.tree('Staphylococcus_epidermidis', colors[2], 0.08, 'Staphylococcus epidermidis', 0.35, 0, 'opera_ms', opera_ms_threshold, dist_type)
-g3 <- plot.tree('Staphylococcus_aureus', colors[3], 0.05, 'Staphylococcus aureus', 0.2, 0, 'opera_ms', opera_ms_threshold, dist_type)
-g4 <- plot.tree('Acinetobacter_baumannii', colors[4], 0.2, 'Acinetobacter baumannii', scale_offset_x = 0.3, 0, 'opera_ms', opera_ms_threshold, dist_type)
+```{r fig.height=10, fig.width=10, message=FALSE, warning=FALSE}
+g2 <- plot.tree('Staphylococcus_epidermidis', colors[2], 0.005, 'Staphylococcus epidermidis', 0.02, 0, 0.2, 0.002, 'opera_ms', opera_ms_threshold, dist_type)
+g3 <- plot.tree('Staphylococcus_aureus', colors[3], 0.004, 'Staphylococcus aureus', 0.01, 0, 0.2, 0.002, 'opera_ms', opera_ms_threshold, dist_type)
+g4 <- plot.tree('Acinetobacter_baumannii', colors[4], 0.004, 'Acinetobacter baumannii', scale_offset_x = 0.015, 0, 0.2, 0.002, 'opera_ms', opera_ms_threshold, dist_type)
 ####
-g5 <- plot.tree('Pseudomonas_aeruginosa', colors[5], 0.2, 'Pseudomonas aeruginosa', scale_offset_x = 0.3, 0, 'canu', canu_threshold, dist_type)
-g6 <- plot.tree('Enterococcus_faecium', colors[6], 0.9, 'Enterococcus faecium', scale_offset_x = 0.8, 0, 'canu', canu_threshold, dist_type)
-g7 <- plot.tree('Enterococcus_faecalis', colors[7], 0.05, 'Enterococcus faecalis', scale_offset_x = 0.2, 0, 'canu', canu_threshold, dist_type)
-g8 <- plot.tree('Klebsiella_pneumoniae', colors[8], 0.2, 'Klebsiella pneumoniae', scale_offset_x = 0.5, 0, 'canu', canu_threshold, dist_type)
+g5 <- plot.tree('Pseudomonas_aeruginosa', colors[5], 0.002, 'Pseudomonas aeruginosa', scale_offset_x = 0.003, 0, 0.05, 0.002, 'canu', canu_threshold, dist_type)
+g6 <- plot.tree('Enterococcus_faecium', colors[6], 0.01, 'Enterococcus faecium', scale_offset_x = 0.02, 0, 0.05, 0.01, 'canu', canu_threshold, dist_type)
+g7 <- plot.tree('Enterococcus_faecalis', colors[7], 0.002, 'Enterococcus faecalis', scale_offset_x = 0.004, 0, 0.08, 0.002, 'canu', canu_threshold, dist_type)
+g8 <- plot.tree('Klebsiella_pneumoniae', colors[8], 0.02, 'Klebsiella pneumoniae', scale_offset_x = 0.04, 0, 0.2, 0.02, 'canu', canu_threshold, dist_type)
 ```
 
 Main figure part (*S. aureus*)

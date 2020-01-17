@@ -52,27 +52,34 @@ mutate(tmp, species=str_replace_all(species, c('s__'='', '_'=' '))) %>%
   ggplot(aes(x=batch1, y=batch2, label=species)) + 
   geom_point(col='red', size=3)  + 
   gghighlight(ratio>4 & batch1>1/4) +
-  geom_vline(xintercept = 1/4, color='blue', lty=2) + 
-  geom_abline(slope = 1/4, intercept = 0, color='blue', lty=2) + 
   geom_text_repel(col='black', fontface='italic',size=5) + 
-  labs(x='Prevalence in batch 1', y='Prevalence in batch 2')
+  labs(x='Prevalence in timepoint 1 and 2', y='Prevalence in timepoint 3')
 ```
 
 Check if the borderline species were correlated with the potential contaminants
-```{r fig.height=12, fig.width=12}
-species.candidates <-  filter(tmp,ratio>3 & batch1>0.22) %>% pull(species)
+```{r fig.height=11.5, fig.width=12}
 species.removed <- filter(tmp,ratio>4 & batch1>1/4) %>% pull(species)
-
-mat <- cor(t(batch1[species.candidates,]), method='spearman')[species.removed, ] 
 
 mat <- cor(t(batch1[tmp$batch1>0.25,]), method='spearman')
 
 rownames(mat) %<>% str_replace_all(c('s__'='', '_'=' ')) %>% str_replace('[a-z]+ ', '. ')
 colnames(mat) %<>% str_replace_all(c('s__'='', '_'=' ')) %>% str_replace('[a-z]+ ', '. ')
+idx <-  which(rownames(batch1[tmp$batch1>0.25,]) %in% species.removed)
+
+ha = rowAnnotation(foo = anno_mark(at =idx, rownames(mat)[idx], labels_gp = gpar(fontface='bold.italic')))
+va = columnAnnotation(foo = anno_mark(at =idx, rownames(mat)[idx], side='bottom', 
+                                      link_gp = gpar(col='red', lwd=2) ,
+                                      labels_rot = 60,
+                                      labels_gp = gpar(fontface='bold.italic', col='red', fontsize=20)))
 
 Heatmap(mat, 
+        #right_annotation = ha, 
+        bottom_annotation = va,
         heatmap_legend_param = list(title='', legend_height=unit(5, "cm"), labels_gp=gpar(fontsize=15)), 
-        row_names_gp=gpar(fontface = "bold.italic"), column_names_gp = gpar(fontface = "bold.italic")) %>% 
+        #show_row_names = F, 
+        show_column_names = F,
+        row_names_gp=gpar(fontface = "bold.italic"), column_names_gp = gpar(fontface = "bold.italic")
+        ) %>% 
   draw(heatmap_legend_side = "left")
 ```
 
