@@ -18,6 +18,7 @@ hcluster <- function(dist_matrix, output_file, threshold){
 clustering novel species without filter the known species  # 0.05 42 clusters
 ```{r message=FALSE, warning=FALSE}
 dist.dat <- read.table("../tables/novel_genome_matrix.txt")
+system("mkdir ../tmp")
 hcluster(dist.dat, "../tmp/genome_cluster.tsv", 0.05)
 system("python ./remove_nonnovel_genome.py ../tmp/genome_cluster.tsv ../tables/non_novel_genome.dat ../output_tables/novel_genome_cluster.tsv")
 
