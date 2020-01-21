@@ -58,7 +58,6 @@ Staphylococcus_haemolyticus	N147_BC09	s_6198	2583571	2557865	MphC;BlaZ;Aph3-III;
 Staphylococcus_haemolyticus	N142_BC01	s_6167	2612780	2586785	BlaZ;MECA;Far1;	HIGH_QUAL
 Staphylococcus_haemolyticus	N108_BC02	s_5974	2673024	2646433	Aac6-Aph2;MECA;BlaZ;	HIGH_QUAL
 Staphylococcus_haemolyticus	N127_BC03	s_6092	2587959	2534423	MECA;Aac6-Aph2;MECA;Dfr;BlaZ;	HIGH_QUAL
-Staphylococcus_haemolyticus	N255_barcode13	s_6649	2690522	2623282	NONE	HIGH_QUAL
 Staphylococcus_haemolyticus	N175_BC10	s_6340	2594013	158566	Aph3-III;Sat4A;MECA;BlaZ;BlaZ;BlaZ;TetK;	HIGH_QUAL
 Staphylococcus_haemolyticus	N219_BC07	s_6552	2483432	354027	Aac6-Aph2;BlaZ;BlaZ;MECA;	HIGH_QUAL
 Staphylococcus_haemolyticus	N217_BC09	s_6545	2838690	1436984	Far1;TetK;BlaZ;	MEDIUM_QUAL
@@ -95,9 +94,7 @@ Staphylococcus_haemolyticus	N125_BC10	s_6082	2673093	2607433	Aac6-Aph2;MECA;MphC
 Staphylococcus_haemolyticus	N220_BC11	s_6557	2876774	1452069	BlaZ;MECA;Aph3-III;Sat4A;BlaZ;BlaZ;	MEDIUM_QUAL
 Staphylococcus_haemolyticus	N134_BC01	s_6134	2727823	2351720	TetM;BlaZ;MECA;Aac6-Aph2;Aph3-III;TetK;AadD;	HIGH_QUAL
 Staphylococcus_haemolyticus	N181_BC10	s_6385	2643529	2506988	Aac6-Aph2;	HIGH_QUAL
-Staphylococcus_haemolyticus	N255_barcode11	s_6647	2749628	2722272	NONE	HIGH_QUAL
 Staphylococcus_haemolyticus	N163_BC06	s_6278	2718228	2444033	Aac6-Aph2;MsrA;Aac6-Aph2;MsrA;TetK;BlaZ;MsrA;BlaZ;Aac6-Aph2;Aac6-Aph2;MphC;MsrA;BlaZ;MECA;Aac6-Aph2;Dfr;BlaZ;	HIGH_QUAL
-Staphylococcus_haemolyticus	N253_barcode11	s_6632	2699425	2645436	NONE	HIGH_QUAL
 Staphylococcus_haemolyticus	N140_BC10	s_6161	2605374	2579452	MECA;Aac6-Aph2;BlaZ;	HIGH_QUAL
 Staphylococcus_haemolyticus	N178_BC02	s_6361	2634928	2608713	MECA;Aac6-Aph2;BlaZ;	HIGH_QUAL
 Staphylococcus_haemolyticus	N103_BC10	s_5953	2773930	1771307	MphC;MsrA;MECA;Aac6-Aph2;Dfr;BlaZ;BlaZ;	HIGH_QUAL
@@ -144,7 +141,6 @@ Staphylococcus_haemolyticus	N189_BC08	s_6426	2591298	2535235	MECA;TetK;TetK;BlaZ
 Staphylococcus_haemolyticus	N176_BC06	s_6347	2943573	2629966	MphC;Aph3-III;Aac6-Aph2;Aac6-Aph2;MECA;BlaZ;Sat4A;MsrA;	MEDIUM_QUAL
 Staphylococcus_haemolyticus	N168_BC11	s_6302	2557083	1129425	MECA;Aph3-III;Sat4A;Far1;BlaZ;Aac6-Aph2;TetK;	HIGH_QUAL
 Staphylococcus_haemolyticus	N103_BC08	s_5952	2551962	353981	Aac6-Aph2;TetK;Sat4A;	HIGH_QUAL
-Staphylococcus_haemolyticus	N253_barcode13	s_6634	2654869	2628452	NONE	HIGH_QUAL
 Staphylococcus_haemolyticus	N104_BC12	s_5958	2524561	120336	Dfr;MECA;Aac6-Aph2;MphC;MsrA;	HIGH_QUAL
 Staphylococcus_haemolyticus	N162_BC06	s_6275	2500930	2476042		HIGH_QUAL
 Staphylococcus_haemolyticus	N120_BC11	s_6045	2529033	2503866		HIGH_QUAL
@@ -161,7 +157,6 @@ Staphylococcus_haemolyticus	N203_BC03	s_6497	2690767	2663999	MECA;Aac6-Aph2;Aph3
 Staphylococcus_haemolyticus	N140_BC11	s_6162	2655632	2583247	MECA;Aac6-Aph2;BlaZ;	HIGH_QUAL
 Staphylococcus_haemolyticus	N225_BC02	s_6576	2569727	964386	BlaZ;Sat4A;Aph3-III;TetK;BlaZ;	HIGH_QUAL
 Staphylococcus_haemolyticus	N193_BC04	s_6454	2594909	2569090	BlaZ;MECA;Far1;	HIGH_QUAL
-Staphylococcus_haemolyticus	N253_barcode14	s_6635	2551700	2526304	NONE	HIGH_QUAL
 Staphylococcus_haemolyticus	N149_BC08	s_6208	2685253	2631574	MphC;BlaZ;Aph3-III;MECA;Aac6-Aph2;Aac6-Aph2;Sat4A;MsrA;	HIGH_QUAL
 Staphylococcus_haemolyticus	N144_BC08	s_6179	2814862	1490883	Aac6-Aph2;MsrA;MphC;MECA;Dfr;Aac6-Aph2;Dfr;TetK;MECA;BlaZ;MECA;	HIGH_QUAL
 Staphylococcus_haemolyticus	N231_BC10	s_6588	2044996	53503	TetK;	MEDIUM_QUAL
@@ -184,7 +179,6 @@ Staphylococcus_haemolyticus	N200_BC10	s_6486	2553968	1498887	MECA;BlaZ;TetK;	HIG
 Staphylococcus_haemolyticus	N130_BC07	s_6114	2734270	694600	MECA;BlaZ;Dfr;Aac6-Aph2;Aac6-Aph2;Aac6-Aph2;MphC;MsrA;	HIGH_QUAL
 Staphylococcus_haemolyticus	N210_BC01	s_6524	2697152	835357	MECA;Aac6-Aph2;BlaZ;	HIGH_QUAL
 Staphylococcus_haemolyticus	N104_BC09	s_5957	1417268	20936		MEDIUM_QUAL
-Staphylococcus_haemolyticus	N253_barcode12	s_6633	2672592	2624570	NONE	HIGH_QUAL
 Staphylococcus_haemolyticus	N147_BC02	s_6193	2630358	2568115	Sat4A;Aph3-III;MECA;TetK;Far1;BlaZ;Aac6-Aph2;	HIGH_QUAL
 Staphylococcus_haemolyticus	N141_BC05	s_6165	2608663	2559996	MphC;BlaZ;Dfr;MECA;Aph3-III;Aac6-Aph2;Sat4A;MsrA;	HIGH_QUAL
 Staphylococcus_haemolyticus	N133_BC08	s_6131	2938122	2687888	Aph3-III;BlaZ;Aac6-Aph2;TetK;MECA;TetM;Aac6-Aph2;Aac6-Aph2;BlaZ;BlaZ;	MEDIUM_QUAL
@@ -212,7 +206,6 @@ Staphylococcus_haemolyticus	N151_BC02	s_6213	2578228	344238	Aac6-Aph2;BlaZ;MECA;
 Staphylococcus_haemolyticus	N174_BC01	s_6333	2678726	2652079	MphC;Aac6-Aph2;MECA;Aac6-Aph2;Dfr;BlaZ;Far1;MsrA;	HIGH_QUAL
 Staphylococcus_haemolyticus	N141_BC03	s_6164	2738929	797538	AadD;BlaZ;Sat4A;MECA;Aph3-III;MphC;Aac6-Aph2;MsrA;Dfr;	HIGH_QUAL
 Staphylococcus_haemolyticus	N117_BC09	s_6022	2678777	1633148	TetK;Aph3-III;BlaZ;Sat4A;MECA;MphC;MsrA;	HIGH_QUAL
-Staphylococcus_haemolyticus	N253_barcode05	s_6629	2687353	1502362	NONE	HIGH_QUAL
 Staphylococcus_haemolyticus	N143_BC10	s_6173	2704371	2593668	Aph3-III;Sat4A;MECA;BlaZ;BlaZ;	HIGH_QUAL
 Staphylococcus_haemolyticus	N153_BC07	s_6223	2423786	89058	BlaZ;Aac6-Aph2;TetK;	HIGH_QUAL
 Staphylococcus_haemolyticus	N125_BC01	s_6076	2346555	202916	Sat4A;Aph3-III;BlaZ;AadD;AadD;MsrA;Aac6-Aph2;Aac6-Aph2;BlaZ;	MEDIUM_QUAL
@@ -256,7 +249,6 @@ Staphylococcus_haemolyticus	N201_BC08	s_6489	2520584	1518244		HIGH_QUAL
 Staphylococcus_haemolyticus	N120_BC10	s_6044	2552320	92119	BlaZ;Aph3-III;Sat4A;AadD;Dfr;MECA;MphC;Aac6-Aph2;MsrA;	HIGH_QUAL
 Staphylococcus_haemolyticus	N167_BC06	s_6294	2674267	2647665	Aph3-III;Sat4A;BlaZ;Dfr;MECA;TetK;	HIGH_QUAL
 Staphylococcus_haemolyticus	N118_BC07	s_6025	2723350	2655561	Aac6-Aph2;MECA;BlaZ;Dfr;TetK;TetK;	HIGH_QUAL
-Staphylococcus_haemolyticus	N255_barcode14	s_6650	2682430	2621749	NONE	HIGH_QUAL
 Staphylococcus_haemolyticus	N232_BC10	s_6593	1811242	66725	AadD;MsrA;Aac6-Aph2;	MEDIUM_QUAL
 Staphylococcus_haemolyticus	N233_BC11	s_6598	2770828	2584028	Aac6-Aph2;MECA;BlaZ;	HIGH_QUAL
 Staphylococcus_haemolyticus	N129_BC12	s_6110	2645571	2523429	Dfr;MECA;Aac6-Aph2;BlaZ;	HIGH_QUAL
@@ -287,7 +279,6 @@ Staphylococcus_haemolyticus	N179_BC09	s_6373	2703838	2555775	MphC;Aac6-Aph2;Aph3
 Staphylococcus_haemolyticus	N166_BC10	s_6290	2566742	2541202	Aac6-Aph2;Dfr;MECA;BlaZ;	HIGH_QUAL
 Staphylococcus_haemolyticus	N110_BC09	s_5985	1870946	28017	TetK;BlaZ;	MEDIUM_QUAL
 Staphylococcus_haemolyticus	N173_BC10	s_6331	2515680	556816	Aph3-III;BlaZ;Aac6-Aph2;TetM;	HIGH_QUAL
-Staphylococcus_haemolyticus	N253_barcode15	s_6636	1600946	118055	NONE	MEDIUM_QUAL
 Staphylococcus_haemolyticus	N229_BC06	s_6583	2281532	37679	Aph3-III;Aac6-Aph2;	MEDIUM_QUAL
 Staphylococcus_haemolyticus	N185_BC01	s_6400	2573211	2547606	MECA;BlaZ;Far1;TetK;	HIGH_QUAL
 Staphylococcus_haemolyticus	N120_BC06	s_6041	2905920	2498115	BlaZ;MECA;TetK;BlaZ;MECA;Aac6-Aph2;MphC;MsrA;	MEDIUM_QUAL
@@ -312,7 +303,6 @@ Staphylococcus_haemolyticus	N223_BC03	s_6566	2376015	100088	BlaZ;TetK;	MEDIUM_QU
 Staphylococcus_haemolyticus	N121_BC08	s_6052	2867641	1527581	AadD;LnuA;TetK;BlaZ;BlaZ;Aac6-Aph2;MECA;Dfr;BlaZ;Far1;	MEDIUM_QUAL
 Staphylococcus_haemolyticus	N127_BC05	s_6093	2626663	2600529	Aac6-Aph2;MECA;Dfr;BlaZ;MphC;MsrA;	HIGH_QUAL
 Staphylococcus_haemolyticus	N207_BC10	s_6511	2407051	87643	MECA;Aac6-Aph2;BlaZ;	MEDIUM_QUAL
-Staphylococcus_haemolyticus	N255_barcode01	s_6645	2772953	2403269	NONE	HIGH_QUAL
 Staphylococcus_haemolyticus	N105_BC07	s_5963	2517235	175636	Aac6-Aph2;BlaZ;TetK;AadD;LnuA;TetK;	HIGH_QUAL
 Staphylococcus_haemolyticus	N223_BC02	s_6565	2608746	191520		HIGH_QUAL
 Staphylococcus_haemolyticus	N121_BC12	s_6056	2704961	2640080	MECA;Aac6-Aph2;BlaZ;	HIGH_QUAL
@@ -329,7 +319,6 @@ Staphylococcus_haemolyticus	N176_BC08	s_6349	2702938	2676050	Aph3-III;BlaZ;MECA;
 Staphylococcus_haemolyticus	N158_BC06	s_6255	2707771	1683688	Aac6-Aph2;MphC;BlaZ;MsrA;Dfr;MECA;BlaZ;	HIGH_QUAL
 Staphylococcus_haemolyticus	N160_BC01	s_6263	2819272	2661315	BlaZ;Aac6-Aph2;MECA;TetK;TetM;	MEDIUM_QUAL
 Staphylococcus_haemolyticus	N117_BC07	s_6020	2535266	1030716		HIGH_QUAL
-Staphylococcus_haemolyticus	N255_barcode08	s_6646	2747808	2720469	NONE	HIGH_QUAL
 Staphylococcus_haemolyticus	N137_BC10	s_6150	2699471	2672618	BlaZ;MECA;Aac6-Aph2;TetK;TetM;Aph3-III;	HIGH_QUAL
 Staphylococcus_haemolyticus	N103_BC12	s_5955	2724387	792436	TetK;MECA;Dfr;BlaZ;Aac6-Aph2;MphC;MsrA;	HIGH_QUAL
 Staphylococcus_haemolyticus	N148_BC01	s_6200	2586387	2560652	MphC;BlaZ;Aph3-III;Sat4A;MECA;Aac6-Aph2;MsrA;Dfr;	HIGH_QUAL
@@ -339,7 +328,6 @@ Staphylococcus_haemolyticus	N105_BC12	s_5965	2844800	116595	Aph3-III;BlaZ;MECA;A
 Staphylococcus_haemolyticus	N139_BC01	s_6151	1873928	93868	Dfr;BlaZ;TetL;Aac6-Aph2;MsrA;MphC;	MEDIUM_QUAL
 Staphylococcus_haemolyticus	N151_BC03	s_6214	2603180	485115	MECA;TetK;BlaZ;BlaZ;	HIGH_QUAL
 Staphylococcus_haemolyticus	N135_BC05	s_6144	2575300	2549677	MphC;MECA;Aac6-Aph2;Dfr;MsrA;BlaZ;	HIGH_QUAL
-Staphylococcus_haemolyticus	N253_barcode10	s_6631	2633253	2607049	NONE	HIGH_QUAL
 Staphylococcus_haemolyticus	N179_BC01	s_6369	2623439	2549907	Aac6-Aph2;MECA;Dfr;BlaZ;AadD;AadD;	HIGH_QUAL
 Staphylococcus_haemolyticus	N169_BC01	s_6304	2792259	365990	MECA;CatA;BlaZ;TetK;Dfr;	HIGH_QUAL
 Staphylococcus_haemolyticus	N135_BC09	s_6145	2601246	2575366	MECA;Aac6-Aph2;Dfr;MphC;MsrA;BlaZ;	HIGH_QUAL
@@ -356,7 +344,6 @@ Staphylococcus_haemolyticus	N144_BC05	s_6177	2679394	2620284	MphC;BlaZ;Aph3-III;
 Staphylococcus_haemolyticus	N161_BC01	s_6267	2661791	1583309	Aph3-III;BlaZ;MECA;Sat4A;MphC;Aac6-Aph2;Aac6-Aph2;Far1;MsrA;Dfr;	HIGH_QUAL
 Staphylococcus_haemolyticus	N177_BC06	s_6355	2593404	2567599	MphC;Aph3-III;Sat4A;MECA;Aac6-Aph2;BlaZ;TetK;MsrA;	HIGH_QUAL
 Staphylococcus_haemolyticus	N125_BC12	s_6084	2662480	2596806	Aac6-Aph2;MphC;MECA;BlaZ;MsrA;Dfr;	HIGH_QUAL
-Staphylococcus_haemolyticus	N253_barcode06	s_6630	2673930	2647325	NONE	HIGH_QUAL
 Staphylococcus_haemolyticus	N135_BC03	s_6142	2730493	2703333	BlaZ;MECA;Aac6-Aph2;Aph3-III;TetK;TetM;	HIGH_QUAL
 Staphylococcus_haemolyticus	N148_BC04	s_6202	2676362	2649735	BlaZ;MECA;Aac6-Aph2;TetK;TetM;	HIGH_QUAL
 Staphylococcus_haemolyticus	N145_BC11	s_6190	2544102	2518787	MECA;Aac6-Aph2;Dfr;BlaZ;	HIGH_QUAL
@@ -364,7 +351,6 @@ Staphylococcus_haemolyticus	N152_BC11	s_6220	2838439	2720612	MphC;Aac6-Aph2;Aac6
 Staphylococcus_haemolyticus	N118_BC11	s_6029	2660782	508012	Aac6-Aph2;MphC;Aac6-Aph2;MsrA;Aac6-Aph2;MECA;BlaZ;Dfr;	HIGH_QUAL
 Staphylococcus_haemolyticus	N110_BC11	s_5987	2389909	83095	Aph3-III;Sat4A;BlaZ;BlaZ;TetK;MECA;	MEDIUM_QUAL
 Staphylococcus_haemolyticus	N166_BC06	s_6286	2604017	2578109	MphC;Aph3-III;Aac6-Aph2;Aac6-Aph2;BlaZ;MECA;Sat4A;Far1;MsrA;	HIGH_QUAL
-Staphylococcus_haemolyticus	N255_barcode15	s_6651	2662406	2619170	NONE	HIGH_QUAL
 Staphylococcus_haemolyticus	N173_BC01	s_6325	2613449	2575643	MphC;MphC;Aph3-III;Aac6-Aph2;MECA;Sat4A;Aac6-Aph2;MsrA;TetK;BlaZ;MsrA;	HIGH_QUAL
 Staphylococcus_haemolyticus	N184_BC02	s_6393	1888979	53356	BlaZ;Aac6-Aph2;	MEDIUM_QUAL
 Staphylococcus_haemolyticus	N107_BC12	s_5972	2827475	1941585	MphC;Dfr;Aac6-Aph2;MsrA;BlaZ;Aph3-III;MECA;Sat4A;TetK;	MEDIUM_QUAL
@@ -389,13 +375,11 @@ Staphylococcus_haemolyticus	N180_BC01	s_6375	2559110	2533647	MphC;MECA;BlaZ;TetK
 Staphylococcus_haemolyticus	N166_BC03	s_6285	2640650	2614379	MphC;Aph3-III;Aac6-Aph2;Sat4A;Aac6-Aph2;MECA;Far1;BlaZ;MsrA;	HIGH_QUAL
 Staphylococcus_haemolyticus	N190_BC02	s_6431	2752525	2640213	Aac6-Aph2;MECA;Dfr;BlaZ;TetK;TetK;	HIGH_QUAL
 Staphylococcus_haemolyticus	N115_BC02	s_6005	2627381	1002579	Aac6-Aph2;MphC;BlaZ;MECA;Dfr;	HIGH_QUAL
-Staphylococcus_haemolyticus	N255_barcode12	s_6648	2711268	2661903	NONE	HIGH_QUAL
 Staphylococcus_haemolyticus	N180_BC07	s_6378	2562249	2466909	MECA;Aac6-Aph2;	HIGH_QUAL
 Staphylococcus_haemolyticus	N121_BC10	s_6054	2623425	2575205	Aac6-Aph2;BlaZ;	HIGH_QUAL
 Staphylococcus_haemolyticus	N174_BC11	s_6338	2836429	2346279	TetK;TetK;Aac6-Aph2;MECA;BlaZ;Dfr;TetK;TetK;TetK;	MEDIUM_QUAL
 Staphylococcus_haemolyticus	N159_BC06	s_6257	2694302	2630485	MphC;BlaZ;MECA;Aph3-III;Aac6-Aph2;Aac6-Aph2;Sat4A;MsrA;	HIGH_QUAL
 Staphylococcus_aureus	N186_BC01	s_4947	2771715	2744144	NorA;Tet-38;Dha1;APH-Stph;Aac3-Ik;FosB;	HIGH_QUAL
-Staphylococcus_aureus	N253_barcode05	s_5138	2985632	2955941	NONE	HIGH_QUAL
 Staphylococcus_aureus	N153_BC12	s_4835	3133105	245522	APH-Stph;BlaZ;BlaZ;Aac6-Aph2;MECA;TetK;Tet-38;Dha1;Aac3-Ik;NorA;	HIGH_QUAL
 Staphylococcus_aureus	N238_BC11	s_5129	3051399	2973742	BlaZ;Aac6-Aph2;APH-Stph;Aac3-Ik;Tet-38;TetK;Dha1;NorA;	HIGH_QUAL
 Staphylococcus_aureus	N229_BC12	s_5106	1408908	56881	Tet-38;TetK;Aac3-Ik;	MEDIUM_QUAL
@@ -447,7 +431,6 @@ Staphylococcus_aureus	N130_BC05	s_4752	2927053	2875550	Dha1;Tet-38;NorA;MECA;Dfr
 Staphylococcus_aureus	N189_BC02	s_4962	2981020	2951379	Aac6-Aph2;MECA;BlaZ;TetK;APH-Stph;Tet-38;Aac3-Ik;Dha1;NorA;	HIGH_QUAL
 Staphylococcus_aureus	N184_BC11	s_4944	2995217	2895130	BlaZ;Aac6-Aph2;APH-Stph;MECA;Tet-38;Dha1;Aac3-Ik;NorA;	HIGH_QUAL
 Staphylococcus_aureus	N173_BC08	s_4892	3176362	667907	TetK;Tet-38;MECA;TetK;BlaZ;Aac6-Aph2;APH-Stph;Dha1;Aac3-Ik;NorA;	HIGH_QUAL
-Staphylococcus_aureus	N253_barcode01	s_5135	3028358	2967246	NONE	HIGH_QUAL
 Staphylococcus_aureus	N212_BC10	s_5047	2972138	2942584	MECA;Aac6-Aph2;BlaZ;TetK;APH-Stph;Tet-38;Aac3-Ik;Dha1;NorA;	HIGH_QUAL
 Staphylococcus_aureus	N153_BC10	s_4833	2974221	318956	MECA;TetK;Tet-38;Dha1;BlaZ;Aac6-Aph2;APH-Stph;Aac3-Ik;NorA;	HIGH_QUAL
 Staphylococcus_aureus	N198_BC08	s_4992	2951787	2922434	MECA;BlaZ;APH-Stph;Tet-38;Aac3-Ik;NorA;	HIGH_QUAL
@@ -560,7 +543,6 @@ Staphylococcus_aureus	N184_BC10	s_4943	3009335	2890137	BlaZ;MECA;APH-Stph;Aac6-A
 Staphylococcus_aureus	N146_BC07	s_4802	2856966	316043	BlaZ;Aac6-Aph2;Dha1;Aac3-Ik;APH-Stph;NorA;TetK;Tet-38;	HIGH_QUAL
 Staphylococcus_aureus	N195_BC06	s_4984	2281882	81237	FosB;Aac3-Ik;NorA;APH-Stph;Tet-38;	MEDIUM_QUAL
 Staphylococcus_aureus	N184_BC06	s_4941	2959789	2930358	Aac6-Aph2;BlaZ;APH-Stph;MECA;TetK;Aac3-Ik;Tet-38;Dha1;NorA;	HIGH_QUAL
-Staphylococcus_aureus	N253_barcode02	s_5136	3026553	2960331	NONE	HIGH_QUAL
 Staphylococcus_aureus	N220_BC07	s_5071	3039840	188907	TetK;APH-Stph;Tet-38;MECA;Aac3-Ik;NorA;BlaZ;Aac6-Aph2;BlaZ;Dha1;	HIGH_QUAL
 Staphylococcus_aureus	N188_BC05	s_4957	2984658	2933802	Aac6-Aph2;MECA;BlaZ;MECA;TetK;TetK;APH-Stph;Aac3-Ik;Tet-38;Dha1;NorA;Spc;ErmA;	HIGH_QUAL
 Staphylococcus_aureus	N181_BC05	s_4923	2909136	2880207	Aac6-Aph2;BlaZ;APH-Stph;MECA;TetK;Tet-38;Aac3-Ik;Dha1;NorA;	HIGH_QUAL
@@ -600,7 +582,6 @@ Staphylococcus_aureus	N181_BC07	s_4925	2804565	2761208	MECA;Aac3-Ik;Dha1;APH-Stp
 Staphylococcus_aureus	N128_BC12	s_4745	3041046	3010810	BlaZ;BlaZ;MECA;APH-Stph;TetK;Aac6-Aph2;Tet-38;Aac3-Ik;Dha1;NorA;	HIGH_QUAL
 Staphylococcus_aureus	N210_BC04	s_5037	3017547	100099	Tet-38;Aac3-Ik;NorA;TetK;Dha1;APH-Stph;MECA;BlaZ;Aac6-Aph2;Dha1;	HIGH_QUAL
 Staphylococcus_aureus	N203_BC12	s_5012	3024040	241840	TetK;BlaZ;APH-Stph;Dha1;MECA;Tet-38;NorA;	HIGH_QUAL
-Staphylococcus_aureus	N253_barcode03	s_5137	2986445	2956745	NONE	HIGH_QUAL
 Staphylococcus_aureus	N157_BC01	s_4840	2754255	182523	Dfr;NorA;Aac3-Ik;Tet-38;MECA;BlaZ;APH-Stph;FosB;Dha1;	HIGH_QUAL
 Staphylococcus_aureus	N138_BC10	s_4783	3021428	2991387	BlaZ;BlaZ;MECA;APH-Stph;Aac6-Aph2;TetK;Tet-38;Dha1;Aac3-Ik;NorA;	HIGH_QUAL
 Staphylococcus_aureus	N113_BC04	s_4705	3005292	2975411	BlaZ;BlaZ;MECA;Aac6-Aph2;APH-Stph;TetK;Tet-38;Aac3-Ik;Dha1;NorA;	HIGH_QUAL
@@ -919,7 +900,6 @@ Bacillus_cereus	N226_BC06	s_1147	5341781	1616257	BLA;	HIGH_QUAL
 Bacillus_cereus	N229_BC11	s_1164	5260165	5085637	BLA;	HIGH_QUAL
 Bacillus_cereus	N152_BC01	s_918	3575201	94397		MEDIUM_QUAL
 Bacillus_cereus	N173_BC10	s_954	3787130	158613		MEDIUM_QUAL
-Bacillus_cereus	N255_barcode10	s_1229	5391354	5322667	NONE	HIGH_QUAL
 Bacillus_cereus	N208_BC10	s_1053	4700275	135075	BLA;	HIGH_QUAL
 Bacillus_cereus	N195_BC11	s_1006	4224286	94803		MEDIUM_QUAL
 Bacillus_cereus	N133_BC11	s_900	5249910	1655131	BLA;	HIGH_QUAL
@@ -933,7 +913,6 @@ Bacillus_cereus	N236_BC05	s_1205	2678814	89874		MEDIUM_QUAL
 Bacillus_cereus	N233_BC04	s_1185	5345557	473503	BLA;	HIGH_QUAL
 Bacillus_cereus	N227_BC10	s_1153	4308048	461260	BLA;	MEDIUM_QUAL
 Bacillus_cereus	N190_BC12	s_989	4828253	1320904	BLA;	HIGH_QUAL
-Bacillus_cereus	N255_barcode07	s_1227	5549325	5494249	NONE	HIGH_QUAL
 Bacillus_cereus	N227_BC12	s_1154	5244409	5192358	BLA;	HIGH_QUAL
 Bacillus_cereus	N222_BC02	s_1118	5326879	5274010	BLA;	HIGH_QUAL
 Bacillus_cereus	N218_BC01	s_1096	5352372	254977	BLA;	HIGH_QUAL
@@ -955,7 +934,6 @@ Bacillus_cereus	N225_BC06	s_1140	4328281	779510		MEDIUM_QUAL
 Bacillus_cereus	N209_BC01	s_1055	5396990	2571018	BLA;	HIGH_QUAL
 Bacillus_cereus	N143_BC02	s_909	5387996	5314238	BLA;	HIGH_QUAL
 Bacillus_cereus	N207_BC04	s_1043	5249429	907038	BLA;	HIGH_QUAL
-Bacillus_cereus	N255_barcode09	s_1228	5372259	5318935	NONE	HIGH_QUAL
 Bacillus_cereus	N223_BC01	s_1123	5502359	5447754	BLA;	HIGH_QUAL
 Bacillus_cereus	N160_BC12	s_930	2951971	46322	BLA;	MEDIUM_QUAL
 Bacillus_cereus	N218_BC02	s_1097	5278352	5225965	BLA;	HIGH_QUAL
@@ -978,7 +956,6 @@ Bacillus_cereus	N213_BC07	s_1073	2895109	90085	BLA;	MEDIUM_QUAL
 Bacillus_cereus	N213_BC12	s_1077	5270827	3016923	BLA;	HIGH_QUAL
 Bacillus_cereus	N212_BC11	s_1070	5506021	5451379	BLA;	HIGH_QUAL
 Bacillus_cereus	N238_BC12	s_1218	2594290	325074	BLA;	MEDIUM_QUAL
-Bacillus_cereus	N255_barcode06	s_1226	5546340	5491295	NONE	HIGH_QUAL
 Bacillus_cereus	N235_BC11	s_1201	5330324	2807755	BLA;	HIGH_QUAL
 Bacillus_cereus	N195_BC06	s_1002	5760352	1286329	BLA;	MEDIUM_QUAL
 Bacillus_cereus	N206_BC06	s_1038	4551770	363348	BLA;	MEDIUM_QUAL
@@ -1065,7 +1042,6 @@ Staphylococcus_capitis	N150_BC01	s_5257	2485497	243648	Aac6-Aph2;	HIGH_QUAL
 Staphylococcus_capitis	N154_BC02	s_5268	2519724	94014	Aac6-Aph2;	HIGH_QUAL
 Staphylococcus_capitis	N177_BC04	s_5308	2893946	2552609	Aac6-Aph2;MECA;Far1;	HIGH_QUAL
 Staphylococcus_capitis	N123_BC05	s_5197	2571904	2505973	MECA;Aac6-Aph2;	HIGH_QUAL
-Staphylococcus_capitis	N255_barcode18	s_5424	2560557	2535073	NONE	HIGH_QUAL
 Staphylococcus_capitis	N116_BC10	s_5180	2161957	64063	Aac6-Aph2;	MEDIUM_QUAL
 Staphylococcus_capitis	N128_BC10	s_5213	2677376	1396896	MECA;	HIGH_QUAL
 Staphylococcus_capitis	N164_BC11	s_5285	2558415	2496519	MECA;Aac6-Aph2;Far1;	HIGH_QUAL
@@ -1075,17 +1051,13 @@ Staphylococcus_capitis	N212_BC05	s_5381	2044835	119620	MECA;Aac6-Aph2;Aac6-Aph2;
 Staphylococcus_capitis	N116_BC08	s_5179	2667862	2641324	AadD;Spc;Spc;AadD;ErmA;ErmA;MECA;Aac6-Aph2;MECA;DfrC;	HIGH_QUAL
 Staphylococcus_capitis	N149_BC10	s_5256	1539941	26813	AadD;AadD;Spc;ErmA;	MEDIUM_QUAL
 Staphylococcus_capitis	N142_BC01	s_5241	1731855	60529	MECA;	MEDIUM_QUAL
-Staphylococcus_capitis	N255_barcode04	s_5420	2620261	2553261	NONE	HIGH_QUAL
 Staphylococcus_capitis	N113_BC01	s_5170	2676327	809515	Aac6-Aph2;	HIGH_QUAL
 Staphylococcus_capitis	N236_BC08	s_5412	2573385	2508585	MECA;Aac6-Aph2;	HIGH_QUAL
 Staphylococcus_capitis	N225_BC03	s_5396	2423048	69487	AadD;MECA;Spc;ErmA;	HIGH_QUAL
 Staphylococcus_capitis	N187_BC09	s_5331	2611525	2547016	MECA;Aac6-Aph2;BlaZ;	HIGH_QUAL
-Staphylococcus_capitis	N255_barcode05	s_5421	2570613	2545029	NONE	HIGH_QUAL
-Staphylococcus_capitis	N255_barcode02	s_5418	2568529	2542965	NONE	HIGH_QUAL
 Staphylococcus_capitis	N123_BC03	s_5195	2690157	2473025	Spc;AadD;ErmA;Spc;ErmA;MECA;MECA;	HIGH_QUAL
 Staphylococcus_capitis	N128_BC11	s_5214	2566893	1605886	Aac6-Aph2;	HIGH_QUAL
 Staphylococcus_capitis	N237_BC11	s_5414	2153461	83079	Aac6-Aph2;ErmA;Spc;	MEDIUM_QUAL
-Staphylococcus_capitis	N255_barcode16	s_5422	2557722	2532267	NONE	HIGH_QUAL
 Staphylococcus_capitis	N179_BC07	s_5315	2592843	2544883	Aac6-Aph2;MECA;VgaA;	HIGH_QUAL
 Staphylococcus_capitis	N107_BC05	s_5158	2503511	1466410	Aac6-Aph2;	HIGH_QUAL
 Staphylococcus_capitis	N132_BC09	s_5224	2737414	2012603	MECA;Aac6-Aph2;Aac6-Aph2;VgaA;	HIGH_QUAL
@@ -1125,7 +1097,6 @@ Staphylococcus_capitis	N189_BC10	s_5343	2737063	2246584	Aac6-Aph2;MECA;	HIGH_QUA
 Staphylococcus_capitis	N218_BC02	s_5388	2549197	231838	Aac6-Aph2;	HIGH_QUAL
 Staphylococcus_capitis	N117_BC07	s_5184	2518918	2272458	Aac6-Aph2;MECA;	HIGH_QUAL
 Staphylococcus_capitis	N136_BC10	s_5234	2873664	2650231	MECA;Aac6-Aph2;	HIGH_QUAL
-Staphylococcus_capitis	N255_barcode17	s_5423	2553594	2528179	NONE	HIGH_QUAL
 Staphylococcus_capitis	N103_BC05	s_5149	2391600	1297405	AadD;ErmA;MECA;Spc;ErmA;	HIGH_QUAL
 Staphylococcus_capitis	N135_BC05	s_5233	2545395	2520068	Aac6-Aph2;MECA;	HIGH_QUAL
 Staphylococcus_capitis	N163_BC01	s_5281	2685982	2633225	Spc;AadD;Spc;ErmA;ErmA;MECA;Aac6-Aph2;DfrC;	HIGH_QUAL
@@ -1151,7 +1122,6 @@ Staphylococcus_capitis	N125_BC07	s_5207	2781304	2633294	MECA;Aac6-Aph2;	HIGH_QUA
 Staphylococcus_capitis	N131_BC09	s_5220	2044167	69580		MEDIUM_QUAL
 Staphylococcus_capitis	N108_BC10	s_5163	1931978	70925	Aac6-Aph2;	MEDIUM_QUAL
 Staphylococcus_capitis	N169_BC07	s_5297	2488537	846803	MECA;Aac6-Aph2;	HIGH_QUAL
-Staphylococcus_capitis	N255_barcode03	s_5419	2572673	2547068	NONE	HIGH_QUAL
 Staphylococcus_capitis	N238_BC04	s_5415	2718257	2691217	Spc;Spc;Spc;ErmA;ErmA;ErmA;MECA;Aac6-Aph2;BlaZ;BlaZ;	HIGH_QUAL
 Staphylococcus_capitis	N221_BC07	s_5391	2747385	929028	Aac6-Aph2;MECA;	HIGH_QUAL
 Staphylococcus_capitis	N125_BC05	s_5205	2528252	2503095	MECA;Aac6-Aph2;	HIGH_QUAL
@@ -1171,7 +1141,6 @@ Staphylococcus_capitis	N202_BC02	s_5363	2579797	1500487		HIGH_QUAL
 Staphylococcus_capitis	N217_BC06	s_5387	2686600	2659874	BlaZ;	HIGH_QUAL
 Staphylococcus_capitis	N165_BC06	s_5288	2664693	2638184	Aac6-Aph2;MECA;	HIGH_QUAL
 Staphylococcus_capitis	N119_BC06	s_5190	2529948	690598	Aac6-Aph2;Far1;	HIGH_QUAL
-Staphylococcus_capitis	N255_barcode19	s_5425	2558578	2533113	NONE	HIGH_QUAL
 Staphylococcus_capitis	N131_BC10	s_5221	1483510	40483		MEDIUM_QUAL
 Staphylococcus_capitis	N152_BC09	s_5261	1579119	36053		MEDIUM_QUAL
 Staphylococcus_capitis	N144_BC11	s_5248	1604055	24739	MECA;	MEDIUM_QUAL
@@ -1197,7 +1166,6 @@ Enterococcus_faecalis	N194_BC01	s_3382	3126289	2987634	MphD;TetM;LsaA;	HIGH_QUAL
 Enterococcus_faecalis	N173_BC06	s_3348	2662289	1358728	LsaA;MphD;	HIGH_QUAL
 Enterococcus_faecalis	N137_BC05	s_3306	2976895	2947295	Sat4A;Aph3-III;ErmB;ErmB;Aac6-Aph2;MphD;LsaA;TetM;	HIGH_QUAL
 Enterococcus_faecalis	N135_BC11	s_3305	3260827	3228416	Aac6-Aph2;TetM;TetM;MphD;LsaA;	HIGH_QUAL
-Enterococcus_faecalis	N253_barcode04	s_3450	3012107	2982152	NONE	HIGH_QUAL
 Enterococcus_faecalis	N148_BC05	s_3318	2641725	89409	LsaA;MphD;Sat4A;Aph3-III;ErmB;CatA;Aac6-Aph2;ErmB;TetM;	HIGH_QUAL
 Enterococcus_faecalis	N160_BC06	s_3344	2976454	2946858	Aph3-III;Sat4A;Aac6-Aph2;ErmB;MphD;LsaA;TetM;	HIGH_QUAL
 Enterococcus_faecalis	N214_BC09	s_3415	2942217	2912960	CatA;Sat4A;ErmB;Aph3-III;Aac6-Aph2;MphD;ErmB;LsaA;TetM;	HIGH_QUAL
@@ -1361,7 +1329,6 @@ Acinetobacter_baumannii	N183_BC05	s_284	3835530	3797427	OXA-51;Zn-dependent;ADC;
 Acinetobacter_baumannii	N218_BC09	s_324	3021417	106680	BlaA2;ADC;Zn-dependent;BlaA1;Mbl;	MEDIUM_QUAL
 Acinetobacter_baumannii	N197_BC02	s_291	3970013	3930579	StrB;StrA;OXA-51;MsrE;TetB;MphE;TEM-1D;ArmA;ADC;OXA-23;Mbl;Zn-dependent;BlaA2;BlaA1;	HIGH_QUAL
 Acinetobacter_baumannii	N098_BC10	s_187	3920061	3870413	MsrE;OXA-23;OXA-23;OXA-51;CARB-5;MphE;ArmA;Zn-dependent;Mbl;BlaA2;ADC;ADC;BlaA1;BlaA1;BlaA1;	HIGH_QUAL
-Acinetobacter_baumannii	N253_barcode09	s_350	3806562	3768742	NONE	HIGH_QUAL
 Acinetobacter_baumannii	N107_BC11	s_196	2396727	49380	BlaA2;MphE;TetB;OXA-23;SulII;BlaA1;ADC;	MEDIUM_QUAL
 Acinetobacter_baumannii	N215_BC06	s_321	2575509	1021813	OXA-51;Zn-dependent;Mbl;ADC;BlaA1;	MEDIUM_QUAL
 Acinetobacter_baumannii	N191_BC04	s_288	4029310	1400746	Mbl;Zn-dependent;ADC;OXA-51;	HIGH_QUAL
@@ -1369,7 +1336,6 @@ Acinetobacter_baumannii	N133_BC02	s_231	3942672	3903509	OXA-23;OXA-51;CARB-5;Zn-
 Acinetobacter_baumannii	N115_BC01	s_207	3921834	3882878	OXA-51;MsrE;OXA-23;OXA-23;CARB-5;ArmA;MphE;Zn-dependent;Mbl;BlaA2;ADC;ADC;BlaA1;	HIGH_QUAL
 Acinetobacter_baumannii	N155_BC02	s_261	3935959	3896863	StrB;StrA;MsrE;TEM-1D;MphE;ArmA;ADC;TetB;OXA-23;OXA-51;Mbl;Zn-dependent;BlaA2;BlaA1;	HIGH_QUAL
 Acinetobacter_baumannii	N228_BC11	s_338	3976368	3894195	MsrE;OXA-23;OXA-23;MphE;OXA-51;ArmA;Mbl;BlaA2;Zn-dependent;ADC;ADC;BlaA1;	HIGH_QUAL
-Acinetobacter_baumannii	N253_barcode08	s_349	3806245	2945477	NONE	HIGH_QUAL
 Acinetobacter_baumannii	N112_BC04	s_201	3931290	3467140	OXA-51;Zn-dependent;Mbl;ADC;	HIGH_QUAL
 Acinetobacter_baumannii	N156_BC12	s_264	3891232	3822402	OXA-51;Zn-dependent;BlaA2;Mbl;ADC;BlaA1;	HIGH_QUAL
 Acinetobacter_baumannii	N098_BC06	s_183	3916203	3877302	MsrE;OXA-23;OXA-51;ArmA;MphE;OXA-23;CARB-5;Zn-dependent;Mbl;BlaA2;ADC;ADC;BlaA1;	HIGH_QUAL
@@ -1756,7 +1722,6 @@ Serratia_marcescens	N164_BC08	s_4423	5549424	5494351	Tet-41;SRT-SST;Aac6-Ic;	MED
 Serratia_marcescens	N214_BC04	s_4454	5369530	5316241	Tet-41;SRT-SST;Aac6-Ic;	HIGH_QUAL
 Serratia_marcescens	N160_BC07	s_4416	5641147	5585167	Tet-41;SRT-SST;Aac6-Ic;	MEDIUM_QUAL
 Serratia_marcescens	N123_BC06	s_4399	5589929	5534456	Tet-41;SRT-SST;Aac6-Ic;	MEDIUM_QUAL
-Serratia_marcescens	N253_barcode21	s_4479	4925429	4806151	NONE	HIGH_QUAL
 Serratia_marcescens	N209_BC11	s_4450	5094421	5043854	SRT-SST;Aac6-Ic;	HIGH_QUAL
 Serratia_marcescens	N175_BC09	s_4435	5620393	4418193	SRT-SST;Aac6-Ic;	MEDIUM_QUAL
 Serratia_marcescens	N157_BC12	s_4414	5672427	5616137	Tet-41;SRT-SST;Aac6-Ic;	MEDIUM_QUAL
@@ -1802,12 +1767,10 @@ Serratia_marcescens	N170_BC12	s_4431	5463107	2871815	Aac6-Ic;Tet-41;SRT-SST;	HIG
 Serratia_marcescens	N202_BC04	s_4443	2951998	139313	SRT-SST;Aac6-Ic;	MEDIUM_QUAL
 Serratia_marcescens	N212_BC07	s_4452	5455996	5401849	Tet-41;SRT-SST;Aac6-Ic;	HIGH_QUAL
 Serratia_marcescens	N142_BC07	s_4404	3784855	3713427	SRT-SST;Aac6-Ic;	MEDIUM_QUAL
-Serratia_marcescens	N253_barcode20	s_4478	5552710	3902077	NONE	MEDIUM_QUAL
 Serratia_marcescens	N142_BC08	s_4405	5465698	5383406	Tet-41;SRT-SST;Aac6-Ic;	HIGH_QUAL
 Serratia_marcescens	N158_BC01	s_4415	5672398	2954473	Tet-41;SRT-SST;Aac6-Ic;	MEDIUM_QUAL
 Serratia_marcescens	N106_BC05	s_4392	5578022	5522668	Tet-41;SRT-SST;Aac6-Ic;	MEDIUM_QUAL
 Serratia_marcescens	N215_BC11	s_4456	5679939	5623575	Tet-41;SRT-SST;Aac6-Ic;	MEDIUM_QUAL
-Serratia_marcescens	N253_barcode23	s_4481	5527198	5472342	NONE	MEDIUM_QUAL
 Serratia_marcescens	N191_BC12	s_4438	5404301	1924926	Tet-41;SRT-SST;StrB;SulII;StrA;Aac6-Ic;	HIGH_QUAL
 Serratia_marcescens	N192_BC01	s_4439	5378122	5300895	Tet-41;SRT-SST;Aac6-Ic;	HIGH_QUAL
 Serratia_marcescens	N232_BC04	s_4474	2678564	178021		MEDIUM_QUAL
@@ -1818,7 +1781,6 @@ Serratia_marcescens	N131_BC05	s_4402	5326816	5273949	Tet-41;SRT-SST;Aac6-Ic;	HIG
 Serratia_marcescens	N215_BC05	s_4455	5491803	2024958	Aac6-Ic;Tet-41;SRT-SST;	HIGH_QUAL
 Serratia_marcescens	N209_BC07	s_4449	5091568	5041029	SRT-SST;Aac6-Ic;	HIGH_QUAL
 Serratia_marcescens	N226_BC05	s_4467	2785581	802902	Aac6-Ic;	MEDIUM_QUAL
-Serratia_marcescens	N253_barcode24	s_4482	4925980	4799968	NONE	HIGH_QUAL
 Enterococcus_faecium	N110_BC11	s_3458	3064734	2849054	Spc;ErmA;Aac6-Ii;Dfr;MsrC;VanX-M;Spc;VanH-Pt;ErmA;VanA;VanS-A;VanY-A;VanR-A;	HIGH_QUAL
 Enterococcus_faecium	N110_BC12	s_3459	3020965	742985	Dfr;Spc;ErmA;VanX-M;VanH-Pt;VanA;VanR-A;VanY-A;Spc;Aac6-Ii;ErmA;MsrC;	HIGH_QUAL
 Enterococcus_faecium	N229_BC12	s_3546	2912606	2664692	Aac6-Ii;MsrC;MsrC;	HIGH_QUAL
@@ -1886,16 +1848,13 @@ Elizabethkingia_anophelis	N196_BC08	s_2959	4288754	4233683	GOB-1;B-1;CME-1;	HIGH
 Elizabethkingia_anophelis	N170_BC07	s_2942	4312545	4269720	GOB-1;B-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N123_BC07	s_2907	4249815	4207611	GOB-1;B-1;CME-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N186_BC05	s_2955	4243399	2495732	GOB-1;B-1;CME-1;	HIGH_QUAL
-Elizabethkingia_anophelis	N255_barcode24	s_2983	4287918	4245331	NONE	HIGH_QUAL
 Elizabethkingia_anophelis	N109_BC09	s_2903	4404038	4360308	B-1;	HIGH_QUAL
-Elizabethkingia_anophelis	N253_barcode18	s_2976	4352690	4264746	NONE	HIGH_QUAL
 Elizabethkingia_anophelis	N180_BC03	s_2945	4276708	4234237	GOB-1;B-1;CME-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N170_BC05	s_2940	4305378	4262625	B-1;GOB-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N141_BC09	s_2915	4246731	4204557	GOB-1;B-1;CME-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N151_BC11	s_2923	4253803	4198143	GOB-1;CME-1;B-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N167_BC10	s_2937	4300522	4257815	GOB-1;B-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N237_BC03	s_2971	3267860	115561	GOB-1;CME-1;	MEDIUM_QUAL
-Elizabethkingia_anophelis	N255_barcode22	s_2981	4298420	4255730	NONE	HIGH_QUAL
 Elizabethkingia_anophelis	N217_BC10	s_2964	4295306	4252652	GOB-1;B-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N237_BC02	s_2970	4324736	2617049	B-1;GOB-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N220_BC12	s_2968	3432054	66927	CME-1;B-1;	MEDIUM_QUAL
@@ -1907,12 +1866,10 @@ Elizabethkingia_anophelis	N164_BC07	s_2931	2966192	59018	CME-1;GOB-1;	MEDIUM_QUA
 Elizabethkingia_anophelis	N114_BC09	s_2904	4265064	4222710	GOB-1;B-1;CME-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N141_BC12	s_2918	4253578	2131863	CME-1;GOB-1;B-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N138_BC06	s_2912	4303956	4192075	GOB-1;B-1;CME-1;	HIGH_QUAL
-Elizabethkingia_anophelis	N255_barcode21	s_2980	4303145	4260407	NONE	HIGH_QUAL
 Elizabethkingia_anophelis	N218_BC12	s_2966	4481812	1387264	B-1;GOB-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N138_BC03	s_2909	4615395	863508	CME-1;GOB-1;B-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N145_BC08	s_2920	4244904	4202749	GOB-1;CME-1;B-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N185_BC06	s_2950	4548711	2354403	B-1;GOB-1;	HIGH_QUAL
-Elizabethkingia_anophelis	N255_barcode23	s_2982	4290231	4247622	NONE	HIGH_QUAL
 Elizabethkingia_anophelis	N186_BC04	s_2954	4446603	4220151	GOB-1;CME-1;B-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N130_BC01	s_2908	3716360	103066	GOB-1;B-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N162_BC08	s_2926	4245041	4202885	GOB-1;B-1;CME-1;	HIGH_QUAL
@@ -1923,7 +1880,6 @@ Elizabethkingia_anophelis	N141_BC10	s_2916	4237388	4138378	GOB-1;B-1;CME-1;	HIGH
 Elizabethkingia_anophelis	N185_BC08	s_2952	4384153	2295829	CME-1;GOB-1;B-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N141_BC08	s_2914	4293639	2515446	GOB-1;B-1;CME-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N185_BC09	s_2953	4576526	1254839	B-1;GOB-1;	HIGH_QUAL
-Elizabethkingia_anophelis	N255_barcode20	s_2979	4294389	4251739	NONE	HIGH_QUAL
 Elizabethkingia_anophelis	N141_BC11	s_2917	4265888	4206519	GOB-1;B-1;CME-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N167_BC01	s_2933	4428846	4372660	B-1;	HIGH_QUAL
 Elizabethkingia_anophelis	N185_BC05	s_2949	4388320	1075583	B-1;GOB-1;	HIGH_QUAL
@@ -2017,7 +1973,6 @@ Pseudomonas_stutzeri	N187_BC03	s_4281	4566748	2155031		HIGH_QUAL
 Pseudomonas_stutzeri	N145_BC11	s_4273	4609643	4563875		HIGH_QUAL
 Pseudomonas_stutzeri	N212_BC05	s_4298	4519309	4474437		HIGH_QUAL
 Serratia_sp.	N226_BC02	s_4537	5652409	5546428	SRT-SST;Aac6-Ic;	HIGH_QUAL
-Serratia_sp.	N253_barcode22	s_4550	3630635	3594558	NONE	HIGH_QUAL
 Serratia_sp.	N202_BC04	s_4526	1712270	80231		HIGH_QUAL
 Serratia_sp.	N142_BC07	s_4509	1670276	1653613	Tet-41;	HIGH_QUAL
 Serratia_sp.	N175_BC08	s_4520	5633673	5577766	SRT-SST;Aac6-Ic;	HIGH_QUAL
@@ -2115,14 +2070,12 @@ Enterobacter_cloacae	N150_BC03	s_3155	5309416	1290016	AadB;AadB;AadA;AadA;SulI;S
 Enterobacter_cloacae	N140_BC03	s_3151	5157894	4756603	ACT-MIR;SulII;AadA;StrB;CatBx;AacAad;CTX-M-1;StrA;TEM-1D;OXA-1;CatA1;Aac3-IIa;QnrB;DfrA5;TetA;	HIGH_QUAL
 Enterobacter_cloacae	N229_BC05	s_3169	4810637	4762879	ACT-MIR;FosA2;	HIGH_QUAL
 Enterobacter_cloacae	N136_BC01	s_3147	5183720	5132269	ACT-MIR;FosA2;	HIGH_QUAL
-Enterobacter_cloacae	N253_barcode06	s_3172	4378875	4335390	NONE	HIGH_QUAL
 Enterobacter_cloacae	N140_BC05	s_3153	5058160	3212577	AadA;StrB;CTX-M-1;AacAad;TEM-1D;SulII;Aac3-IIa;OXA-1;StrA;CatBx;CatA1;QnrB;DfrA5;TetA;ACT-MIR;	HIGH_QUAL
 Enterobacter_cloacae	N233_BC09	s_3171	2673388	2621590	ACT-MIR;FosA2;	MEDIUM_QUAL
 Enterobacter_cloacae	N140_BC04	s_3152	5158094	4759160	ACT-MIR;StrB;SulII;CTX-M-1;TEM-1D;CatBx;StrA;OXA-1;OXA-1;CatA1;AacAad;AacAad;AadA;AadA;CatBx;QnrB;CatA1;DfrA5;Aac3-IIa;Aac3-IIa;TetA;	HIGH_QUAL
 Enterobacter_cloacae	N196_BC07	s_3158	4714546	4667740	ACT-MIR;FosA2;	HIGH_QUAL
 Enterobacter_cloacae	N140_BC02	s_3150	5155564	4748638	ACT-MIR;StrB;SulII;AadA;TEM-1D;CatBx;StrA;OXA-1;AacAad;Aac3-IIa;CTX-M-1;CatA1;DfrA5;QnrB;TetA;	HIGH_QUAL
 Enterobacter_cloacae	N186_BC03	s_3157	4706899	2082781	ACT-MIR;FosA2;	HIGH_QUAL
-Enterobacter_cloacae	N253_barcode08	s_3173	4020321	2459703	NONE	MEDIUM_QUAL
 Acinetobacter_sp.	N233_BC02	s_567	3311147	353778	CARB-5;	HIGH_QUAL
 Acinetobacter_sp.	N187_BC01	s_549	3361294	2495163	SulII;	HIGH_QUAL
 Acinetobacter_sp.	N197_BC05	s_550	1871622	35280		MEDIUM_QUAL
@@ -2173,7 +2126,6 @@ Candida_albicans	N230_BC09	s_2658	14876914	667016		HIGH_QUAL
 Candida_albicans	N154_BC07	s_2640	14645386	418502		HIGH_QUAL
 Candida_albicans	N135_BC06	s_2637	13900043	523581		HIGH_QUAL
 Candida_albicans	N161_BC07	s_2645	13923868	154780		HIGH_QUAL
-Elizabethkingia_miricola	N253_barcode17	s_3123	4401873	4358158	NONE	HIGH_QUAL
 Elizabethkingia_miricola	N161_BC04	s_3096	4393853	4350223	B-1;	HIGH_QUAL
 Elizabethkingia_miricola	N109_BC06	s_3086	4410886	4367089	B-1;	HIGH_QUAL
 Elizabethkingia_miricola	N161_BC05	s_3097	2911331	2882380		MEDIUM_QUAL
@@ -2184,7 +2136,6 @@ Elizabethkingia_miricola	N194_BC10	s_3115	3621798	3585813		MEDIUM_QUAL
 Elizabethkingia_miricola	N217_BC08	s_3118	4389663	4346076	B-1;	HIGH_QUAL
 Elizabethkingia_miricola	N171_BC04	s_3109	4403952	4360223	B-1;	HIGH_QUAL
 Elizabethkingia_miricola	N161_BC06	s_3098	4402129	4358416	B-1;	HIGH_QUAL
-Elizabethkingia_miricola	N253_barcode19	s_3124	4432809	4388789	NONE	HIGH_QUAL
 Elizabethkingia_miricola	N239_BC03	s_3121	4439432	4395352	B-1;	HIGH_QUAL
 Elizabethkingia_miricola	N109_BC10	s_3088	4399304	4355621	B-1;	HIGH_QUAL
 Burkholderia_lata	N127_BC08	s_2518	7914240	3113755	AacAad;	HIGH_QUAL
@@ -2270,11 +2221,6 @@ Delftia_tsuruhatensis	N165_BC11	s_2875	6836676	6768860		HIGH_QUAL
 Delftia_tsuruhatensis	N149_BC12	s_2868	6839967	6772116		HIGH_QUAL
 Delftia_tsuruhatensis	N149_BC11	s_2867	6840606	4755557		HIGH_QUAL
 Enterobacter_hormaechei	N129_BC09	s_3181	4847672	4799548	ACT-MIR;FosA2;	HIGH_QUAL
-Enterobacter_hormaechei	N253_barcode07	s_3188	4857191	4808969	NONE	HIGH_QUAL
-Enterobacter_hormaechei	N253_barcode15	s_3192	4850638	4802481	NONE	HIGH_QUAL
-Enterobacter_hormaechei	N253_barcode12	s_3190	4850393	4802238	NONE	HIGH_QUAL
-Enterobacter_hormaechei	N253_barcode16	s_3193	4859458	4811213	NONE	HIGH_QUAL
-Enterobacter_hormaechei	N253_barcode13	s_3191	4860067	4811817	NONE	HIGH_QUAL
 Enterobacter_hormaechei	N220_BC08	s_3186	2310643	2026380		MEDIUM_QUAL
 Lysinibacillus_sp.	N170_BC01	s_3892	5097062	3011210		MEDIUM_QUAL
 Lysinibacillus_sp.	N223_BC01	s_3897	4163198	238011		MEDIUM_QUAL
