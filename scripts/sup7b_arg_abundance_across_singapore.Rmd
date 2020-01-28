@@ -76,6 +76,9 @@ ggplot(dat, aes(x = location, y = value)) +
   scale_y_log10(limits=c(3e-4,2), breaks = c(0, 0.001, 0.01, 0.1, 1), labels = c(0, 0.001, 0.01, 0.1, 1)) +
   labs(x=NULL, y = "Normalized ARG Abundance") +
   theme(axis.text = element_text(size = 15))
+
+wilcox.test(dat$value[dat$location=="Hospital"], dat$value[dat$location=="Office"])
+wilcox.test(dat$value[dat$location=="Hospital"], dat$value[dat$location=="MetaSUB"])
   
 ggsave('../plots/sup7b.arg_abundances.png', height = 5, width = 6)
 
