@@ -59,10 +59,13 @@ distances.opera <- foreach(s=species.list.opera, .combine = rbind) %do% {
 }
 
 p1 <- filter(distances.opera, dist<0.00075) %>% ## s_4510 and s_4747 shared 79% of the genome, and are 99.88% identical
+  mutate(species=str_replace(species, "_"," ")) %>% 
   ggplot(aes(x=species, y=dist)) + 
   geom_quasirandom() + 
   geom_hline(yintercept = opera_ms_threshold) + 
   labs(x=NULL, y='Distances within cluster') + 
+  scale_y_continuous(limits=c(0, 1.5e-4)) + 
+  theme(strip.text = element_text(face="bold.italic"), axis.text.x = element_blank()) +
   facet_wrap(~species, scales='free', nrow=1)
 
 distances.canu <- foreach(s=species.list.canu, .combine = rbind) %do% {
@@ -70,11 +73,16 @@ distances.canu <- foreach(s=species.list.canu, .combine = rbind) %do% {
 }
 
 p2 <- filter(distances.canu) %>% 
+  mutate(species=str_replace(species, "_"," ")) %>% 
   ggplot(aes(x=species, y=dist)) + 
   geom_quasirandom() + 
   geom_hline(yintercept = canu_threshold) + 
   labs(x=NULL, y='Distances within cluster') + 
+  scale_y_continuous(limits=c(0, 1.5e-3)) + 
+  theme(strip.text = element_text(face="bold.italic"), axis.text.x = element_blank()) +
   facet_wrap(~species, scales='free', nrow=1)
 
 cowplot::plot_grid(p1, p2, nrow=2)
+
+rbind(filter(distances.opera, dist<0.00075), filter(distances.canu)) %>% nrow
 ```
