@@ -297,7 +297,7 @@ ggplot(plot.dat, aes(x=V1, y=V2, col=Sample_type, shape=Time_point), lwd=2) +
   facet_wrap(~Sample_type,dir="v") + 
   guides(color=guide_legend(title='Sample type'), shape=guide_legend('Time point'))
 
-ggsave('../plots/fig2c_pcoa_spatial_temporal.svg', height = 8, width = 20)
+ggsave('../plots/fig2c_pcoa_spatial_temporal.svg', height = 8, width = 17)
 ```
 
 Test if the two CTs have different stability

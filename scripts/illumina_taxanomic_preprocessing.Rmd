@@ -57,7 +57,7 @@ mutate(tmp, species=str_replace_all(species, c('s__'='', '_'=' '))) %>%
   geom_segment(aes(y=1/4,x=1/16, yend=1, xend=1/4),color='blue', lty=2, lwd=1) + 
   geom_segment(aes(y=1/4,x=1/16, yend=0.25, xend=-0.05),color='blue', lty=2, lwd=1) + 
   geom_point(col='black', size=3)  + 
-  gghighlight(ratio>3 & batch1>0.22 | (batch2>0.22 & ratio<1/3)) +
+  gghighlight(ratio>4*0.85 & batch1>0.25*0.85 | (batch2>0.25*0.85 & ratio<0.25*1.15)) +
   #geom_vline(xintercept = 1/4, color='blue', lty=2, lwd=1) + 
   #geom_abline(slope = 1/4, intercept = 0, color='blue', lty=2, lwd=1) + 
   # geom_hline(yintercept = 1/4, color='blue', lty=2, lwd=1) + 
@@ -76,11 +76,11 @@ Check if the borderline species were correlated with the potential contaminants
 ```{r fig.height=13, fig.width=14.5}
 species.removed <- filter(tmp,ratio>4 & batch1>1/4) %>% pull(species)
 
-mat <- cor(t(batch1[tmp$batch1>0.22,]), method='spearman')
+mat <- cor(t(batch1[tmp$batch1>0.25*0.85,]), method='spearman')
 
 rownames(mat) %<>% str_replace_all(c('s__'='', '_'=' ')) %>% str_replace('[a-z]+ ', '. ')
 colnames(mat) %<>% str_replace_all(c('s__'='', '_'=' ')) %>% str_replace('[a-z]+ ', '. ')
-idx <-  which(rownames(batch1[tmp$batch1>0.22,]) %in% species.removed)
+idx <-  which(rownames(batch1[tmp$batch1>0.25*0.85,]) %in% species.removed)
 
 ha = rowAnnotation(foo = anno_mark(at =idx, rownames(mat)[idx], labels_gp = gpar(fontface='bold.italic')))
 va = columnAnnotation(foo = anno_mark(at =idx, rownames(mat)[idx], side='bottom', 
