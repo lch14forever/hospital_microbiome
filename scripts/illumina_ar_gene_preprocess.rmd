@@ -1,0 +1,42 @@
+---
+title: "AR gene contaminant check"
+author: "Chenhao Li"
+date: "2/10/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load generic libraries
+```{r message=FALSE, warning=FALSE}
+source('configuration.r')
+```
+
+Load plot specific libraries
+```{r message=FALSE, warning=FALSE}
+```
+
+Merge data
+```{r}
+metadata <-read.table("../metadata/illumina_metadata.txt",sep="\t",head=T) 
+anti <-read.table("../tables/illumina_AR_gene_assignment.dat",sep="\t",head=T)
+b1lib <- (filter(metadata, timept %in% c(1, 2)) %>% pull(Library))
+b2lib <- (filter(metadata, timept %in% c(3)) %>% pull(Library))
+batch1 <- filter(anti, Lib %in% b1lib)
+batch2 <- filter(anti, Lib %in% b2lib)
+
+b1prev <- filter(batch1, Cover > 0) %>% count(Anti) %>% mutate(n=n/length(unique(b1lib)))
+b2prev <- filter(batch2, Cover > 0) %>% count(Anti) %>% mutate(n=n/length(unique(b2lib)))
+
+tmp <- merge(b1prev,  b2prev, by=1, all=TRUE)
+tmp[is.na(tmp)] <- 0
+
+ggplot(tmp, aes(x=n.x, y=n.y)) + 
+  geom_point() + 
+  xlim(0,1) +
+  ylim(0,1) + 
+  labs(x="Batch 1", y="Batch 2")
+  geom_abline(intercept = 0, slope = 1)
+```

@@ -78,8 +78,8 @@ species.removed <- filter(tmp,ratio>4 & batch1>1/4) %>% pull(species)
 
 mat <- cor(t(batch1[tmp$batch1>0.25*0.85,]), method='spearman')
 
-rownames(mat) %<>% str_replace_all(c('s__'='', '_'=' ')) %>% str_replace('[a-z]+ ', '. ')
-colnames(mat) %<>% str_replace_all(c('s__'='', '_'=' ')) %>% str_replace('[a-z]+ ', '. ')
+rownames(mat) %<>% str_replace_all(c('s__'='', '_'=' ')) #%>% str_replace('[a-z]+ ', '. ') %>% str_replace("P. acnes", "C. acnes") %>% str_replace("caprae capitis", "caprae/capitis")
+colnames(mat) %<>% str_replace_all(c('s__'='', '_'=' ')) #%>% str_replace('[a-z]+ ', '. ') %>% str_replace("P. acnes", "C. acnes") %>% str_replace("caprae capitis", "caprae/capitis")
 idx <-  which(rownames(batch1[tmp$batch1>0.25*0.85,]) %in% species.removed)
 
 ha = rowAnnotation(foo = anno_mark(at =idx, rownames(mat)[idx], labels_gp = gpar(fontface='bold.italic')))
