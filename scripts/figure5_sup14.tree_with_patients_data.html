@@ -1815,19 +1815,13 @@ patient &lt;-
   merge(filter(patient, anno=='This study') %&gt;% select(strain, `99.99%`), all=TRUE, by=1) %&gt;% 
   merge(filter(patient, anno!='This study') %&gt;% select(strain, `99.99%`), all=TRUE, by=1)
 
-p1 &lt;- binom.test(filter(test.dat, MDR) %&gt;% pull(`99.99%.x`) %&gt;% sum(na.rm = T), 
-           sum(test.dat$`99.99%.x`, na.rm = T), 
-           sum(test.dat$MDR)/nrow(test.dat)
-           )$p.value
-p2 &lt;- binom.test(filter(test.dat, MDR) %&gt;% pull(`99.99%.y`) %&gt;% sum(na.rm = T), 
-           sum(test.dat$`99.99%.y`, na.rm = T), 
+p1 &lt;- binom.test(filter(test.dat, MDR) %&gt;% select(`99.99%.x`, `99.99%.y`) %&gt;% colSums(na.rm=T) %&gt;% sum(),
+           sum(c(test.dat$`99.99%.x`, test.dat$`99.99%.y`), na.rm = T), 
            sum(test.dat$MDR)/nrow(test.dat)
            )$p.value
 
-print(paste0('Test for 99.99% overlapping with patient in this study: ', p1))</code></pre>
-<pre><code>## [1] &quot;Test for 99.99% overlapping with patient in this study: 0.0929576532900476&quot;</code></pre>
-<pre class="r"><code>print(paste0('Test for 99.99% overlapping with patient in Nasser et al: ', p2))</code></pre>
-<pre><code>## [1] &quot;Test for 99.99% overlapping with patient in Nasser et al: 9.67260797287087e-13&quot;</code></pre>
+print(paste0('Test for 99.99% overlapping with patients: ', p1))</code></pre>
+<pre><code>## [1] &quot;Test for 99.99% overlapping with patients: 1.14277225674222e-10&quot;</code></pre>
 <p>Plot the tree</p>
 <pre class="r"><code>d1 &lt;- rownames_to_column(dat$antibiotics) %&gt;% melt(id.vars='rowname') %&gt;% mutate(`Antibiotic resistance`=value)
 d2 &lt;- filter(patient, anno=='Nasser et al') %&gt;% melt() %&gt;% 
@@ -2005,7 +1999,7 @@ cowplot::plot_grid(p1, tree4, legend, nrow=1, rel_widths = c(1,1,0.2))</code></p
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>## R version 3.5.1 (2018-07-02)
 ## Platform: x86_64-apple-darwin15.6.0 (64-bit)
-## Running under: macOS  10.15.2
+## Running under: macOS  10.15.4
 ## 
 ## Matrix products: default
 ## BLAS: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRblas.0.dylib

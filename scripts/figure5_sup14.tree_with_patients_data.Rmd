@@ -258,17 +258,12 @@ test.dat <-
   merge(filter(patient, anno=='This study') %>% select(strain, `99.99%`), all=TRUE, by=1) %>% 
   merge(filter(patient, anno!='This study') %>% select(strain, `99.99%`), all=TRUE, by=1)
 
-p1 <- binom.test(filter(test.dat, MDR) %>% pull(`99.99%.x`) %>% sum(na.rm = T), 
-           sum(test.dat$`99.99%.x`, na.rm = T), 
-           sum(test.dat$MDR)/nrow(test.dat)
-           )$p.value
-p2 <- binom.test(filter(test.dat, MDR) %>% pull(`99.99%.y`) %>% sum(na.rm = T), 
-           sum(test.dat$`99.99%.y`, na.rm = T), 
+p1 <- binom.test(filter(test.dat, MDR) %>% select(`99.99%.x`, `99.99%.y`) %>% colSums(na.rm=T) %>% sum(),
+           sum(c(test.dat$`99.99%.x`, test.dat$`99.99%.y`), na.rm = T), 
            sum(test.dat$MDR)/nrow(test.dat)
            )$p.value
 
-print(paste0('Test for 99.99% overlapping with patient in this study: ', p1))
-print(paste0('Test for 99.99% overlapping with patient in Nasser et al: ', p2))
+print(paste0('Test for 99.99% overlapping with patients: ', p1))
 ```
 
 Plot the tree
