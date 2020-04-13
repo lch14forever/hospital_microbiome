@@ -25,7 +25,7 @@ cd hospital_microbiome && git lfs pull
 ## Raw data availability
 
  - Raw sequencing data has been uploaded to [European Nucleotide Archive](https://www.ebi.ac.uk/ena/data/view/PRJEB31632)
- - Assemblies and annotations are available at [figshare](https://ndownloader.figshare.com/files/17290511)
+ - Assemblies and annotations are available at [Figshare](https://figshare.com/articles/Cartography_of_opportunistic_pathogens_and_antibiotic_resistance_genes_in_a_tertiary_hospital_environment/11683350)
 
 ## Citation
 
