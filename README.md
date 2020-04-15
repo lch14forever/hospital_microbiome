@@ -26,8 +26,9 @@ cd hospital_microbiome && git lfs pull
 
  - Raw sequencing data has been uploaded to [European Nucleotide Archive](https://www.ebi.ac.uk/ena/data/view/PRJEB31632)
  - Assemblies and annotations are available at [Figshare](https://figshare.com/articles/Cartography_of_opportunistic_pathogens_and_antibiotic_resistance_genes_in_a_tertiary_hospital_environment/11683350)
+ - Source code and software for visualizing the data on 3D models are available on [github](https://github.com/CSB5/hospital_microbiome_explorer)
 
 ## Citation
 
-Chng *et al*. (2020). Cartography of opportunistic pathogens and antibiotic resistance genes in a tertiary hospital environment. Nature Medicine. *In press*
+Chng *et al*. (2020). Cartography of opportunistic pathogens and antibiotic resistance genes in a tertiary hospital environment. Nature Medicine. *In press*.
 
