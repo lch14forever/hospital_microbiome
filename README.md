@@ -1,6 +1,6 @@
 # Data and scripts for reproducing the analyses
 
-This repository contains data and scripts used in the manuscript titled "Cartography of opportunistic pathogens and antibiotic resistance genes in a tertiary hospital environment".
+This repository contains data and scripts used in our recent manuscript ([Chng *et al*, Nature Medicine, 2020](#citation)).
 
 ## Directory structure
 
