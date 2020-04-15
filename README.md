@@ -34,3 +34,6 @@ Chng *et al*. (2020). Cartography of opportunistic pathogens and antibiotic resi
 
 Note: A self-archived version of the manuscript is available at [BioRxiv](https://www.biorxiv.org/content/10.1101/644740v2).
 
+## Contact
+
+Please direct any questions or feedback to [Chenhao Li](mailto:lich@gis.a-star.edu.sg) and [Niranjan Nagarajan](mailto:nagarajann@gis.a-star.edu.sg).
