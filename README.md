@@ -29,5 +29,5 @@ cd hospital_microbiome && git lfs pull
 
 ## Citation
 
-Chng, Li, Bertrand, et al. Cartography of opportunistic pathogens and antibiotic resistance genes in a tertiary hospital environment. BioRxiv (2019)
+Chng *et al*. (2020). Cartography of opportunistic pathogens and antibiotic resistance genes in a tertiary hospital environment. Nature Medicine.
 
