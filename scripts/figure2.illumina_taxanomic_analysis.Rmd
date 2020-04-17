@@ -50,12 +50,14 @@ dat.merged$Sample_type <- fct_relevel(factor(dat.merged$Sample_type), 'Sink Trap
 PCoA1 and PCoA2
 ```{r fig.height=5, fig.width=9}
 ## PCoA
-ggplot(dat.merged, aes(x=V1, y=V2, col=Sample_type), lwd=2) +
+ggplot(dat.merged, aes(x=V1, y=V2, col=Sample_type, fill=Sample_type, shape=Sample_type), lwd=2) +
   geom_density_2d(aes(x=V1, y=V2),  inherit.aes = FALSE, col='grey', lwd=1) + 
-	geom_point(size=4.5) +
+	geom_point(size=2.5) +
 	labs(x=paste0('MDS1 (',round(eigen[1], 1),'%)'),
        y=paste0('MDS2 (',round(eigen[2], 1),'%)')) +
-	scale_color_manual(values=c(pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)], 'grey')) + 
+	scale_color_manual(values=c(pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)], 'grey')) +  
+  scale_fill_manual(values=c(pal_npg(c("nrc"))(10)[c(1,5,7,2,3,10,4)], 'grey')) +
+  scale_shape_manual(values=c(8,9,24,25, 21,22,23)) + 
   theme(legend.title = element_blank()) 
 ggsave('../plots/f2a_mds_genus.svg', width =9, height = 5)
 ```
