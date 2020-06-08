@@ -1,4 +1,4 @@
-# Data and scripts for reproducing the analyses
+# Data and scripts for reproducing the analyses in the hospital microbiome project
 
 This repository contains data and scripts used in our recent manuscript ([Chng *et al*, 2020](#citation)).
 
@@ -30,9 +30,8 @@ cd hospital_microbiome && git lfs pull
 
 ## Citation
 
-Chng *et al*. (2020). Cartography of opportunistic pathogens and antibiotic resistance genes in a tertiary hospital environment. *In press*.
+Chng *et al*. (2020). Cartography of opportunistic pathogens and antibiotic resistance genes in a tertiary hospital environment. *Nature Medicine* ([journal version](https://www.nature.com/articles/s41591-020-0894-4), [bioRxiv version](https://www.biorxiv.org/content/10.1101/644740v2)).
 
-Note: A self-archived version of the manuscript is available at [BioRxiv](https://www.biorxiv.org/content/10.1101/644740v2).
 
 ## Contact
 
